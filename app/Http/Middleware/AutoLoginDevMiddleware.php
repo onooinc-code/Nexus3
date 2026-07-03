@@ -16,7 +16,23 @@ class AutoLoginDevMiddleware
     public function handle(Request $request, Closure $next, ...$guards): Response
     {
         if (app()->environment('local')) {
-            $user = \App\Models\User::first();
+            // Try to get admin user, or create it if doesn't exist
+            $user = \App\Models\User::where('email', 'admin@nexus.local')->first();
+            
+            if (!$user) {
+                $user = \App\Models\User::first();
+            }
+
+            if (!$user) {
+                // Create default admin user
+                $user = \App\Models\User::create([
+                    'name' => 'Admin',
+                    'email' => 'admin@nexus.local',
+                    'password' => bcrypt('admin'),
+                    'email_verified_at' => now(),
+                ]);
+            }
+
             if ($user) {
                 // Use stateless Auth to prevent session locks
                 \Illuminate\Support\Facades\Auth::guard('sanctum')->setUser($user);

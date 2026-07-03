@@ -16,6 +16,7 @@ Route::post('/dashboard/refresh-metric', [DashboardController::class, 'refreshMe
 
 // --- Nexus Monolithic Hubs Routes ---
 use App\Http\Controllers\Web\HubController;
+use App\Http\Controllers\Web\TasksHubController;
 
 Route::prefix('hub')->group(function () {
     Route::get('/dashboard', [HubController::class, 'dashboard'])->name('hub.dashboard');
@@ -47,7 +48,9 @@ Route::prefix('hub')->group(function () {
     Route::get('/people-connect', [HubController::class, 'peopleConnect'])->name('hub.people-connect');
     Route::get('/hedra-soul', [HubController::class, 'hedraSoul'])->name('hub.hedra-soul');
     Route::get('/proactive-ai', [HubController::class, 'proactiveAi'])->name('hub.proactive-ai');
-    Route::get('/tasks', [HubController::class, 'tasks'])->name('hub.tasks');
+    Route::get('/tasks', [TasksHubController::class, 'index'])->name('hub.tasks.index');
+    Route::get('/tasks/{task}', [TasksHubController::class, 'show'])->name('hub.tasks.show');
+    Route::get('/notifications', [HubController::class, 'notifications'])->name('hub.notifications');
     Route::get('/scheduler', [HubController::class, 'scheduler'])->name('hub.scheduler');
     Route::get('/apis', [HubController::class, 'apis'])->name('hub.apis');
     Route::get('/admin', [HubController::class, 'admin'])->name('hub.admin');

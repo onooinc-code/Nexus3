@@ -36,6 +36,7 @@ use App\Models\Agent;
 use App\Models\Setting;
 use App\Models\HedrasoulSession;
 use App\Models\HedrasoulMessage;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -61,7 +62,6 @@ class AppServiceProvider extends ServiceProvider
             return new \App\Services\Routing\MessageRouterService($app['cache']);
         });
 
-
         // Bind Interface implementations
         $this->app->bind(
             \App\Contracts\MemoryEngineContract::class,
@@ -84,6 +84,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        URL::forceScheme('https');
+
         // Configure pagination
         \Illuminate\Pagination\Paginator::useBootstrap();
 

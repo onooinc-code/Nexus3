@@ -56,6 +56,10 @@ return [
         'index' => env('PINECONE_INDEX_NAME'),
     ],
 
+    'pushbullet' => [
+        'key' => env('PUSHBULLET_API_KEY'),
+    ],
+
     'ai' => [
         'verify_ssl' => env('AI_VERIFY_SSL', true),
         'gemini' => [

@@ -250,9 +250,21 @@ class HubController extends Controller
 
     public function updateSettings(Request $request)
     {
+        $cacheService = app(\App\Services\SettingCacheService::class);
+
         foreach ($request->except('_token') as $key => $value) {
-            Setting::updateOrCreate(['key' => $key], ['value' => is_array($value) ? json_encode($value) : $value]);
+            Setting::updateOrCreate(
+                ['key' => $key],
+                ['value' => is_array($value) ? json_encode($value) : $value]
+            );
+            // Invalidate the cache for this key so changes take effect immediately
+            try {
+                $cacheService->forget($key, null);
+            } catch (\Exception $e) {
+                // ignore cache failures
+            }
         }
+
         return response()->json(['success' => true]);
     }
     public function peopleConnect(Request $request)
@@ -308,27 +320,12 @@ class HubController extends Controller
         return view('hubs.proactive-ai', compact('triggers', 'logs'));
     }
 
-    public function tasks()
+    public function notifications()
     {
-        $tasks = \App\Models\AgentTask::orderBy('created_at', 'desc')->get();
+        $notifications = \App\Models\HedrasoulNotification::orderBy('created_at', 'desc')
+            ->paginate(50);
 
-        $todo = $tasks->filter(function($task) {
-            return in_array(strtolower($task->status), ['pending', 'queued', 'todo']);
-        });
-
-        $inProgress = $tasks->filter(function($task) {
-            return in_array(strtolower($task->status), ['in_progress', 'running', 'active']);
-        });
-
-        $completed = $tasks->filter(function($task) {
-            return in_array(strtolower($task->status), ['completed', 'done', 'success']);
-        });
-
-        $failed = $tasks->filter(function($task) {
-            return in_array(strtolower($task->status), ['failed', 'error', 'cancelled']);
-        });
-
-        return view('hubs.tasks', compact('todo', 'inProgress', 'completed', 'failed'));
+        return view('hubs.notifications', compact('notifications'));
     }
 
     public function scheduler()

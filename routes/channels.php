@@ -58,6 +58,10 @@ Broadcast::channel('workflow.{workflowId}', function (User $user, string $workfl
     return ! $workflow->owner_id || (int) $workflow->owner_id === (int) $user->id;
 });
 
+Broadcast::channel('notifications.{userId}', function (User $user, int $userId) {
+    return (int) $user->id === (int) $userId;
+});
+
 /**
  * PeopleConnect Hub Channels
  */

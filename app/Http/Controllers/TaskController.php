@@ -375,6 +375,36 @@ class TaskController extends Controller
                     'to_status' => $newStatus
                 ],
             ]);
+
+            // Phase 4: Trigger Notifications for completed/failed tasks
+            if (in_array($newStatus, ['failed', 'completed'])) {
+                $type = $newStatus === 'failed' ? 'error' : 'success';
+                $title = $newStatus === 'failed' ? 'Task Failed' : 'Task Completed';
+                $priority = $newStatus === 'failed' ? 'high' : 'normal';
+                
+                // 1. Create HedraSoul Notification (Persistent DB)
+                app(\App\Services\HedraSoul\HedraSoulNotificationService::class)->create(
+                    type: $type,
+                    priority: $priority,
+                    title: $title,
+                    body: "Task #{$task->id} '{$task->title}' has been {$newStatus}.",
+                    relatedId: $task->id,
+                    relatedType: 'App\Models\AgentTask',
+                    actionButtons: [['label' => 'View Task', 'url' => url('/hub/tasks/' . $task->id)]]
+                );
+
+                // 2. Broadcast via NotificationBroadcasted for Web & FCM
+                \App\Events\NotificationBroadcasted::dispatch(
+                    $request->user()?->id ?? 1,
+                    [
+                        'title' => $title,
+                        'body' => "Task #{$task->id} '{$task->title}' has been {$newStatus}.",
+                        'actions' => [['label' => 'View Task', 'url' => url('/hub/tasks/' . $task->id)]],
+                        'data' => ['click_action' => url('/hub/tasks/' . $task->id)]
+                    ],
+                    $type
+                );
+            }
             
             return response()->json([
                 'data' => $task->refresh(),

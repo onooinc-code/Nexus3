@@ -865,6 +865,22 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'auth:sanctum']], functi
 
 
 /**
+ * Notification Broadcast Routes
+ * Real-time notifications using Laravel Echo and Reverb
+ */
+Route::group(['prefix' => 'v1/notifications', 'middleware' => ['api', 'auth:sanctum']], function () {
+    Route::post('/broadcast', [\App\Http\Controllers\NotificationBroadcastController::class, 'send'])
+        ->name('notifications.broadcast');
+    Route::post('/broadcast-batch', [\App\Http\Controllers\NotificationBroadcastController::class, 'sendBatch'])
+        ->name('notifications.broadcast.batch');
+    Route::post('/fcm-token', [\App\Http\Controllers\NotificationBroadcastController::class, 'registerFcmToken'])
+        ->name('notifications.fcm.token');
+});
+
+Route::get('/v1/notifications/fcm-config', [\App\Http\Controllers\NotificationBroadcastController::class, 'fcmConfig'])
+    ->name('notifications.fcm.config');
+
+/**
  * Hedra Soul Routes
  */
 Route::group(['prefix' => 'v1/hedra-soul', 'middleware' => ['api', 'auth:sanctum']], function () {

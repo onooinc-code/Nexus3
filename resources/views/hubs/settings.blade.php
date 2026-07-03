@@ -78,7 +78,17 @@
                             </div>
 
                             <div class="text-end border-top border-secondary pt-3 mt-4">
-                                <button type="button" class="btn btn-primary px-4" id="btn-save-settings"><i class="fa-solid fa-floppy-disk me-2"></i> Save Changes</button>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="me-3 w-50">
+                                        <label class="form-label text-light fw-bold mb-1">Notification Transport</label>
+                                        <select id="notification_driver" class="form-select form-select-sm">
+                                            <option value="reverb" {{ (isset($settings['notifications.driver']) ? $settings['notifications.driver'] : config('notifications.driver', 'reverb')) == 'reverb' ? 'selected' : '' }}>Reverb (WebSocket)</option>
+                                            <option value="fcm" {{ (isset($settings['notifications.driver']) ? $settings['notifications.driver'] : config('notifications.driver', 'reverb')) == 'fcm' ? 'selected' : '' }}>Firebase Cloud Messaging (Push)</option>
+                                        </select>
+                                        <div class="text-muted small mt-1">Choose real-time notification transport for browser clients.</div>
+                                    </div>
+                                    <button type="button" class="btn btn-primary px-4" id="btn-save-settings"><i class="fa-solid fa-floppy-disk me-2"></i> Save Changes</button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -129,6 +139,23 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
+                // Small helper to show Bootstrap toasts
+                function showToast(type, message) {
+                        const toastId = 'toast-' + Date.now();
+                        const toastHtml = `
+                                <div id="${toastId}" class="toast align-items-center text-bg-${type} border-0 position-fixed" role="alert" aria-live="assertive" aria-atomic="true" style="top:20px; right:20px; z-index:2000;">
+                                    <div class="d-flex">
+                                        <div class="toast-body">${message}</div>
+                                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                    </div>
+                                </div>`;
+
+                        const $toast = $(toastHtml).appendTo('body');
+                        const bsToast = new bootstrap.Toast(document.getElementById(toastId), { delay: 4000 });
+                        bsToast.show();
+                        // remove after hidden
+                        document.getElementById(toastId).addEventListener('hidden.bs.toast', function () { $(this).remove(); });
+                }
         // Slider value update
         $('#rate-slider').on('input', function() {
             $('#rate-val').text($(this).val());
@@ -151,16 +178,16 @@
                 data: {
                     rate_limit: $('#rate-slider').val(),
                     maintenance_mode: $('#switchMaintenance').is(':checked') ? 1 : 0,
-                    debug_telemetry: $('#switchDebug').is(':checked') ? 1 : 0
+                    debug_telemetry: $('#switchDebug').is(':checked') ? 1 : 0,
+                    'notifications.driver': $('#notification_driver').val()
                 },
                 success: function() {
                     btn.html('<i class="fa-solid fa-floppy-disk me-2"></i> Save Changes').prop('disabled', false);
-                    // Add a small success toast or alert
-                    alert('Settings saved successfully!');
+                    showToast('success', 'Settings saved successfully!');
                 },
                 error: function(err) {
                     btn.html(originalText).prop('disabled', false);
-                    alert('Error saving settings.');
+                    showToast('danger', 'Error saving settings.');
                     console.error(err);
                 }
             });
@@ -191,11 +218,11 @@
                     headers: { 'Accept': 'application/json' },
                     data: { _token: '{{ csrf_token() }}' },
                     success: function() {
-                        alert("Factory purge successful!");
+                        showToast('success', 'Factory purge successful!');
                         window.location.reload();
                     },
                     error: function(err) {
-                        alert("Failed to factory purge. Check permissions.");
+                        showToast('danger', 'Failed to factory purge. Check permissions.');
                         console.error(err);
                     }
                 });

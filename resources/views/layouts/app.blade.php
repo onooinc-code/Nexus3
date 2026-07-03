@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @auth
+        <meta name="user-id" content="{{ auth()->id() }}">
+    @endauth
     <title>@yield('page_title', 'Nexus Hub') — Nexus V2</title>
 
     <!-- Google Fonts: Inter + Outfit + JetBrains Mono -->
@@ -206,11 +209,8 @@
                         <span id="queue-status-text" class="text-light">Queue Active</span>
                     </div>
 
-                    <!-- Notifications -->
-                    <a href="{{ route('hub.hedra-soul') }}" class="btn btn-sm position-relative" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); text-decoration: none;">
-                        <i class="fa-regular fa-bell" style="font-size: 0.85rem;"></i>
-                        <span id="notif-badge" class="notif-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size: 0.55rem; @if(($unreadNotificationsCount ?? 0) === 0) display: none; @endif">{{ $unreadNotificationsCount ?? 0 }}</span>
-                    </a>
+                    <!-- Notifications Hub -->
+                    @include('components.notification-hub')
 
                     <!-- Horizon Link -->
                     <a href="/horizon" target="_blank" class="btn btn-sm d-none d-md-flex align-items-center gap-2"
@@ -268,6 +268,8 @@
             <div class="statusbar-item">
                 <i class="fa-brands fa-whatsapp" style="color: hsl(142,76%,55%); font-size: 0.8rem;"></i>
                 <span id="sb-waha-status">WAHA</span>
+                <div class="statusbar-item">
+                </div>
             </div>
             <div class="statusbar-item d-none d-md-flex">
                 <i class="fa-solid fa-diagram-project" style="color: var(--nexus-blue); font-size: 0.75rem;"></i>
@@ -316,18 +318,162 @@
     <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
 
+    @php
+        $notificationDriver = app(\App\Services\SettingCacheService::class)->get('notifications.driver', config('notifications.driver', 'reverb'));
+    @endphp
+    @if ($notificationDriver === 'fcm')
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+    @endif
+
     <script>
         // ── Laravel Echo / Reverb ──
         window.Pusher = Pusher;
         window.Echo = new Echo({
             broadcaster: 'reverb',
             key: '{{ config("broadcasting.connections.reverb.key") }}',
-            wsHost: '{{ config("broadcasting.connections.reverb.host", "127.0.0.1") }}',
-            wsPort: parseInt('{{ config("broadcasting.connections.reverb.port", "6001") }}'),
-            wssPort: parseInt('{{ config("broadcasting.connections.reverb.port", "6001") }}'),
-            forceTLS: false,
+            wsHost: 'soulyeg.online',
+            wsPort: 443,
+            wssPort: 443,
+            forceTLS: true,
+            encrypted: true,
+            disableStats: true,
             enabledTransports: ['ws', 'wss'],
+            authEndpoint: '/broadcasting/auth',
+            auth: {
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            },
         });
+
+        window.NotificationDriver = @json($notificationDriver ?? config('notifications.driver', 'reverb'));
+        @php
+            $notificationConfig = [
+                'fcm' => [
+                    'apiKey' => config('notifications.fcm.api_key'),
+                    'authDomain' => config('notifications.fcm.auth_domain'),
+                    'projectId' => config('notifications.fcm.project_id'),
+                    'storageBucket' => config('notifications.fcm.storage_bucket'),
+                    'messagingSenderId' => config('notifications.fcm.messaging_sender_id'),
+                    'appId' => config('notifications.fcm.app_id'),
+                    'measurementId' => config('notifications.fcm.measurement_id'),
+                    'vapidKey' => config('notifications.fcm.vapid_key'),
+                    'serviceWorkerUrl' => config('notifications.fcm.service_worker_url', '/firebase-messaging-sw.js'),
+                ],
+            ];
+        @endphp
+        window.NotificationConfig = @json($notificationConfig);
+
+        const registerFcmToken = async (token) => {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+            await fetch('/api/v1/notifications/fcm-token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    token,
+                    device_name: navigator.userAgent,
+                    platform: 'web',
+                }),
+            });
+        };
+
+        const handleFcmMessage = (payload) => {
+            const notification = payload.notification || {};
+            const data = payload.data || {};
+            const message = {
+                id: data.id || payload.messageId || `notif-${Date.now()}`,
+                title: notification.title || 'Notification',
+                body: notification.body || '',
+                icon: notification.icon || null,
+                badge: notification.badge || null,
+                type: data.type || 'info',
+                actions: notification.actions || [],
+                data,
+                requireInteraction: notification.requireInteraction || false,
+                timestamp: new Date().toISOString(),
+            };
+
+            if (window.notificationHub && typeof window.notificationHub.addNotification === 'function') {
+                window.notificationHub.addNotification(message);
+            }
+
+            if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                    new Notification(message.title, {
+                        body: message.body,
+                        icon: message.icon || '/favicon.ico',
+                        badge: message.badge || '/favicon.ico',
+                        tag: message.id,
+                        requireInteraction: message.requireInteraction,
+                        data: data,
+                    });
+                } catch (error) {
+                    console.error('Failed to show FCM foreground notification:', error);
+                }
+            }
+        };
+
+        const initFcm = async () => {
+            if (window.NotificationDriver !== 'fcm') {
+                return;
+            }
+
+            if (!('serviceWorker' in navigator) || !window.firebase || !window.NotificationConfig?.fcm) {
+                return;
+            }
+
+            const fcm = window.NotificationConfig.fcm;
+            if (!fcm.apiKey || !fcm.messagingSenderId) {
+                return;
+            }
+
+            if (Notification.permission === 'denied') {
+                console.warn('Browser notifications are denied for this origin.');
+                return;
+            }
+
+            if (Notification.permission !== 'granted') {
+                await Notification.requestPermission();
+            }
+
+            if (Notification.permission !== 'granted') {
+                return;
+            }
+
+            try {
+                await navigator.serviceWorker.register(fcm.serviceWorkerUrl || '/firebase-messaging-sw.js');
+
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(fcm);
+                }
+
+                const messaging = firebase.messaging();
+                const token = await messaging.getToken({
+                    vapidKey: fcm.vapidKey,
+                    serviceWorkerRegistration: await navigator.serviceWorker.ready,
+                });
+
+                if (token) {
+                    await registerFcmToken(token);
+                }
+
+                messaging.onMessage((payload) => {
+                    handleFcmMessage(payload);
+                });
+            } catch (error) {
+                console.error('FCM initialization failed:', error);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', initFcm);
 
         // ── NProgress for page/AJAX ──
         NProgress.configure({ showSpinner: false, minimum: 0.1 });
@@ -383,12 +529,18 @@
                         $('#sb-queue-count').text(res.data.queue_count + ' Jobs');
                         
                         const wahaIcon = $('#sb-waha-status').prev('i');
+                <div class="statusbar-item">
+                </div>
                         if (res.data.waha_status === 'Online') {
                             wahaIcon.css('color', 'hsl(142,76%,55%)');
                             $('#sb-waha-status').text('WAHA (Online)');
+                <div class="statusbar-item">
+                </div>
                         } else {
                             wahaIcon.css('color', 'var(--error)');
                             $('#sb-waha-status').text('WAHA (Offline)');
+                <div class="statusbar-item">
+                </div>
                         }
 
                         const agentOrb = $('#sb-agent-status').prev('.agent-status-orb');
@@ -497,5 +649,65 @@
     <script src="{{ asset('js/app.js') }}"></script>
     @endif
 
+    <script>
+
+
+
+
+            if(!orb || !text) return;
+
+            try {
+
+                if (window.Echo && window.Echo.connector && window.Echo.connector.socket) {
+
+                    const socket = window.Echo.connector.socket;
+
+                    if (socket.readyState === 1) {
+
+                        orb.className = "agent-status-orb online";
+
+                        text.innerText = "Reverb Online";
+
+                    } else {
+
+                        throw new Error("Socket not open");
+
+                    }
+
+                } else {
+
+                    throw new Error("Echo not initialized");
+
+                }
+
+            } catch (e) {
+
+                orb.className = "agent-status-orb offline";
+
+                text.innerText = "Reverb Offline";
+
+            }
+
+        }
+
+
+    </script>
 </body>
 </html>
+
+    <script>
+            if(!orb || !text) return;
+            try {
+                if (window.Echo && window.Echo.connector && window.Echo.connector.socket) {
+                    if (window.Echo.connector.socket.readyState === 1) {
+                        orb.className = 'agent-status-orb online';
+                        text.innerText = 'Reverb Online';
+                    } else { throw new Error(); }
+                } else { throw new Error(); }
+            } catch (e) {
+                orb.className = 'agent-status-orb offline';
+                text.innerText = 'Reverb Offline';
+            }
+        }
+        document.addEventListener('DOMContentLoaded', updateReverbStatus);
+    </script>
