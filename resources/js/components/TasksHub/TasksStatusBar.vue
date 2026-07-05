@@ -68,7 +68,7 @@ export default {
   },
   methods: {
     fetchStats() {
-      axios.get('/api/tasks/stats')
+      axios.get('/api/v1/tasks/stats')
         .then(res => {
           this.stats = res.data.data;
           this.queueStats = res.data.data.queue_stats || {};

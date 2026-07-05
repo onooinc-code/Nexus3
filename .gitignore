@@ -63,3 +63,25 @@ temp_*.php
 
 # Python doc generation scripts (dev artifact)
 generate_docs.py
+
+# ByteRover — .brv/context-tree/ contains a nested .git managed by brv vc.
+# Without these entries, `git add .` fails with "does not have a commit checked out".
+.brv/
+.codersinflow
+node_modules
+.env
+.venv
+.codex
+out
+dist
+*.vsix
+.claude
+CLAUDE.md
+.DS_Store
+.git
+*.tmp
+__pycache__
+*.pyc
+.env.local
+.next
+.github

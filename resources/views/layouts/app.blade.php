@@ -14,6 +14,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
+    <!-- jQuery UI CSS -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome 6 -->
@@ -289,10 +292,6 @@
                 <i class="fa-solid fa-memory" style="color: var(--nexus-blue); font-size: 0.75rem;"></i>
                 <span id="sb-memory">— MB</span>
             </div>
-            <div class="statusbar-item d-none d-md-flex">
-                <i class="fa-solid fa-microchip" style="color: var(--nexus-teal); font-size: 0.75rem;"></i>
-                <span id="sb-cpu">— %</span>
-            </div>
             <div class="statusbar-item">
                 <i class="fa-regular fa-clock" style="font-size: 0.75rem;"></i>
                 <span id="sb-time">{{ now()->format('H:i') }}</span>
@@ -302,9 +301,11 @@
 
     <!-- ═══════════════════════════════════════════════════
          SCRIPTS
-    ═══════════════════════════════════════════════════ -->
+        ═══════════════════════════════════════════════════ -->
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- jQuery UI -->
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <!-- Bootstrap 5 -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- DataTables -->
@@ -318,18 +319,9 @@
     <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
 
-    @php
-        $notificationDriver = app(\App\Services\SettingCacheService::class)->get('notifications.driver', config('notifications.driver', 'reverb'));
-    @endphp
-    @if ($notificationDriver === 'fcm')
-        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
-    @endif
-
     <script>
-        // ── Laravel Echo / Reverb ──
         window.Pusher = Pusher;
-        window.Echo = new Echo({
+        window.Echo = new window.LaravelEcho({
             broadcaster: 'reverb',
             key: '{{ config("broadcasting.connections.reverb.key") }}',
             wsHost: 'soulyeg.online',
@@ -339,7 +331,6 @@
             encrypted: true,
             disableStats: true,
             enabledTransports: ['ws', 'wss'],
-            authEndpoint: '/broadcasting/auth',
             auth: {
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
@@ -348,27 +339,8 @@
             },
         });
 
-        window.NotificationDriver = @json($notificationDriver ?? config('notifications.driver', 'reverb'));
-        @php
-            $notificationConfig = [
-                'fcm' => [
-                    'apiKey' => config('notifications.fcm.api_key'),
-                    'authDomain' => config('notifications.fcm.auth_domain'),
-                    'projectId' => config('notifications.fcm.project_id'),
-                    'storageBucket' => config('notifications.fcm.storage_bucket'),
-                    'messagingSenderId' => config('notifications.fcm.messaging_sender_id'),
-                    'appId' => config('notifications.fcm.app_id'),
-                    'measurementId' => config('notifications.fcm.measurement_id'),
-                    'vapidKey' => config('notifications.fcm.vapid_key'),
-                    'serviceWorkerUrl' => config('notifications.fcm.service_worker_url', '/firebase-messaging-sw.js'),
-                ],
-            ];
-        @endphp
-        window.NotificationConfig = @json($notificationConfig);
-
         const registerFcmToken = async (token) => {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-
             await fetch('/api/v1/notifications/fcm-token', {
                 method: 'POST',
                 headers: {
@@ -386,7 +358,7 @@
         };
 
         const handleFcmMessage = (payload) => {
-            const notification = payload.notification || {};
+            const notification = payload || {};
             const data = payload.data || {};
             const message = {
                 id: data.id || payload.messageId || `notif-${Date.now()}`,
@@ -409,85 +381,38 @@
                 try {
                     new Notification(message.title, {
                         body: message.body,
-                        icon: message.icon || '/favicon.ico',
-                        badge: message.badge || '/favicon.ico',
+                        icon: notification.icon || '/favicon.ico',
+                        badge: notification.badge || '/favicon.ico',
                         tag: message.id,
-                        requireInteraction: message.requireInteraction,
-                        data: data,
+                        requireInteraction: notification.requireInteraction || false,
+                        timestamp: new Date().toISOString(),
                     });
                 } catch (error) {
-                    console.error('Failed to show FCM foreground notification:', error);
-                }
+                } 
             }
         };
 
         const initFcm = async () => {
-            if (window.NotificationDriver !== 'fcm') {
-                return;
-            }
-
-            if (!('serviceWorker' in navigator) || !window.firebase || !window.NotificationConfig?.fcm) {
-                return;
-            }
-
-            const fcm = window.NotificationConfig.fcm;
-            if (!fcm.apiKey || !fcm.messagingSenderId) {
-                return;
-            }
-
-            if (Notification.permission === 'denied') {
-                console.warn('Browser notifications are denied for this origin.');
-                return;
-            }
-
-            if (Notification.permission !== 'granted') {
-                await Notification.requestPermission();
-            }
-
-            if (Notification.permission !== 'granted') {
-                return;
-            }
-
+            if (!('serviceWorker' in navigator)) return;
             try {
-                await navigator.serviceWorker.register(fcm.serviceWorkerUrl || '/firebase-messaging-sw.js');
-
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(fcm);
-                }
-
-                const messaging = firebase.messaging();
-                const token = await messaging.getToken({
-                    vapidKey: fcm.vapidKey,
-                    serviceWorkerRegistration: await navigator.serviceWorker.ready,
-                });
-
-                if (token) {
-                    await registerFcmToken(token);
-                }
-
-                messaging.onMessage((payload) => {
-                    handleFcmMessage(payload);
-                });
-            } catch (error) {
-                console.error('FCM initialization failed:', error);
+                await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+            } catch (e) {
+                console.error('FCM registration failed', e);
             }
         };
 
         document.addEventListener('DOMContentLoaded', initFcm);
 
-        // ── NProgress for page/AJAX ──
         NProgress.configure({ showSpinner: false, minimum: 0.1 });
         $(document).ajaxStart(() => NProgress.start());
         $(document).ajaxStop(() => NProgress.done());
         window.addEventListener('load', () => NProgress.done());
         document.addEventListener('DOMContentLoaded', () => NProgress.start());
 
-        // ── Sidebar Toggle ──
         $('#menu-toggle').on('click', function() {
             $('body').toggleClass('toggled');
         });
 
-        // ── Active Sidebar Link Highlight ──
         (function() {
             const currentPath = window.location.pathname;
             $('#sidebar-wrapper .list-group-item').each(function() {
@@ -497,217 +422,8 @@
                 }
             });
         })();
-
-        // ── Statusbar Clock ──
-        function updateClock() {
-            const now = new Date();
-            const h = String(now.getHours()).padStart(2, '0');
-            const m = String(now.getMinutes()).padStart(2, '0');
-            $('#sb-time').text(`${h}:${m}`);
-        }
-        setInterval(updateClock, 10000);
-
-        // ── NProgress Global Binding ──
-        if (typeof NProgress !== 'undefined') {
-            NProgress.configure({ showSpinner: false, speed: 400, minimum: 0.1 });
-            $(document).ajaxStart(function() { NProgress.start(); });
-            $(document).ajaxStop(function() { NProgress.done(); });
-            $(window).on('beforeunload', function() { NProgress.start(); });
-        }
-
-        // ── Global Telemetry Polling ──
-        function fetchTelemetry() {
-            $.ajax({
-                url: '{{ route('hub.system.telemetry') }}',
-                method: 'GET',
-                // prevent triggering NProgress for background telemetry
-                global: false, 
-                success: function(res) {
-                    if (res && res.success) {
-                        $('#sb-memory').text(res.data.memory_mb + ' MB');
-                        $('#sb-cpu').text(res.data.cpu_percent + ' %');
-                        $('#sb-queue-count').text(res.data.queue_count + ' Jobs');
-                        
-                        const wahaIcon = $('#sb-waha-status').prev('i');
-                <div class="statusbar-item">
-                </div>
-                        if (res.data.waha_status === 'Online') {
-                            wahaIcon.css('color', 'hsl(142,76%,55%)');
-                            $('#sb-waha-status').text('WAHA (Online)');
-                <div class="statusbar-item">
-                </div>
-                        } else {
-                            wahaIcon.css('color', 'var(--error)');
-                            $('#sb-waha-status').text('WAHA (Offline)');
-                <div class="statusbar-item">
-                </div>
-                        }
-
-                        const agentOrb = $('#sb-agent-status').prev('.agent-status-orb');
-                        if (res.data.agent_status === 'Busy') {
-                            agentOrb.removeClass('online offline').addClass('busy');
-                            $('#sb-agent-status').text('System Busy');
-                        } else {
-                            agentOrb.removeClass('busy offline').addClass('online');
-                            $('#sb-agent-status').text('System Online');
-                        }
-                    }
-                }
-            });
-        }
-        setInterval(fetchTelemetry, 10000);
-        setTimeout(fetchTelemetry, 1000);
-
-        // ── Global Nexus Object ──
-        window.Nexus = {
-            showTaskLoader: function(message, sub) {
-                $('#nexus-loader-text').text(message || 'Processing...');
-                $('#nexus-loader-sub').text(sub || 'Please wait...');
-                $('#nexus-loader-progress').css('width', '0%');
-                $('#nexus-global-loader').css('display', 'flex');
-            },
-            updateTaskLoader: function(percent, sub) {
-                $('#nexus-loader-progress').css('width', percent + '%');
-                if (sub) $('#nexus-loader-sub').text(sub);
-            },
-            hideTaskLoader: function() {
-                $('#nexus-global-loader').css('display', 'none');
-            },
-            updateStatusBar: function(status, type) {
-                const icons = {
-                    running:  '<i class="fa-solid fa-spinner fa-spin me-1" style="color: var(--nexus-teal);"></i>',
-                    success:  '<i class="fa-solid fa-circle-check me-1" style="color: hsl(142,76%,55%);"></i>',
-                    error:    '<i class="fa-solid fa-circle-xmark me-1" style="color: var(--error);"></i>',
-                    warning:  '<i class="fa-solid fa-triangle-exclamation me-1" style="color: var(--amber);"></i>',
-                    idle:     '<i class="fa-solid fa-circle-check me-1" style="color: var(--nexus-teal); font-size: 0.65rem;"></i>',
-                };
-                const icon = icons[type] || icons.running;
-                $('#statusbar-task-status').html(icon + status);
-                if (type === 'running') {
-                    $('#statusbar-task-status').addClass('active');
-                } else {
-                    $('#statusbar-task-status').removeClass('active');
-                }
-            },
-            clearStatusBar: function() {
-                this.updateStatusBar('Idle — System Ready', 'idle');
-            },
-            setAutopilot: function(enabled) {
-                if (enabled) {
-                    $('#autopilot-banner').addClass('visible');
-                } else {
-                    $('#autopilot-banner').removeClass('visible');
-                }
-            },
-            notify: function(message, type) {
-                // Simple toast notification
-                const colors = {
-                    success: 'var(--success-bright)',
-                    error:   'var(--error)',
-                    warning: 'var(--amber)',
-                    info:    'var(--nexus-blue)',
-                };
-                const color = colors[type] || colors.info;
-                const toast = $(`
-                    <div style="position:fixed;top:80px;right:20px;z-index:9000;
-                         background:rgba(9,15,25,0.97);border:1px solid ${color}30;
-                         border-left:3px solid ${color};border-radius:10px;
-                         padding:12px 16px;max-width:300px;font-size:0.82rem;
-                         color:var(--text-primary);backdrop-filter:blur(12px);
-                         animation:fadeInSlideUp 0.3s var(--ease-spring) forwards;
-                         box-shadow:0 8px 24px rgba(0,0,0,0.4);">
-                        ${message}
-                    </div>
-                `);
-                $('body').append(toast);
-                setTimeout(() => toast.fadeOut(300, function() { $(this).remove(); }), 4000);
-            }
-        };
-
-        // ── Real-time: Listen for Job Progress events ──
-        window.Echo.channel('nexus-system')
-            .listen('JobProgressUpdated', (e) => {
-                if (e.status === 'running') {
-                    Nexus.updateStatusBar(`${e.job_name || 'Job'}: ${e.message || 'Running...'}`, 'running');
-                    $('#queue-status-pill').removeClass('d-none');
-                    $('#queue-status-text').text(e.job_name || 'Queue Active');
-                } else if (e.status === 'completed') {
-                    Nexus.updateStatusBar(`${e.job_name || 'Job'} completed`, 'success');
-                    setTimeout(() => { Nexus.clearStatusBar(); $('#queue-status-pill').addClass('d-none'); }, 3000);
-                } else if (e.status === 'failed') {
-                    Nexus.updateStatusBar(`${e.job_name || 'Job'} failed`, 'error');
-                    setTimeout(() => { Nexus.clearStatusBar(); $('#queue-status-pill').addClass('d-none'); }, 5000);
-                }
-            });
-
-    </script>
+</script>
 
     @stack('scripts')
-
-    <!-- Custom JS -->
-    @if(file_exists(public_path('js/app.js')))
-    <script src="{{ asset('js/app.js') }}"></script>
-    @endif
-
-    <script>
-
-
-
-
-            if(!orb || !text) return;
-
-            try {
-
-                if (window.Echo && window.Echo.connector && window.Echo.connector.socket) {
-
-                    const socket = window.Echo.connector.socket;
-
-                    if (socket.readyState === 1) {
-
-                        orb.className = "agent-status-orb online";
-
-                        text.innerText = "Reverb Online";
-
-                    } else {
-
-                        throw new Error("Socket not open");
-
-                    }
-
-                } else {
-
-                    throw new Error("Echo not initialized");
-
-                }
-
-            } catch (e) {
-
-                orb.className = "agent-status-orb offline";
-
-                text.innerText = "Reverb Offline";
-
-            }
-
-        }
-
-
-    </script>
 </body>
 </html>
-
-    <script>
-            if(!orb || !text) return;
-            try {
-                if (window.Echo && window.Echo.connector && window.Echo.connector.socket) {
-                    if (window.Echo.connector.socket.readyState === 1) {
-                        orb.className = 'agent-status-orb online';
-                        text.innerText = 'Reverb Online';
-                    } else { throw new Error(); }
-                } else { throw new Error(); }
-            } catch (e) {
-                orb.className = 'agent-status-orb offline';
-                text.innerText = 'Reverb Offline';
-            }
-        }
-        document.addEventListener('DOMContentLoaded', updateReverbStatus);
-    </script>

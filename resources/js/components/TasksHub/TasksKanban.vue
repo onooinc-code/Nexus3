@@ -164,34 +164,43 @@ export default {
       });
     },
     fetchTasks() {
-      axios.get('/api/tasks?per_page=100')
+      axios.get('/api/v1/tasks?per_page=100')
         .then(response => {
             const data = response.data.data || response.data;
             this.processTasks(Array.isArray(data) ? data : data.data);
         })
         .catch(error => console.error("Error fetching tasks:", error));
     },
-    onTaskChange(evt, newStatus) {
+    mapColumnToApiStatus(columnId) {
+        const mapping = {
+            'todo': 'todo',
+            'in-progress': 'in-progress',
+            'blocked': 'blocked',
+            'completed': 'completed'
+        };
+        return mapping[columnId];
+    },
+    onTaskChange(evt, columnId) {
       if (evt.added) {
         const task = evt.added.element;
-        let apiStatus = newStatus;
-        if(apiStatus === 'todo') apiStatus = 'todo';
-        if(apiStatus === 'in-progress') apiStatus = 'in-progress';
+        const apiStatus = this.mapColumnToApiStatus(columnId);
         
-        axios.patch(`/api/tasks/${task.id}/status`, { status: apiStatus })
-          .then(res => {
-            if(window.Nexus && window.Nexus.notify) {
-                Nexus.notify(`Task ${task.id} moved to ${newStatus}`, 'success');
-            }
-          })
-          .catch(err => {
-            console.error(err);
-            if(window.Nexus && window.Nexus.notify) {
-                Nexus.notify(`Failed to move task.`, 'error');
-            }
-            // Revert on failure
-            this.fetchTasks();
-          });
+        if (apiStatus) {
+            axios.patch(`/api/v1/tasks/${task.id}/status`, { status: apiStatus })
+              .then(res => {
+                if(window.Nexus && window.Nexus.notify) {
+                    Nexus.notify(`Task ${task.id} moved to ${columnId}`, 'success');
+                }
+              })
+              .catch(err => {
+                console.error(err);
+                if(window.Nexus && window.Nexus.notify) {
+                    Nexus.notify(`Failed to move task.`, 'error');
+                }
+                // Revert on failure
+                this.fetchTasks();
+              });
+        }
       }
     },
     handleAction({ action, task }) {
@@ -201,10 +210,10 @@ export default {
         }
 
         let endpoint = '';
-        if(action === 'execute') endpoint = `/api/tasks/${task.id}/execute`;
-        if(action === 'pause') endpoint = `/api/tasks/${task.id}/pause`;
-        if(action === 'resume') endpoint = `/api/tasks/${task.id}/resume`;
-        if(action === 'cancel') endpoint = `/api/tasks/${task.id}/cancel`;
+        if(action === 'execute') endpoint = `/api/v1/tasks/${task.id}/execute`;
+        if(action === 'pause') endpoint = `/api/v1/tasks/${task.id}/pause`;
+        if(action === 'resume') endpoint = `/api/v1/tasks/${task.id}/resume`;
+        if(action === 'cancel') endpoint = `/api/v1/tasks/${task.id}/cancel`;
         
         if(endpoint) {
             axios.post(endpoint)
@@ -224,7 +233,7 @@ export default {
         
         if (action === 'delete') {
             if(confirm('Are you sure you want to delete this task?')) {
-                axios.delete(`/api/tasks/${task.id}`)
+                axios.delete(`/api/v1/tasks/${task.id}`)
                     .then(() => this.fetchTasks())
                     .catch(err => console.error(err));
             }

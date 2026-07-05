@@ -61,7 +61,18 @@
                             <label class="form-label" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-family: 'JetBrains Mono';">Due Date</label>
                             <input type="datetime-local" name="due_at" class="form-control">
                         </div>
-                        <div class="col-12">
+                        <div class="col-12" id="agentSelectContainer" style="display: none;">
+                            <label class="form-label" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-family: 'JetBrains Mono';">Select Agent *</label>
+                            <select name="agent_id" class="form-select">
+                                <option value="">-- Choose Agent --</option>
+                                @isset($agents)
+                                    @foreach($agents as $agent)
+                                        <option value="{{ $agent->id }}">{{ $agent->name }}</option>
+                                    @endforeach
+                                @endisset
+                            </select>
+                        </div>
+                        <div class="col-12" id="payloadContainer" style="display: none;">
                             <label class="form-label" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-family: 'JetBrains Mono';">Payload (JSON)</label>
                             <textarea name="payload" class="form-control" rows="3" placeholder='{"key": "value"}' style="font-family: 'JetBrains Mono'; font-size: 0.75rem;"></textarea>
                         </div>
@@ -92,6 +103,21 @@ document.addEventListener('DOMContentLoaded', function() {
             if(type === 'system') typeText = 'System Task';
             
             document.getElementById('newTaskTitleText').innerText = 'New ' + typeText;
+
+            // Toggle fields based on type
+            const agentContainer = document.getElementById('agentSelectContainer');
+            const payloadContainer = document.getElementById('payloadContainer');
+            
+            if (type === 'agent') {
+                agentContainer.style.display = 'block';
+                payloadContainer.style.display = 'none';
+            } else if (type === 'system') {
+                agentContainer.style.display = 'none';
+                payloadContainer.style.display = 'block';
+            } else { // manual
+                agentContainer.style.display = 'none';
+                payloadContainer.style.display = 'none';
+            }
         });
     }
 
@@ -104,21 +130,46 @@ document.addEventListener('DOMContentLoaded', function() {
         const $btn = $(this);
         $btn.html('<i class="fa-solid fa-spinner fa-spin me-1"></i> Creating...').prop('disabled', true);
 
+        let payloadString = null;
+        if (payload.type === 'system' && payload.payload) {
+            try {
+                JSON.parse(payload.payload);
+                payloadString = payload.payload;
+            } catch (e) {
+                alert('Invalid JSON in payload');
+                $btn.html('<i class="fa-solid fa-check me-1"></i> Create Task').prop('disabled', false);
+                return;
+            }
+        }
+
+        // Map priority to integer
+        const priorityMap = { 'low': 2, 'medium': 5, 'high': 8, 'critical': 10 };
+        const priorityVal = priorityMap[payload.priority] || 5;
+
         // Map due_at to due_date and payload to payload_data for standard store
         let postData = {
             title: payload.title,
             description: payload.description,
             type: payload.type,
-            priority: payload.priority,
-            due_date: payload.due_at,
-            payload_data: payload.payload
+            priority: priorityVal
         };
+        
+        if (payload.due_at) {
+            postData.due_date = payload.due_at;
+        }
+
+        if (payload.type === 'agent') {
+            postData.agent_id = payload.agent_id;
+        }
+        if (payload.type === 'system' && payloadString) {
+            postData.payload_data = payloadString;
+        }
         
         // CSRF Token
         postData._token = form.find('input[name="_token"]').val();
 
         $.ajax({
-            url: '/api/tasks',
+            url: '/api/v1/tasks',
             method: 'POST',
             data: postData,
             success: function(res) {
@@ -134,10 +185,17 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             error: function(err) {
                 console.error(err);
+                let msg = 'Failed to create task.';
+                if(err.responseJSON && err.responseJSON.errors) {
+                    msg = JSON.stringify(err.responseJSON.errors);
+                } else if(err.responseJSON && err.responseJSON.error) {
+                    msg = err.responseJSON.error;
+                }
+                
                 if(window.Nexus && window.Nexus.notify) {
-                    Nexus.notify('Failed to create task. Check the form.', 'error');
+                    Nexus.notify(msg, 'error');
                 } else {
-                    alert('Failed to create task');
+                    alert(msg);
                 }
                 $btn.html('<i class="fa-solid fa-check me-1"></i> Create Task').prop('disabled', false);
             }
