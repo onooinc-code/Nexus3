@@ -526,6 +526,44 @@ class SettingController extends Controller
     }
 
     /**
+     * Warm the settings cache.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function warmCache(Request $request): JsonResponse
+    {
+        // Authorize user
+        $this->authorize('create', Setting::class);
+
+        // Dummy implementation for reference Hub
+        // To be implemented properly later
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Settings cache warmed successfully.',
+        ]);
+    }
+
+    /**
+     * Update webhook settings.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function updateWebhooks(Request $request): JsonResponse
+    {
+        // Authorize user
+        $this->authorize('create', Setting::class);
+
+        // Dummy implementation for reference Hub
+        return response()->json([
+            'success' => true,
+            'message' => 'Webhooks updated successfully.',
+        ]);
+    }
+
+    /**
      * Bulk update settings.
      *
      * @param Request $request

@@ -695,6 +695,10 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'auth:sanctum']], functi
             ->name('settings.bulk-update');
         Route::post('/factory-reset', [\App\Http\Controllers\SettingController::class, 'factoryReset'])
             ->name('settings.factory-reset');
+        Route::post('/cache/warm', [\App\Http\Controllers\SettingController::class, 'warmCache'])
+            ->name('settings.cache.warm');
+        Route::post('/webhooks', [\App\Http\Controllers\SettingController::class, 'updateWebhooks'])
+            ->name('settings.webhooks.update');
 
         // Emergency control routes (super-admin only)
         Route::get('/system/agent-pause', [\App\Http\Controllers\SettingController::class, 'getGlobalAgentPauseStatus'])

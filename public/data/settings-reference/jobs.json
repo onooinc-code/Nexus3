@@ -1,0 +1,55 @@
+[
+  {
+    "name": "ProcessAiInferenceJob",
+    "hub": "AI Hub",
+    "description": "وظيفة تُنفذ في الخلفية لإجراء استدعاءات نماذج الذكاء الاصطناعي.",
+    "settings_used": [
+      "ai.default_model",
+      "integrations.openai_api_key",
+      "integrations.anthropic_api_key"
+    ]
+  },
+  {
+    "name": "ExecuteAgentTaskJob",
+    "hub": "Agents Hub",
+    "description": "وظيفة مسؤولة عن تشغيل مهام الـ Agents. تتأثر بحالة الطوارئ العالمية.",
+    "settings_used": [
+      "system.global_agent_pause"
+    ]
+  },
+  {
+    "name": "SyncWahaContactsJob",
+    "hub": "WAHA Hub",
+    "description": "مزامنة جهات الاتصال من سيرفر WAHA إلى التطبيق.",
+    "settings_used": [
+      "integrations.waha_api_key",
+      "integrations.waha_api_url"
+    ]
+  },
+  {
+    "name": "ProcessWahaWebhookJob",
+    "hub": "WAHA Hub",
+    "description": "معالجة أحداث الويب هوكس الواردة من واتساب.",
+    "settings_used": [
+      "integrations.waha_api_key"
+    ]
+  },
+  {
+    "name": "ExtractMemoryJob",
+    "hub": "Memory Hub",
+    "description": "استخراج المعلومات والذكريات من المحادثات باستخدام الـ LLM.",
+    "settings_used": [
+      "ai.memory_model",
+      "integrations.openai_api_key"
+    ]
+  },
+  {
+    "name": "SaveToPineconeJob",
+    "hub": "Memory Hub",
+    "description": "حفظ المتجهات (Vectors) في قاعدة بيانات Pinecone.",
+    "settings_used": [
+      "integrations.pinecone_api_key",
+      "integrations.pinecone_index"
+    ]
+  }
+]

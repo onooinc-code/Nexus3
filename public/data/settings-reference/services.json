@@ -1,0 +1,41 @@
+[
+  {
+    "name": "SettingCacheService",
+    "description": "الخدمة المسؤولة عن جلب الإعدادات باستخدام تقنية Redis Cache-Aside Pattern لضمان أفضل أداء (مدة حفظ الكاش ساعة واحدة).",
+    "methods": [
+      { "name": "get(string $key, mixed $default = null)", "returns": "mixed", "description": "جلب قيمة إعداد معين من الـ Cache، وفي حال عدم وجوده يتم جلبه من قاعدة البيانات وحفظه في الـ Cache." },
+      { "name": "getAll(?string $group = null)", "returns": "array", "description": "جلب جميع الإعدادات أو مجموعة محددة." },
+      { "name": "set(string $key, mixed $value)", "returns": "void", "description": "تحديث قيمة الإعداد وتفريغ الـ Cache الخاص به لضمان تحديث البيانات." },
+      { "name": "forget(string $key)", "returns": "void", "description": "حذف الإعداد من الـ Cache." },
+      { "name": "clear()", "returns": "void", "description": "مسح جميع الكاش الخاص بالـ Settings." }
+    ]
+  },
+  {
+    "name": "CredentialValidationService",
+    "description": "الخدمة المسؤولة عن اختبار صحة مفاتيح الـ API المضافة في الإعدادات (مثل OpenAI، Pinecone).",
+    "methods": [
+      { "name": "validateAllCredentials()", "returns": "array", "description": "يقوم باختبار جميع الـ Credentials المخزنة في النظام وإرجاع تقرير بحالتها." },
+      { "name": "validateCredential(string $key, string $value)", "returns": "array", "description": "يحدد نوع المفتاح بناءً على الـ key، ويقوم باستدعاء دالة الاختبار المناسبة له." },
+      { "name": "testOpenAi(string $apiKey)", "returns": "array", "description": "يختبر مفتاح OpenAI API من خلال استدعاء /v1/models." },
+      { "name": "testPinecone(string $apiKey)", "returns": "array", "description": "يختبر مفتاح Pinecone API من خلال استدعاء /indexes." }
+    ]
+  },
+  {
+    "name": "CredentialEncryptionService",
+    "description": "الخدمة المسؤولة عن التشفير وفك التشفير للقيم الحساسة (مثل كلمات المرور ومفاتيح الـ API).",
+    "methods": [
+      { "name": "encrypt(string $value)", "returns": "string", "description": "تشفير النص باستخدام Laravel Crypt." },
+      { "name": "decrypt(string $encryptedValue)", "returns": "string", "description": "فك تشفير النص، ويرجع قيمة فارغة في حال فشل الفك." },
+      { "name": "mask(string $value)", "returns": "string", "description": "إخفاء القيمة وإظهار أجزاء بسيطة منها (مثل sk-***efgh)." },
+      { "name": "shouldEncrypt(string $key)", "returns": "bool", "description": "يحدد ما إذا كان الـ key يحتاج إلى تشفير تلقائي (أي مفتاح يحتوي على 'key' أو 'password')." }
+    ]
+  },
+  {
+    "name": "SeedRunnerService",
+    "description": "الخدمة المسؤولة عن قراءة وتشغيل الـ Seeders الخاصة بالإعدادات من خلال الـ API.",
+    "methods": [
+      { "name": "listAvailableSeeds()", "returns": "array", "description": "يجلب قائمة بجميع الـ Seeders المتاحة ومعلومات عنها." },
+      { "name": "runSeed(string $seedId)", "returns": "array", "description": "يقوم بتشغيل Seeder معين وإرجاع النتيجة." }
+    ]
+  }
+]

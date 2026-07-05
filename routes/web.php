@@ -44,6 +44,7 @@ Route::prefix('hub')->group(function () {
     Route::post('/models/{id}/toggle', [HubController::class, 'toggleModel'])->name('hub.models.toggle');
     Route::get('/settings', [HubController::class, 'settings'])->name('hub.settings');
     Route::post('/settings', [HubController::class, 'updateSettings'])->name('hub.settings.update');
+    Route::get('/settings/reference', [\App\Http\Controllers\SettingsReferenceController::class, 'index'])->name('hub.settings.reference');
     // New Hubs
     Route::get('/people-connect', [HubController::class, 'peopleConnect'])->name('hub.people-connect');
     Route::get('/hedra-soul', [HubController::class, 'hedraSoul'])->name('hub.hedra-soul');

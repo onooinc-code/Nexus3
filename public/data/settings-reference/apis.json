@@ -1,0 +1,123 @@
+[
+  {
+    "group": "CRUD Endpoints الأساسية",
+    "icon": "fa-database",
+    "endpoints": [
+      {
+        "id": "get-settings",
+        "method": "GET",
+        "path": "/api/v1/settings",
+        "controller": "SettingController@index",
+        "description": "عرض جميع الـ settings مع دعم filters متعددة.",
+        "parameters": [
+          { "name": "group", "type": "string", "required": false, "description": "general|security|ai|integrations|ui|notifications" },
+          { "name": "type", "type": "string", "required": false, "description": "string|integer|boolean|json|text" },
+          { "name": "scope", "type": "string", "required": false, "description": "global|workspace|user" },
+          { "name": "search", "type": "string", "required": false, "description": "كلمة للبحث في الـ key" }
+        ],
+        "response_example": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"key\": \"system.global_agent_pause\",\n      \"value\": false,\n      \"type\": \"boolean\"\n    }\n  ],\n  \"count\": 1\n}"
+      },
+      {
+        "id": "post-settings",
+        "method": "POST",
+        "path": "/api/v1/settings",
+        "controller": "SettingController@store",
+        "description": "إنشاء setting جديد في قاعدة البيانات.",
+        "parameters": [
+          { "name": "key", "type": "string", "required": true, "description": "مفتاح الإعداد (مثال: ui.theme)" },
+          { "name": "value", "type": "mixed", "required": true, "description": "قيمة الإعداد" },
+          { "name": "type", "type": "string", "required": true, "description": "نوع القيمة" }
+        ],
+        "response_example": "{\n  \"success\": true,\n  \"message\": \"Setting created successfully.\"\n}"
+      },
+      {
+        "id": "get-setting",
+        "method": "GET",
+        "path": "/api/v1/settings/{key}",
+        "controller": "SettingController@show",
+        "description": "عرض setting واحد باستخدام المفتاح الخاص به.",
+        "parameters": [],
+        "response_example": "{\n  \"success\": true,\n  \"data\": {\n    \"key\": \"ui.theme\",\n    \"value\": \"dark\"\n  }\n}"
+      },
+      {
+        "id": "put-setting",
+        "method": "PUT",
+        "path": "/api/v1/settings/{key}",
+        "controller": "SettingController@update",
+        "description": "تحديث قيمة setting موجود.",
+        "parameters": [
+          { "name": "value", "type": "mixed", "required": true, "description": "القيمة الجديدة" }
+        ],
+        "response_example": "{\n  \"success\": true,\n  \"message\": \"Setting updated successfully.\"\n}"
+      },
+      {
+        "id": "delete-setting",
+        "method": "DELETE",
+        "path": "/api/v1/settings/{key}",
+        "controller": "SettingController@destroy",
+        "description": "حذف setting من قاعدة البيانات.",
+        "parameters": [],
+        "response_example": "{\n  \"success\": true,\n  \"message\": \"Setting deleted successfully.\"\n}"
+      }
+    ]
+  },
+  {
+    "group": "Bulk & Grouped Endpoints",
+    "icon": "fa-layer-group",
+    "endpoints": [
+      {
+        "id": "get-grouped",
+        "method": "GET",
+        "path": "/api/v1/settings/grouped",
+        "controller": "SettingController@grouped",
+        "description": "عرض جميع الإعدادات مجمعة حسب الـ Group.",
+        "parameters": [],
+        "response_example": "{\n  \"success\": true,\n  \"data\": {\n    \"general\": [...],\n    \"ui\": [...]\n  }\n}"
+      },
+      {
+        "id": "put-bulk",
+        "method": "PUT",
+        "path": "/api/v1/settings/bulk",
+        "controller": "SettingController@bulkUpdate",
+        "description": "تحديث عدة إعدادات في طلب واحد.",
+        "parameters": [
+          { "name": "settings", "type": "array", "required": true, "description": "مصفوفة تحتوي على المفاتيح والقيم الجديدة" }
+        ],
+        "response_example": "{\n  \"success\": true,\n  \"message\": \"Settings updated successfully.\"\n}"
+      }
+    ]
+  },
+  {
+    "group": "Emergency Control Endpoints",
+    "icon": "fa-triangle-exclamation",
+    "endpoints": [
+      {
+        "id": "post-agent-pause",
+        "method": "POST",
+        "path": "/api/v1/settings/system/agent-pause",
+        "controller": "SettingController@toggleGlobalAgentPause",
+        "description": "تفعيل/إيقاف حالة الطوارئ وإيقاف جميع الـ Agents.",
+        "parameters": [
+          { "name": "enabled", "type": "boolean", "required": true, "description": "حالة التفعيل" },
+          { "name": "reason", "type": "string", "required": false, "description": "سبب الطوارئ" }
+        ],
+        "response_example": "{\n  \"success\": true,\n  \"message\": \"Agent pause ACTIVATED\"\n}"
+      }
+    ]
+  },
+  {
+    "group": "Credential Validation Endpoints",
+    "icon": "fa-key",
+    "endpoints": [
+      {
+        "id": "get-validate-all",
+        "method": "GET",
+        "path": "/api/v1/settings/credentials/validate",
+        "controller": "SettingController@validateAllCredentials",
+        "description": "التحقق من صحة جميع مفاتيح الـ API المخزنة.",
+        "parameters": [],
+        "response_example": "{\n  \"success\": true,\n  \"data\": {\n    \"valid_count\": 2,\n    \"results\": {\n      \"integrations.openai_api_key\": {\"valid\": true}\n    }\n  }\n}"
+      }
+    ]
+  }
+]
