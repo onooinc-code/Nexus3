@@ -7,6 +7,8 @@
             <i class="fa-solid fa-ellipsis-vertical"></i>
         </button>
         <ul class="dropdown-menu dropdown-menu-end shadow-sm bg-dark border-secondary">
+          <li><a class="dropdown-item text-light" href="#" @click.prevent="viewTask"><i class="fa-solid fa-eye me-2 text-primary"></i>View Details</a></li>
+          <li><hr class="dropdown-divider bg-secondary"></li>
           <li><a class="dropdown-item text-light" href="#" @click.prevent="$emit('action', {action: 'execute', task})"><i class="fa-solid fa-play me-2 text-success"></i>Run Now</a></li>
           <li><a class="dropdown-item text-light" href="#" @click.prevent="$emit('action', {action: 'pause', task})"><i class="fa-solid fa-pause me-2 text-warning"></i>Pause</a></li>
           <li><a class="dropdown-item text-light" href="#" @click.prevent="$emit('action', {action: 'resume', task})"><i class="fa-solid fa-forward-step me-2 text-info"></i>Resume</a></li>
@@ -50,6 +52,9 @@ export default {
       if(!dateStr) return '';
       const date = new Date(dateStr);
       return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    },
+    viewTask() {
+        window.location.href = `/hub/tasks/${this.task.id}`;
     }
   }
 }

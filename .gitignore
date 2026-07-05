@@ -1,5 +1,5 @@
 /vendor/
-node_modules/
+/node_modules/
 /npm-debug.log
 /yarn-error.log
 /.fleet
@@ -25,12 +25,6 @@ public_html/hot
 /.kilocode
 /.continue
 /.sixth
-
-.env
-Homestead.yaml
-Homestead.json
-.env.backup
-.env.production
 
 # Development scratch & temp files
 *.log
@@ -69,3 +63,25 @@ temp_*.php
 
 # Python doc generation scripts (dev artifact)
 generate_docs.py
+
+# ByteRover — .brv/context-tree/ contains a nested .git managed by brv vc.
+# Without these entries, `git add .` fails with "does not have a commit checked out".
+.brv/
+.codersinflow
+node_modules
+.env
+.venv
+.codex
+out
+dist
+*.vsix
+.claude
+CLAUDE.md
+.DS_Store
+.git
+*.tmp
+__pycache__
+*.pyc
+.env.local
+.next
+.github

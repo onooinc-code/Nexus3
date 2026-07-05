@@ -3,17 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Events\GlobalAgentPauseToggled;
-use App\Http\Controllers\Controller;
 use App\Models\Setting;
-use App\Policies\SettingPolicy;
 use App\Services\CredentialEncryptionService;
 use App\Services\CredentialValidationService;
 use App\Services\LogService;
 use App\Services\SeedRunnerService;
 use App\Services\SettingCacheService;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
 /**
@@ -26,46 +25,32 @@ class SettingController extends Controller
 {
     /**
      * The cache service instance.
-     *
-     * @var SettingCacheService
      */
     protected SettingCacheService $cacheService;
 
     /**
      * The log service instance.
-     *
-     * @var LogService
      */
     protected LogService $logService;
 
     /**
      * The credential encryption service instance.
-     *
-     * @var CredentialEncryptionService
      */
     protected CredentialEncryptionService $encryptionService;
 
     /**
      * The credential validation service instance.
-     *
-     * @var CredentialValidationService
      */
     protected CredentialValidationService $validationService;
 
     /**
      * The seed runner service instance.
-     *
-     * @var SeedRunnerService
      */
     protected SeedRunnerService $seedRunnerService;
 
     /**
      * Create a new controller instance.
      *
-     * @param SettingCacheService $cacheService
-     * @param LogService $logService
-     * @param CredentialEncryptionService $encryptionService
-     * @param SeedRunnerService $seedRunnerService
      * @return void
      */
     public function __construct(
@@ -83,10 +68,29 @@ class SettingController extends Controller
     }
 
     /**
+     * Clear all settings cache.
+     */
+    public function clearCache(): JsonResponse
+    {
+        // Authorize user
+        $this->authorize('create', Setting::class);
+
+        $this->cacheService->clear();
+
+        $this->logService->info('Settings cache cleared', [
+            'channel' => 'system',
+            'type' => 'cache',
+            'user_id' => request()->user()?->id,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All settings cache cleared successfully.',
+        ]);
+    }
+
+    /**
      * Display a listing of settings.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
@@ -140,9 +144,6 @@ class SettingController extends Controller
 
     /**
      * Store a newly created setting.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function store(Request $request): JsonResponse
     {
@@ -210,9 +211,6 @@ class SettingController extends Controller
 
     /**
      * Display the specified setting.
-     *
-     * @param string $key
-     * @return JsonResponse
      */
     public function show(string $key): JsonResponse
     {
@@ -234,10 +232,6 @@ class SettingController extends Controller
 
     /**
      * Update the specified setting.
-     *
-     * @param Request $request
-     * @param string $key
-     * @return JsonResponse
      */
     public function update(Request $request, string $key): JsonResponse
     {
@@ -307,9 +301,6 @@ class SettingController extends Controller
 
     /**
      * Remove the specified setting.
-     *
-     * @param string $key
-     * @return JsonResponse
      */
     public function destroy(Request $request, string $key): JsonResponse
     {
@@ -340,8 +331,6 @@ class SettingController extends Controller
 
     /**
      * Get all settings grouped by their group.
-     *
-     * @return JsonResponse
      */
     public function grouped(): JsonResponse
     {
@@ -359,8 +348,6 @@ class SettingController extends Controller
 
     /**
      * Get all public settings.
-     *
-     * @return JsonResponse
      */
     public function publicSettings(): JsonResponse
     {
@@ -374,9 +361,6 @@ class SettingController extends Controller
 
     /**
      * Get masked credential for sensitive settings.
-     *
-     * @param string $key
-     * @return JsonResponse
      */
     public function getMaskedCredential(string $key): JsonResponse
     {
@@ -387,12 +371,12 @@ class SettingController extends Controller
 
         // Decrypt to get value
         $value = $setting->value;
-        if ($setting->is_encrypted && !empty($value)) {
+        if ($setting->is_encrypted && ! empty($value)) {
             $value = $this->encryptionService->decrypt($value);
         }
 
         // Mask the credential
-        $masked = !empty($value) ? $this->encryptionService->mask($value) : null;
+        $masked = ! empty($value) ? $this->encryptionService->mask($value) : null;
 
         return response()->json([
             'success' => true,
@@ -406,9 +390,6 @@ class SettingController extends Controller
 
     /**
      * Validate a single credential in a secure setting.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function validateCredential(Request $request): JsonResponse
     {
@@ -435,7 +416,7 @@ class SettingController extends Controller
             $settingValue = $data['value'] ?? $setting?->value;
         }
 
-        if (!$settingValue) {
+        if (! $settingValue) {
             return response()->json([
                 'success' => false,
                 'message' => 'No credential value available to validate.',
@@ -452,8 +433,6 @@ class SettingController extends Controller
 
     /**
      * Validate all integration credentials in the settings store.
-     *
-     * @return JsonResponse
      */
     public function validateAllCredentials(): JsonResponse
     {
@@ -469,9 +448,6 @@ class SettingController extends Controller
 
     /**
      * Get current health status for the settings and integration layer.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function healthStatus(Request $request): JsonResponse
     {
@@ -503,6 +479,7 @@ class SettingController extends Controller
             $sock = @fsockopen($host, $port, $errno, $errstr, 3);
             if ($sock) {
                 fclose($sock);
+
                 return [
                     'healthy' => true,
                     'message' => "Reverb is reachable on {$host}:{$port}",
@@ -526,48 +503,7 @@ class SettingController extends Controller
     }
 
     /**
-     * Warm the settings cache.
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function warmCache(Request $request): JsonResponse
-    {
-        // Authorize user
-        $this->authorize('create', Setting::class);
-
-        // Dummy implementation for reference Hub
-        // To be implemented properly later
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Settings cache warmed successfully.',
-        ]);
-    }
-
-    /**
-     * Update webhook settings.
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function updateWebhooks(Request $request): JsonResponse
-    {
-        // Authorize user
-        $this->authorize('create', Setting::class);
-
-        // Dummy implementation for reference Hub
-        return response()->json([
-            'success' => true,
-            'message' => 'Webhooks updated successfully.',
-        ]);
-    }
-
-    /**
      * Bulk update settings.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function bulkUpdate(Request $request): JsonResponse
     {
@@ -622,15 +558,12 @@ class SettingController extends Controller
         return response()->json([
             'success' => true,
             'data' => $updated,
-            'message' => count($updated) . ' settings updated.',
+            'message' => count($updated).' settings updated.',
         ]);
     }
 
     /**
      * Get global agent pause status.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function getGlobalAgentPauseStatus(Request $request): JsonResponse
     {
@@ -647,14 +580,11 @@ class SettingController extends Controller
 
     /**
      * Toggle global agent pause (emergency control).
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function toggleGlobalAgentPause(Request $request): JsonResponse
     {
         // Only super-admins can toggle agent pause
-        if (!($request->user()->is_super_admin ?? false)) {
+        if (! ($request->user()->is_super_admin ?? false)) {
             return response()->json([
                 'message' => 'Forbidden',
                 'error' => 'Super-admin access required for emergency controls',
@@ -714,14 +644,11 @@ class SettingController extends Controller
 
     /**
      * Toggle global maintenance mode (emergency control).
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function toggleMaintenanceMode(Request $request): JsonResponse
     {
         // Only super-admins can toggle maintenance mode
-        if (!($request->user()->is_super_admin ?? false)) {
+        if (! ($request->user()->is_super_admin ?? false)) {
             return response()->json([
                 'message' => 'Forbidden',
                 'error' => 'Super-admin access required for emergency controls',
@@ -778,14 +705,12 @@ class SettingController extends Controller
 
     /**
      * Get available database seeders.
-     *
-     * @return JsonResponse
      */
     public function listSeeds(): JsonResponse
     {
         // Authorize user
         $user = auth()->user();
-        if (!($user && $user->is_super_admin)) {
+        if (! ($user && $user->is_super_admin)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Forbidden',
@@ -804,15 +729,11 @@ class SettingController extends Controller
 
     /**
      * Run a database seeder.
-     *
-     * @param Request $request
-     * @param string $seedId
-     * @return JsonResponse
      */
     public function runSeed(Request $request, string $seedId): JsonResponse
     {
         // Authorize user
-        if (!($request->user()->is_super_admin ?? false)) {
+        if (! ($request->user()->is_super_admin ?? false)) {
             return response()->json([
                 'message' => 'Forbidden',
                 'error' => 'Super-admin access required',
@@ -843,14 +764,11 @@ class SettingController extends Controller
 
     /**
      * Run multiple database seeders.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function runMultipleSeeds(Request $request): JsonResponse
     {
         // Authorize user
-        if (!($request->user()->is_super_admin ?? false)) {
+        if (! ($request->user()->is_super_admin ?? false)) {
             return response()->json([
                 'message' => 'Forbidden',
                 'error' => 'Super-admin access required',
@@ -897,14 +815,11 @@ class SettingController extends Controller
 
     /**
      * Proxy an API request to bypass CORS restrictions.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function apiProxy(Request $request): JsonResponse
     {
         // Require super-admin or high privileges for security
-        if (!($request->user()->is_super_admin ?? false)) {
+        if (! ($request->user()->is_super_admin ?? false)) {
             return response()->json([
                 'message' => 'Forbidden',
                 'error' => 'Super-admin access required to use the API proxy.',
@@ -933,7 +848,7 @@ class SettingController extends Controller
         // Basic SSRF protection
         $parsedUrl = parse_url($url);
         $host = $parsedUrl['host'] ?? '';
-        
+
         if (empty($host) || preg_match('/^(localhost|127\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|169\.254\.\d+\.\d+|172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+|::1)$/i', $host)) {
             return response()->json([
                 'success' => false,
@@ -944,7 +859,7 @@ class SettingController extends Controller
         // Clean out empty headers and format as key-value
         $formattedHeaders = [];
         foreach ($headers as $header) {
-            if (!empty($header['key'])) {
+            if (! empty($header['key'])) {
                 $formattedHeaders[$header['key']] = $header['value'] ?? '';
             }
         }
@@ -952,7 +867,7 @@ class SettingController extends Controller
         $startTime = microtime(true);
 
         try {
-            $pendingRequest = \Illuminate\Support\Facades\Http::withHeaders($formattedHeaders)
+            $pendingRequest = Http::withHeaders($formattedHeaders)
                 ->timeout(30);
 
             if (in_array($method, ['POST', 'PUT', 'PATCH'])) {
@@ -975,31 +890,29 @@ class SettingController extends Controller
                     'headers' => $response->headers(),
                     'body' => $jsonBody !== null ? $jsonBody : $bodyStr,
                     'latency' => $latency,
-                ]
+                ],
             ]);
 
         } catch (\Exception $e) {
             $latency = round((microtime(true) - $startTime) * 1000);
+
             return response()->json([
                 'success' => false,
                 'error' => $e->getMessage(),
                 'data' => [
                     'latency' => $latency,
-                ]
+                ],
             ], 500);
         }
     }
 
     /**
      * Get the dynamic WAHA webhook URL.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function getWahaWebhookUrl(Request $request): JsonResponse
     {
         $appUrl = config('app.url', url('/'));
-        $webhookUrl = rtrim($appUrl, '/') . '/api/v1/webhooks/waha';
+        $webhookUrl = rtrim($appUrl, '/').'/api/v1/webhooks/waha';
 
         return response()->json([
             'success' => true,
@@ -1009,29 +922,26 @@ class SettingController extends Controller
 
     /**
      * Test the connection to the WAHA server.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function testWahaConnection(Request $request): JsonResponse
     {
-        $url = $request->input('waha_url') 
-            ?? app(\App\Services\SettingCacheService::class)->get('waha_url')
-            ?? config('services.waha.url') 
-            ?? config('services.waha.api_url') 
+        $url = $request->input('waha_url')
+            ?? app(SettingCacheService::class)->get('waha_url')
+            ?? config('services.waha.url')
+            ?? config('services.waha.api_url')
             ?? 'http://localhost:3000';
-        $key = $request->input('waha_api_key') 
-            ?? app(\App\Services\SettingCacheService::class)->get('waha_api_key')
-            ?? config('services.waha.api_key') 
+        $key = $request->input('waha_api_key')
+            ?? app(SettingCacheService::class)->get('waha_api_key')
+            ?? config('services.waha.api_key')
             ?? config('services.waha.api_token');
 
         $url = rtrim($url, '/');
-        if (!preg_match('#^https?://#i', $url)) {
-            $url = 'http://' . $url;
+        if (! preg_match('#^https?://#i', $url)) {
+            $url = 'http://'.$url;
         }
 
         try {
-            $client = \Illuminate\Support\Facades\Http::timeout(5);
+            $client = Http::timeout(5);
             if ($key) {
                 $client = $client->withHeaders([
                     'Authorization' => "Bearer {$key}",
@@ -1052,42 +962,39 @@ class SettingController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Connection test failed. WAHA returned status code: ' . $response->status(),
+                'message' => 'Connection test failed. WAHA returned status code: '.$response->status(),
                 'response' => $response->body(),
             ], 400);
 
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Connection test failed. Unable to reach WAHA server: ' . $e->getMessage(),
+                'message' => 'Connection test failed. Unable to reach WAHA server: '.$e->getMessage(),
             ], 500);
         }
     }
 
     /**
      * Test the webhook signature and endpoint responsiveness.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function testWahaWebhook(Request $request): JsonResponse
     {
         $webhookUrl = url('/api/v1/webhooks/waha');
 
-        $secret = $request->input('waha_webhook_secret') 
-            ?? app(\App\Services\SettingCacheService::class)->get('waha_webhook_secret')
+        $secret = $request->input('waha_webhook_secret')
+            ?? app(SettingCacheService::class)->get('waha_webhook_secret')
             ?? config('services.waha.webhook_secret');
 
         $payload = [
             'event' => 'message',
             'session' => 'default',
             'payload' => [
-                'id' => 'test_message_id_' . uniqid(),
+                'id' => 'test_message_id_'.uniqid(),
                 'timestamp' => time(),
                 'from' => '1234567890@c.us',
                 'to' => '0987654321@c.us',
                 'body' => 'Webhook test ping from settings dashboard.',
-            ]
+            ],
         ];
 
         $jsonPayload = json_encode($payload);
@@ -1098,7 +1005,7 @@ class SettingController extends Controller
                 $signature = hash_hmac('sha512', $jsonPayload, $secret);
             }
 
-            $internalRequest = \Illuminate\Http\Request::create(
+            $internalRequest = Request::create(
                 $webhookUrl,
                 'POST',
                 [],
@@ -1112,7 +1019,7 @@ class SettingController extends Controller
                 $jsonPayload
             );
 
-            $response = app(\Illuminate\Contracts\Http\Kernel::class)->handle($internalRequest);
+            $response = app(Kernel::class)->handle($internalRequest);
 
             if ($response->getStatusCode() === 202) {
                 return response()->json([
@@ -1125,14 +1032,14 @@ class SettingController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Webhook test failed. Webhook handler returned status code: ' . $response->getStatusCode(),
+                'message' => 'Webhook test failed. Webhook handler returned status code: '.$response->getStatusCode(),
                 'response' => $response->getContent(),
             ], 400);
 
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Webhook test failed. Unable to reach webhook endpoint: ' . $e->getMessage(),
+                'message' => 'Webhook test failed. Unable to reach webhook endpoint: '.$e->getMessage(),
             ], 500);
         }
     }

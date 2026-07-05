@@ -55,7 +55,7 @@ export default {
   },
   methods: {
     fetchLogs() {
-      axios.get(`/api/tasks/${this.taskId}/logs`)
+      axios.get(`/api/v1/tasks/${this.taskId}/logs`)
         .then(res => {
           this.logs = res.data.data || [];
           this.status = 'loaded';
