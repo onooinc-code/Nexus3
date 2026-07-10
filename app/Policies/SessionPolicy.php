@@ -13,7 +13,7 @@ class SessionPolicy
     /**
      * Grant administrators blanket access.
      */
-    public function before(User $user, string $ability): bool|null
+    public function before(User $user, string $ability): ?bool
     {
         if (in_array($user->email, config('broadcasting.admin_emails', []), true)) {
             return true;

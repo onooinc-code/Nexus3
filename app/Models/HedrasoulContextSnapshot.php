@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class HedrasoulContextSnapshot extends Model
 {
-    use \Illuminate\Database\Eloquent\Factories\HasFactory;
-public const UPDATED_AT = null;
+    use HasFactory;
+
+    public const UPDATED_AT = null;
 
     protected $fillable = [
         'session_id',

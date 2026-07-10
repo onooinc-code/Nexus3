@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class SoulyRuntimeProfile extends Model
 {
-    use \Illuminate\Database\Eloquent\Factories\HasFactory;
-protected $fillable = [
+    use HasFactory;
+
+    protected $fillable = [
         'autonomy_mode',
         'active_model_instance_id',
         'active_instruction_version_id',

@@ -2,15 +2,15 @@
 
 namespace App\Services\PeopleConnect;
 
+use App\Models\Agent;
 use App\Models\Contact;
 use App\Models\ContactMessage;
-use App\Models\WahaSyncProcess;
-use App\Models\Agent;
-use App\Models\ContactTag;
 use App\Models\ContactPreference;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
+use App\Models\ContactTag;
+use App\Models\WahaSyncProcess;
 use Exception;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class WahaAnalysisService
 {
@@ -21,7 +21,7 @@ class WahaAnalysisService
         $messageLimit = $config['message_limit'] ?? 50;
 
         $query = Contact::whereNotNull('waha_contact_id');
-        if (!empty($contactIds)) {
+        if (! empty($contactIds)) {
             $query->whereIn('id', $contactIds);
         }
 
@@ -42,11 +42,11 @@ class WahaAnalysisService
 
             try {
                 $this->analyzeContact($contact, $config, $messageLimit);
-                
+
                 $process->increment('processed_items');
                 $process->update(['progress' => round(($process->processed_items / $total) * 100)]);
             } catch (Exception $e) {
-                Log::error("WahaAnalysisService Error on contact {$contact->id}: " . $e->getMessage());
+                Log::error("WahaAnalysisService Error on contact {$contact->id}: ".$e->getMessage());
                 $process->increment('failed_items');
             }
         }
@@ -54,7 +54,7 @@ class WahaAnalysisService
         $process->update([
             'status' => 'completed',
             'completed_at' => now(),
-            'progress' => 100
+            'progress' => 100,
         ]);
     }
 
@@ -80,7 +80,7 @@ class WahaAnalysisService
         // In real implementation, we would pass $messages to the Agent (via AgentRuntimeService or similar)
         // Here we simulate the extraction for demonstration of the flow.
 
-        DB::transaction(function () use ($contact, $extractPreferences, $extractPersonality, $extractTopics) {
+        DB::transaction(function () use ($contact, $extractPreferences, $extractPersonality) {
             if ($extractPreferences) {
                 ContactPreference::updateOrCreate(
                     ['contact_id' => $contact->id, 'key' => 'language'],
@@ -91,7 +91,7 @@ class WahaAnalysisService
                 ContactTag::firstOrCreate([
                     'contact_id' => $contact->id,
                     'tag' => 'Friendly',
-                    'source' => 'ai_analysis'
+                    'source' => 'ai_analysis',
                 ]);
             }
         });

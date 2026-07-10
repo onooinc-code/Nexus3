@@ -2,15 +2,16 @@
 
 namespace App\Services\Pipelines;
 
+use App\Models\Contact;
 use App\Models\Conversation;
 use App\Models\Memory;
-use App\Models\Contact;
-use Illuminate\Support\Facades\Log;
 
 class ContextAssemblyPipeline
 {
     protected int $maxMemories = 10;
+
     protected int $maxMessages = 20;
+
     protected array $context = [];
 
     public function __construct(int $maxMemories = 10, int $maxMessages = 20)
@@ -60,7 +61,7 @@ class ContextAssemblyPipeline
             $context['history'] = $this->loadHistory($conversationId);
         }
 
-        if (!empty($context['memories'])) {
+        if (! empty($context['memories'])) {
             $context['summary'] = $this->buildSummary($context['memories']);
         }
 
@@ -96,7 +97,9 @@ class ContextAssemblyPipeline
             $q->orderBy('created_at', 'desc')->limit($this->maxMessages);
         }])->find($conversationId);
 
-        if (!$conversation) return [];
+        if (! $conversation) {
+            return [];
+        }
 
         return $conversation->messages
             ->sortBy('created_at')
@@ -125,12 +128,12 @@ class ContextAssemblyPipeline
     {
         $parts = [];
 
-        if (!empty($context['summary'])) {
+        if (! empty($context['summary'])) {
             $parts[] = "## Relevant Context\n{$context['summary']}";
         }
 
-        if (!empty($context['history'])) {
-            $parts[] = "## Conversation History";
+        if (! empty($context['history'])) {
+            $parts[] = '## Conversation History';
             foreach ($context['history'] as $msg) {
                 $role = $msg->sender_type === 'user' ? 'User' : 'Assistant';
                 $parts[] = "{$role}: {$msg->content}";

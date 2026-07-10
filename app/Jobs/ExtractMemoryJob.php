@@ -2,12 +2,13 @@
 
 namespace App\Jobs;
 
+use App\Events\MemoriesExtracted;
 use App\Models\Conversation;
 use App\Models\Memory;
-use App\Models\Contact;
-use Illuminate\Bus\Batch;
-use Illuminate\Support\Facades\Bus;
 use Exception;
+use Illuminate\Bus\Batch;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Bus;
 use Throwable;
 
 /**
@@ -31,22 +32,18 @@ class ExtractMemoryJob extends BaseJob
 
     /**
      * Job timeout.
-     *
-     * @var int
      */
     public int $timeout = 300;
 
     /**
      * Number of retry attempts.
-     *
-     * @var int
      */
     public int $tries = 2;
 
     /**
      * Constructor.
      *
-     * @param string $conversationId Conversation UUID
+     * @param  string  $conversationId  Conversation UUID
      */
     public function __construct(
         protected string $conversationId,
@@ -57,7 +54,6 @@ class ExtractMemoryJob extends BaseJob
     /**
      * Execute the job - Extract memories from conversation.
      *
-     * @return void
      * @throws Exception
      */
     public function handle(): void
@@ -73,12 +69,13 @@ class ExtractMemoryJob extends BaseJob
                     'reason' => 'idempotent_skip',
                     'conversation_id' => $this->conversationId,
                 ]);
+
                 return;
             }
 
             // Fetch conversation with all messages
             $conversation = $this->safelyGetModel(Conversation::class, $this->conversationId);
-            if (!$conversation) {
+            if (! $conversation) {
                 throw new Exception("Conversation not found: {$this->conversationId}");
             }
 
@@ -93,6 +90,7 @@ class ExtractMemoryJob extends BaseJob
                     'conversation_id' => $this->conversationId,
                 ]);
                 $this->markAsProcessed(['extracted_count' => 0]);
+
                 return;
             }
 
@@ -105,6 +103,7 @@ class ExtractMemoryJob extends BaseJob
                     'conversation_id' => $this->conversationId,
                 ]);
                 $this->markAsProcessed(['extracted_count' => 0]);
+
                 return;
             }
 
@@ -139,27 +138,28 @@ class ExtractMemoryJob extends BaseJob
                     $extractedCount++;
 
                 } catch (Exception $e) {
-                    \Log::error("Failed to create memory record", [
+                    \Log::error('Failed to create memory record', [
                         'conversation_id' => $this->conversationId,
                         'exception' => $e->getMessage(),
                     ]);
+
                     continue;
                 }
             }
 
             // Dispatch job chain if any jobs created
-            if (!empty($jobChain)) {
+            if (! empty($jobChain)) {
                 try {
                     Bus::chain($jobChain)
                         ->catch(function (Batch $batch, Throwable $e) {
-                            \Log::error("Memory extraction job chain failed", [
+                            \Log::error('Memory extraction job chain failed', [
                                 'conversation_id' => $this->conversationId,
                                 'exception' => $e->getMessage(),
                             ]);
                         })
                         ->dispatch();
                 } catch (Exception $e) {
-                    \Log::error("Failed to dispatch memory job chain", [
+                    \Log::error('Failed to dispatch memory job chain', [
                         'conversation_id' => $this->conversationId,
                         'exception' => $e->getMessage(),
                     ]);
@@ -167,7 +167,7 @@ class ExtractMemoryJob extends BaseJob
             }
 
             // Broadcast extraction event
-            event(new \App\Events\MemoriesExtracted(
+            event(new MemoriesExtracted(
                 $this->conversationId,
                 $extractedCount
             ));
@@ -198,8 +198,8 @@ class ExtractMemoryJob extends BaseJob
      * This is a simplified extraction logic. In production, this would use
      * NLP/LLM to identify important facts and entities.
      *
-     * @param \Illuminate\Database\Eloquent\Collection $messages Collection of Message models
-     * @param Conversation $conversation Conversation being analyzed
+     * @param  Collection  $messages  Collection of Message models
+     * @param  Conversation  $conversation  Conversation being analyzed
      * @return array Array of extracted memory data
      */
     protected function extractMemoriesFromConversation($messages, Conversation $conversation): array
@@ -262,8 +262,6 @@ class ExtractMemoryJob extends BaseJob
 
     /**
      * Extract idempotency data from job properties.
-     *
-     * @return array
      */
     protected function extractIdempotencyData(): array
     {

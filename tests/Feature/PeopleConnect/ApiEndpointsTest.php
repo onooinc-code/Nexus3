@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\PeopleConnect;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use App\Models\Contact;
 use App\Models\PeopleConnect\PeopleConnectConversation;
-use App\Models\PeopleConnect\PeopleConnectSession;
 use App\Models\PeopleConnect\PeopleConnectMessage;
+use App\Models\PeopleConnect\PeopleConnectSession;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class ApiEndpointsTest extends TestCase
 {
@@ -29,23 +29,23 @@ class ApiEndpointsTest extends TestCase
             'channel' => 'whatsapp',
             'provider' => 'waha',
             'provider_conversation_id' => '12345@c.us',
-            'unread_count' => 1
+            'unread_count' => 1,
         ]);
         PeopleConnectSession::create([
             'conversation_id' => $conversation->id,
             'contact_id' => $contact->id,
-            'status' => 'open'
+            'status' => 'open',
         ]);
 
         $response = $this->actingAs($this->user)->getJson('/api/v1/people-connect/stats');
 
         $response->assertStatus(200)
-                 ->assertJson([
-                     'total_contacts' => 1,
-                     'active_sessions' => 1,
-                     'unread_conversations' => 1,
-                     'status' => 'healthy'
-                 ]);
+            ->assertJson([
+                'total_contacts' => 1,
+                'active_sessions' => 1,
+                'unread_conversations' => 1,
+                'status' => 'healthy',
+            ]);
     }
 
     public function test_search_endpoint_finds_contact()
@@ -56,7 +56,7 @@ class ApiEndpointsTest extends TestCase
             'channel' => 'whatsapp',
             'provider' => 'waha',
             'provider_conversation_id' => '987654321@c.us',
-            'unread_count' => 0
+            'unread_count' => 0,
         ]);
 
         $response = $this->actingAs($this->user)->getJson('/api/v1/people-connect/search?q=Jane');
@@ -81,7 +81,7 @@ class ApiEndpointsTest extends TestCase
             'sender_type' => 'contact',
             'direction' => 'inbound',
             'body' => 'Hello World',
-            'status' => 'delivered'
+            'status' => 'delivered',
         ]);
 
         $response = $this->actingAs($this->user)->getJson('/api/v1/people-connect/livemsgs');

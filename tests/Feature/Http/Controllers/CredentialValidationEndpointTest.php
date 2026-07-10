@@ -113,7 +113,7 @@ class CredentialValidationEndpointTest extends TestCase
 
         $response->assertStatus(200);
         $reverb = $response->json('data.reverb');
-        
+
         $this->assertIsArray($reverb);
         $this->assertArrayHasKey('healthy', $reverb);
         $this->assertArrayHasKey('message', $reverb);
@@ -128,7 +128,7 @@ class CredentialValidationEndpointTest extends TestCase
 
         $response->assertStatus(200);
         $credentials = $response->json('data.credential_validation');
-        
+
         $this->assertIsArray($credentials);
         $this->assertArrayHasKey('valid_count', $credentials);
         $this->assertArrayHasKey('invalid_count', $credentials);

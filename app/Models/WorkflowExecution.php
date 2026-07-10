@@ -8,10 +8,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class WorkflowExecution extends BaseModel
 {
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_RUNNING = 'running';
+
     public const STATUS_PAUSED = 'paused';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     public $incrementing = false;

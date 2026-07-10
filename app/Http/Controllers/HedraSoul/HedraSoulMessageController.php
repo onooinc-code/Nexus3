@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\HedraSoul;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\HedraSoul\ProcessHedraSoulMessageJob;
+use App\Models\HedrasoulContextSnapshot;
 use App\Models\HedrasoulMessage;
 use App\Models\SoulyActionTrace;
-use App\Models\HedrasoulContextSnapshot;
-use App\Jobs\HedraSoul\ProcessHedraSoulMessageJob;
-use Illuminate\Http\Request;
 
 class HedraSoulMessageController extends Controller
 {
@@ -40,7 +39,7 @@ class HedraSoulMessageController extends Controller
             ->orWhere('trace_id', $message->trace_id)
             ->first();
 
-        if (!$trace) {
+        if (! $trace) {
             return response()->json(['error' => 'Trace not found'], 404);
         }
 
@@ -55,13 +54,13 @@ class HedraSoulMessageController extends Controller
     {
         $this->authorize('view', $message);
 
-        if (!$message->context_snapshot_id) {
+        if (! $message->context_snapshot_id) {
             return response()->json(['error' => 'Context not found'], 404);
         }
 
         $context = HedrasoulContextSnapshot::find($message->context_snapshot_id);
 
-        if (!$context) {
+        if (! $context) {
             return response()->json(['error' => 'Context not found'], 404);
         }
 

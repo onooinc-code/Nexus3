@@ -3,18 +3,18 @@
 namespace App\Services;
 
 use App\Models\Agent;
-use App\Models\AgentTask;
-use App\Services\LogService;
 
 class AgentToolExecutor
 {
     protected AgentToolRegistry $registry;
+
     protected ?LogService $logService;
+
     protected array $executionHistory = [];
 
     public function __construct(AgentToolRegistry $registry, ?LogService $logService = null)
     {
-        $this->registry   = $registry;
+        $this->registry = $registry;
         $this->logService = $logService;
     }
 
@@ -23,7 +23,7 @@ class AgentToolExecutor
         $startTime = microtime(true);
 
         try {
-            if (!$this->registry->has($toolName)) {
+            if (! $this->registry->has($toolName)) {
                 throw new \InvalidArgumentException("Tool not registered: {$toolName}");
             }
 
@@ -92,11 +92,12 @@ class AgentToolExecutor
             $toolName = $toolCall['tool'] ?? $toolCall['name'] ?? null;
             $params = $toolCall['params'] ?? $toolCall['parameters'] ?? [];
 
-            if (!$toolName) {
+            if (! $toolName) {
                 $results[] = [
                     'success' => false,
                     'error' => 'Missing tool name in tool call',
                 ];
+
                 continue;
             }
 
@@ -116,18 +117,21 @@ class AgentToolExecutor
         $this->executionHistory = [];
     }
 
-    public function getSuccessRate(string $toolName = null): float
+    public function getSuccessRate(?string $toolName = null): float
     {
         $history = $this->executionHistory;
 
         if ($toolName) {
-            $history = array_filter($history, fn($h) => $h['tool'] === $toolName);
+            $history = array_filter($history, fn ($h) => $h['tool'] === $toolName);
         }
 
         $total = count($history);
-        if ($total === 0) return 0.0;
+        if ($total === 0) {
+            return 0.0;
+        }
 
-        $successful = count(array_filter($history, fn($h) => $h['success']));
+        $successful = count(array_filter($history, fn ($h) => $h['success']));
+
         return round(($successful / $total) * 100, 2);
     }
 }

@@ -2,13 +2,15 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use App\Models\AIProvider;
-use App\Models\AIModel;
 use App\Models\AIApiKey;
+use App\Models\AIModel;
+use App\Models\AIProvider;
 use App\Models\IntentRouting;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
+use Tests\TestCase;
 
 class AiRequestTest extends TestCase
 {
@@ -54,29 +56,29 @@ class AiRequestTest extends TestCase
 
         // Create intent routing
         $intent = IntentRouting::create([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'id' => (string) Str::uuid(),
             'intent_name' => 'test-intent',
             'default_provider_id' => $provider->id,
             'default_model_id' => $model->id,
         ]);
 
         // Mock the HTTP response for AI generation
-        \Illuminate\Support\Facades\Http::fake([
+        Http::fake([
             // Mock the generation endpoint
-            '*' => \Illuminate\Support\Facades\Http::response([
+            '*' => Http::response([
                 'choices' => [
                     [
                         'message' => [
                             'content' => 'This is a test response',
-                        ]
-                    ]
+                        ],
+                    ],
                 ],
                 'usage' => [
                     'prompt_tokens' => 10,
                     'completion_tokens' => 5,
                     'total_tokens' => 15,
-                ]
-            ], 200, ['Content-Type' => 'application/json'])
+                ],
+            ], 200, ['Content-Type' => 'application/json']),
         ]);
 
         $response = $this->postJson('/api/v1/ai/request', [
@@ -84,7 +86,7 @@ class AiRequestTest extends TestCase
             'prompt' => 'Hello, world!',
             'options' => [
                 'temperature' => 0.7,
-            ]
+            ],
         ]);
 
         $response->assertStatus(200);
@@ -163,7 +165,7 @@ class AiRequestTest extends TestCase
 
         // Create intent routing with fallback
         $intent = IntentRouting::create([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'id' => (string) Str::uuid(),
             'intent_name' => 'test-intent',
             'default_provider_id' => $primaryProvider->id,
             'fallback_provider_id' => $fallbackProvider->id,
@@ -172,24 +174,24 @@ class AiRequestTest extends TestCase
         ]);
 
         // Mock HTTP responses - primary fails, fallback succeeds
-        \Illuminate\Support\Facades\Http::fake([
+        Http::fake([
             // Primary provider fails
-            'https://api.primary.com*' => \Illuminate\Support\Facades\Http::response('Internal Server Error', 500),
+            'https://api.primary.com*' => Http::response('Internal Server Error', 500),
             // Fallback provider succeeds
-            'https://api.fallback.com*' => \Illuminate\Support\Facades\Http::response([
+            'https://api.fallback.com*' => Http::response([
                 'choices' => [
                     [
                         'message' => [
                             'content' => 'Fallback response',
-                        ]
-                    ]
+                        ],
+                    ],
                 ],
                 'usage' => [
                     'prompt_tokens' => 8,
                     'completion_tokens' => 4,
                     'total_tokens' => 12,
-                ]
-            ], 200, ['Content-Type' => 'application/json'])
+                ],
+            ], 200, ['Content-Type' => 'application/json']),
         ]);
 
         $response = $this->postJson('/api/v1/ai/request', [

@@ -13,6 +13,7 @@ class TypingIndicator implements ShouldBroadcastNow
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public bool $isTyping;
+
     public int $userId;
 
     public function __construct(bool $isTyping, int $userId)
@@ -23,7 +24,7 @@ class TypingIndicator implements ShouldBroadcastNow
 
     public function broadcastOn()
     {
-        return new PrivateChannel('hedrasoul.hub.' . $this->userId);
+        return new PrivateChannel('hedrasoul.hub.'.$this->userId);
     }
 
     public function broadcastAs()

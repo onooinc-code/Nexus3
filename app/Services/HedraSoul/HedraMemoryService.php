@@ -3,8 +3,8 @@
 namespace App\Services\HedraSoul;
 
 use App\Models\HedraMemorySuggestion;
-use App\Models\HedraProfileFact;
 use App\Models\HedraMemoryVersion;
+use App\Models\HedraProfileFact;
 use App\Models\HedrasoulMessage;
 
 /**
@@ -145,7 +145,7 @@ class HedraMemoryService
         return HedraProfileFact::where('is_approved', true)
             ->where(function ($q) use ($query) {
                 $q->where('content', 'LIKE', "%{$query}%")
-                  ->orWhere('memory_type', 'LIKE', "%{$query}%");
+                    ->orWhere('memory_type', 'LIKE', "%{$query}%");
             })
             ->get()
             ->toArray();

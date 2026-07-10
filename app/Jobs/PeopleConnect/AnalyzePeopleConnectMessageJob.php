@@ -2,15 +2,15 @@
 
 namespace App\Jobs\PeopleConnect;
 
+use App\Models\PeopleConnect\PeopleConnectMessage;
+use App\Models\PeopleConnect\PeopleConnectProcessingLog;
+use App\Services\PeopleConnect\PeopleConnectAnalysisService;
+use App\Services\PeopleConnect\PeopleConnectRealtimeBroadcaster;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Models\PeopleConnect\PeopleConnectMessage;
-use App\Services\PeopleConnect\PeopleConnectAnalysisService;
-use App\Services\PeopleConnect\PeopleConnectRealtimeBroadcaster;
-use App\Models\PeopleConnect\PeopleConnectProcessingLog;
 use Throwable;
 
 class AnalyzePeopleConnectMessageJob implements ShouldQueue
@@ -18,6 +18,7 @@ class AnalyzePeopleConnectMessageJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public array $backoff = [30, 120, 300];
 
     public function __construct(public PeopleConnectMessage $message) {}
@@ -42,4 +43,3 @@ class AnalyzePeopleConnectMessageJob implements ShouldQueue
         ]);
     }
 }
-

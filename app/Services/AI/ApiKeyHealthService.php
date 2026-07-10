@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Log;
 class ApiKeyHealthService
 {
     protected string $cachePrefix = 'ai_key_health_';
+
     protected int $ttlSeconds = 300;
+
     protected array $healthChecks = [];
 
     public function checkKey(string $provider, string $apiKey): array
@@ -63,12 +65,14 @@ class ApiKeyHealthService
         foreach ($keyMap as $provider => $apiKey) {
             $results[$provider] = $this->checkKey($provider, $apiKey);
         }
+
         return $results;
     }
 
     public function getKeyHealth(string $provider, string $apiKey): array
     {
         $cacheKey = $this->getCacheKey($provider, $apiKey);
+
         return Cache::get($cacheKey, [
             'provider' => $provider,
             'status' => 'unknown',
@@ -86,6 +90,7 @@ class ApiKeyHealthService
                 $unhealthy[$provider] = $health;
             }
         }
+
         return $unhealthy;
     }
 
@@ -98,13 +103,14 @@ class ApiKeyHealthService
                 $healthy[$provider] = $health;
             }
         }
+
         return $healthy;
     }
 
-    public function clearHealthCache(string $provider = null): void
+    public function clearHealthCache(?string $provider = null): void
     {
         if ($provider) {
-            $pattern = $this->cachePrefix . $provider . '_*';
+            $pattern = $this->cachePrefix.$provider.'_*';
             foreach (Cache::getRedis()->keys($pattern) as $key) {
                 Cache::forget(str_replace($this->cachePrefix, '', $key));
             }
@@ -142,13 +148,14 @@ class ApiKeyHealthService
                 $keyRecord->save();
             }
         } catch (\Throwable $e) {
-            Log::warning('Failed to update key health record: ' . $e->getMessage());
+            Log::warning('Failed to update key health record: '.$e->getMessage());
         }
     }
 
     protected function getCacheKey(string $provider, string $apiKey): string
     {
         $keyHash = substr(md5($apiKey), 0, 12);
-        return $this->cachePrefix . $provider . '_' . $keyHash;
+
+        return $this->cachePrefix.$provider.'_'.$keyHash;
     }
 }

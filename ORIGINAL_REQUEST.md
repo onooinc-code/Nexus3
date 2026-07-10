@@ -368,3 +368,43 @@ A settings section (can be an additional tab or linked page `/hub/models/setting
 - [ ] DataTables used for tables with > 10 rows
 - [ ] Streaming renders tokens progressively
 - [ ] All actions show success/error toasts via `window.Nexus.notify()`
+
+## Follow-up — 2026-07-07T04:30:55+03:00
+
+Audit, review, and test the entire AI Models Hub implementation (both Backend and Frontend). The team will check for code quality, architectural consistency, route mapping, and visual/functional discrepancies, fixing any bugs found and generating a comprehensive QA report.
+
+Working directory: c:/Users/hedra/Desktop/N-V3/Nexus
+Integrity mode: development
+
+### Requirements
+
+#### R1. Codebase Audit & Consistency Check
+- Review all backend files: `app/Http/Controllers/Web/AiHubController.php`, `app/Services/AiHubService.php`, and related Form Requests / Jobs.
+- Review all frontend blade partials under `resources/views/hubs/partials/ai-hub/` and `resources/views/hubs/models.blade.php`.
+- Check for route collisions, invalid JavaScript syntax, database query inefficiencies, and general PSR-12 standard violations.
+
+#### R2. Automated & Manual Test Execution
+- Run existing PHPUnit feature and unit tests related to `AiHub`.
+- Write new feature tests if any endpoints (like Key Rotation, Telemetry, and Billing Alerts) are not fully covered.
+- Run Laravel Pint formatter to ensure styling compliance.
+
+#### R3. Comprehensive Discrepancy Fixing
+- Fix any discovered syntax errors, frontend/backend integration issues, or broken assets/Vite configurations.
+- Verify that Chart.js displays dynamic cost and telemetry data correctly.
+
+#### R4. Final Audit & Verification Report
+- Produce a detailed audit report (`AI_Hub_Audit_Report.md`) listing all executed tests, discovered issues, applied fixes, and architectural recommendations.
+
+### Acceptance Criteria
+
+#### Testing & Linting
+- [ ] All existing and new PHPUnit tests for `AiHub` pass successfully.
+- [ ] Laravel Pint linter returns zero warnings/errors for modified files.
+
+#### Integration & Functionality
+- [ ] All 8 tabs in the AI Models Hub UI are checked for visual errors and javascript console issues.
+- [ ] The `costCharts` dynamic data loading on the Dashboard works correctly without breaking the Chart.js instances.
+
+#### Deliverables
+- [ ] A final Markdown report `AI_Hub_Audit_Report.md` is generated in the root directory detailing the results.
+

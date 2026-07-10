@@ -3,7 +3,6 @@
 namespace App\Services\Contact;
 
 use Carbon\Carbon;
-use Illuminate\Support\Str;
 
 class WhatsAppImportParser
 {
@@ -11,10 +10,8 @@ class WhatsAppImportParser
      * Parse WhatsApp TXT export format
      * Expected format: [2026-05-31, 14:30:45] Sender: Message content
      *
-     * @param string $content
-     * @param string $phoneNumber Contact's WhatsApp phone number
-     * @param string|null $timezone Timezone for timestamp parsing
-     * @return array
+     * @param  string  $phoneNumber  Contact's WhatsApp phone number
+     * @param  string|null  $timezone  Timezone for timestamp parsing
      */
     public function parseTxt(string $content, string $phoneNumber, ?string $timezone = 'UTC'): array
     {
@@ -36,6 +33,7 @@ class WhatsAppImportParser
                 }
 
                 $current = $this->buildTxtMessage($matches[1], $matches[2], trim($matches[3]), trim($matches[4]), 'Y-m-d', $phoneNumber, $timezone);
+
                 continue;
             }
 
@@ -46,12 +44,13 @@ class WhatsAppImportParser
                 }
 
                 $current = $this->buildTxtMessage($matches[1], $matches[2], trim($matches[3]), trim($matches[4]), null, $phoneNumber, $timezone);
+
                 continue;
             }
 
             // Multi-line message continuation.
             if ($current !== null) {
-                $current['body'] .= "\n" . $line;
+                $current['body'] .= "\n".$line;
             }
         }
 
@@ -66,29 +65,26 @@ class WhatsAppImportParser
      * Parse WhatsApp JSON export format
      * Expected: Array of message objects with timestamp, text, from, fromName, etc.
      *
-     * @param string $jsonContent
-     * @param string $phoneNumber Contact's WhatsApp phone number
-     * @param string|null $timezone
-     * @return array
+     * @param  string  $phoneNumber  Contact's WhatsApp phone number
      */
     public function parseJson(string $jsonContent, string $phoneNumber, ?string $timezone = 'UTC'): array
     {
         $data = json_decode($jsonContent, true);
 
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             return [];
         }
 
         // Handle both direct messages array and nested structure
         $messagesArray = $data['messages'] ?? $data;
-        if (!is_array($messagesArray)) {
+        if (! is_array($messagesArray)) {
             return [];
         }
 
         $messages = [];
 
         foreach ($messagesArray as $msg) {
-            if (!is_array($msg)) {
+            if (! is_array($msg)) {
                 continue;
             }
 
@@ -141,8 +137,6 @@ class WhatsAppImportParser
     /**
      * Determine message direction (inbound/outbound)
      *
-     * @param string $sender
-     * @param string $phoneNumber
      * @return string 'inbound' or 'outbound'
      */
     private function determineDirection(string $sender, string $phoneNumber): string
@@ -187,7 +181,7 @@ class WhatsAppImportParser
 
     private function parseTxtTimestamp(string $date, string $time, string $timezone, ?string $dateFormat): string
     {
-        $time = preg_match('/^\d{1,2}:\d{2}$/', $time) ? $time . ':00' : $time;
+        $time = preg_match('/^\d{1,2}:\d{2}$/', $time) ? $time.':00' : $time;
         $formats = $dateFormat
             ? ["{$dateFormat} H:i:s", "{$dateFormat} g:i A", "{$dateFormat} g:i:s A"]
             : ['d/m/Y H:i:s', 'd/m/Y g:i A', 'd/m/Y g:i:s A', 'm/d/Y H:i:s', 'm/d/Y g:i A', 'm/d/Y g:i:s A', 'd/m/y H:i:s', 'd/m/y g:i A', 'm/d/y H:i:s', 'm/d/y g:i A'];
@@ -216,7 +210,7 @@ class WhatsAppImportParser
         $isTwoDigitYear = strlen($yearPart) === 2;
 
         $dateFormat = $isTwoDigitYear ? 'y' : 'Y';
-        
+
         $formats = [
             "d/m/{$dateFormat} H:i:s", "d/m/{$dateFormat} g:i A", "d/m/{$dateFormat} g:i:s A",
             "m/d/{$dateFormat} H:i:s", "m/d/{$dateFormat} g:i A", "m/d/{$dateFormat} g:i:s A",
@@ -232,6 +226,7 @@ class WhatsAppImportParser
                 if ($parsed->year < 1000) {
                     continue;
                 }
+
                 return $parsed->setTimezone('UTC')->toDateTimeString();
             } catch (\Throwable $e) {
                 continue;
@@ -243,6 +238,7 @@ class WhatsAppImportParser
             if ($parsed->year < 1000 && $isTwoDigitYear) {
                 $parsed->year += 2000;
             }
+
             return $parsed->setTimezone('UTC')->toDateTimeString();
         } catch (\Throwable $e) {
             return null;
@@ -251,9 +247,6 @@ class WhatsAppImportParser
 
     /**
      * Normalize sender identifier for contact matching
-     *
-     * @param string $sender
-     * @return string
      */
     private function normalizeSender(string $sender): string
     {
@@ -263,9 +256,6 @@ class WhatsAppImportParser
 
     /**
      * Check if message is a system message
-     *
-     * @param string $body
-     * @return bool
      */
     private function isSystemMessage(string $body): bool
     {
@@ -297,9 +287,7 @@ class WhatsAppImportParser
     /**
      * Parse various timestamp formats
      *
-     * @param mixed $timestamp
-     * @param string $timezone
-     * @return string|null
+     * @param  mixed  $timestamp
      */
     private function parseTimestamp($timestamp, string $timezone): ?string
     {
@@ -320,6 +308,7 @@ class WhatsAppImportParser
             foreach ($formats as $format) {
                 try {
                     $carbon = Carbon::createFromFormat($format, $timestamp, $timezone);
+
                     return $carbon->setTimezone('UTC')->toDateTimeString();
                 } catch (\Exception $e) {
                     continue;
@@ -346,9 +335,6 @@ class WhatsAppImportParser
 
     /**
      * Calculate dedupe hash for a message
-     *
-     * @param array $message
-     * @return string
      */
     public function calculateDedupeHash(array $message): string
     {

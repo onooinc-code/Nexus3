@@ -15,7 +15,9 @@ class ExecuteWorkflowJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 900;
+
     public array $backoff = [300, 900, 3600];
 
     public function __construct(public string $executionId)

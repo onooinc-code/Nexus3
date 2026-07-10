@@ -9,38 +9,38 @@
     @endauth
     <title>@yield('page_title', 'Nexus Hub') — Nexus V2</title>
 
-    <!-- Google Fonts: Inter + Outfit + JetBrains Mono -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
-    <!-- jQuery UI CSS -->
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome 6 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <!-- DataTables -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-    <!-- NProgress -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css">
+    <!-- Local Vendor Styles (Offline-first) -->
+    <link rel="stylesheet" href="{{ asset('vendor/jquery-ui/css/jquery-ui.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/datatables/css/dataTables.bootstrap5.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/nprogress/nprogress.min.css') }}">
     <!-- Nexus Design System -->
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
+    <!-- System Font Stack (Inter / Outfit / JetBrains Mono fallbacks) -->
+    <style>
+        :root {
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --font-display: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Consolas', 'Courier New', monospace;
+        }
+        body { font-family: var(--font-sans); }
+        .font-mono, [style*="JetBrains Mono"] { font-family: var(--font-mono) !important; }
+    </style>
 
     @stack('styles')
 </head>
 <body>
 
-    <!-- ── Autopilot Warning Banner ── -->
-    <div id="autopilot-banner" class="autopilot-warning-banner nx-autopilot-warning-pulse">
+    <!-- ── Autopilot Warning Banner (Hidden) ── -->
+    <div id="autopilot-banner" class="autopilot-warning-banner nx-autopilot-warning-pulse" style="display: none;">
         <i class="fa-solid fa-triangle-exclamation me-2"></i>
         ⚠️ SYSTEM AUTOPILOT ENGAGED GLOBALLY — ALL RESPONSES ARE AI-AUTOMATED
         <i class="fa-solid fa-triangle-exclamation ms-2"></i>
     </div>
 
-    <!-- ── Global Loading Overlay ── -->
-    <div id="nexus-global-loader">
+    <!-- ── Global Loading Overlay (Hidden) ── -->
+    <div id="nexus-global-loader" style="display: none;">
         <div class="text-center">
             <div style="width: 48px; height: 48px; border: 3px solid rgba(59,130,246,0.2); border-top-color: hsl(217,91%,60%); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px;"></div>
             <div class="loader-title" id="nexus-loader-text">Processing...</div>
@@ -302,42 +302,89 @@
     <!-- ═══════════════════════════════════════════════════
          SCRIPTS
         ═══════════════════════════════════════════════════ -->
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <!-- jQuery UI -->
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-    <!-- Bootstrap 5 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- DataTables -->
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-    <!-- NProgress -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Pusher & Laravel Echo -->
-    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
+    <!-- Local Vendor Scripts (Offline-first — order matters) -->
+    <script src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ asset('vendor/jquery-ui/js/jquery-ui.min.js') }}"></script>
+    <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables/js/dataTables.bootstrap5.min.js') }}"></script>
+    <script src="{{ asset('vendor/nprogress/nprogress.min.js') }}"></script>
+    <script src="{{ asset('vendor/chartjs/chart.umd.min.js') }}"></script>
+    <!-- Pusher & Laravel Echo (local) -->
+    <script src="{{ asset('vendor/pusher/pusher.min.js') }}"></script>
+    <script src="{{ asset('vendor/laravel-echo/echo.iife.js') }}"></script>
 
     <script>
-        window.Pusher = Pusher;
-        window.Echo = new window.LaravelEcho({
-            broadcaster: 'reverb',
-            key: '{{ config("broadcasting.connections.reverb.key") }}',
-            wsHost: 'soulyeg.online',
-            wsPort: 443,
-            wssPort: 443,
-            forceTLS: true,
-            encrypted: true,
-            disableStats: true,
-            enabledTransports: ['ws', 'wss'],
-            auth: {
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
+        // Global Nexus Utilities
+        window.Nexus = {
+            notify: function(message, type = 'info') {
+                if (window.notificationHub && typeof window.notificationHub.addNotification === 'function') {
+                    window.notificationHub.addNotification({
+                        id: 'notif-' + Date.now(),
+                        title: type.charAt(0).toUpperCase() + type.slice(1),
+                        body: message,
+                        type: type === 'error' ? 'error' : (type === 'success' ? 'success' : 'info')
+                    });
+                } else {
+                    console.log(`[Nexus Notify] ${type.toUpperCase()}: ${message}`);
+                    alert(`${type.toUpperCase()}: ${message}`);
+                }
             },
-        });
+            
+            showTaskLoader: function(title = 'Processing...', subtitle = 'Please wait...') {
+                const loader = document.getElementById('nexus-global-loader');
+                if (loader) {
+                    const titleEl = document.getElementById('nexus-loader-text');
+                    const subEl = document.getElementById('nexus-loader-sub');
+                    if (titleEl) titleEl.innerText = title;
+                    if (subEl) subEl.innerText = subtitle;
+                    loader.style.display = 'flex';
+                }
+            },
+            
+            hideTaskLoader: function() {
+                const loader = document.getElementById('nexus-global-loader');
+                if (loader) {
+                    loader.style.display = 'none';
+                }
+            }
+        };
+    </script>
+
+    <script>
+        // Initialize Pusher & Laravel Echo (graceful degradation if Reverb is offline)
+        // laravel-echo@2.x IIFE exposes Echo.default — resolve the real constructor first
+        try {
+            window.Pusher = Pusher;
+
+            // Resolve the Echo constructor (v1 = Echo directly, v2 = Echo.default)
+            const EchoConstructor = (typeof Echo !== 'undefined')
+                ? (Echo && typeof Echo.default === 'function' ? Echo.default : Echo)
+                : null;
+
+            if (!EchoConstructor || typeof EchoConstructor !== 'function') {
+                throw new Error('Echo constructor not found');
+            }
+
+            window.Echo = new EchoConstructor({
+                broadcaster: 'reverb',
+                key: '{{ config("broadcasting.connections.reverb.key") }}',
+                wsHost: '{{ config("broadcasting.connections.reverb.options.host", "") }}' || window.location.hostname,
+                wsPort: {{ config("broadcasting.connections.reverb.options.port", 8080) }},
+                wssPort: {{ config("broadcasting.connections.reverb.options.port", 8080) }},
+                forceTLS: {{ config("broadcasting.connections.reverb.options.scheme", "http") === "https" ? "true" : "false" }},
+                enabledTransports: ['ws', 'wss'],
+                auth: {
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                },
+            });
+        } catch (echoErr) {
+            // Reverb not running — real-time features disabled, rest of app works fine
+            window.Echo = null;
+        }
 
         const registerFcmToken = async (token) => {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';

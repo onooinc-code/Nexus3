@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -13,6 +14,7 @@ use Illuminate\Support\Str;
 class BaseModel extends Model
 {
     use HasFactory;
+
     /**
      * Cast JSON attributes to arrays/objects
      *
@@ -61,8 +63,6 @@ class BaseModel extends Model
 
     /**
      * Generate a UUID for the model
-     *
-     * @return string
      */
     public static function generateUuid(): string
     {
@@ -86,9 +86,9 @@ class BaseModel extends Model
     /**
      * Scope to filter by status
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string|array $status
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder  $query
+     * @param  string|array  $status
+     * @return Builder
      */
     public function scopeByStatus($query, $status)
     {
@@ -102,8 +102,8 @@ class BaseModel extends Model
     /**
      * Scope to get active records
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder  $query
+     * @return Builder
      */
     public function scopeActive($query)
     {
@@ -113,8 +113,8 @@ class BaseModel extends Model
     /**
      * Scope to get inactive records
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder  $query
+     * @return Builder
      */
     public function scopeInactive($query)
     {
@@ -124,8 +124,8 @@ class BaseModel extends Model
     /**
      * Get a JSON attribute value
      *
-     * @param string $key
-     * @param mixed $default
+     * @param  string  $key
+     * @param  mixed  $default
      * @return mixed
      */
     public function getJsonAttribute($key, $default = null)
@@ -142,13 +142,14 @@ class BaseModel extends Model
     /**
      * Set a JSON attribute value
      *
-     * @param string $key
-     * @param mixed $value
+     * @param  string  $key
+     * @param  mixed  $value
      * @return $this
      */
     public function setJsonAttribute($key, $value)
     {
         $this->attributes[$key] = is_array($value) ? json_encode($value) : $value;
+
         return $this;
     }
 
@@ -165,7 +166,7 @@ class BaseModel extends Model
     /**
      * Convert the model to JSON
      *
-     * @param int $options
+     * @param  int  $options
      * @return string
      */
     public function toJson($options = 0)

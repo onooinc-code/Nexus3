@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\AiInstance;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class AiInstanceController extends Controller
@@ -12,7 +12,7 @@ class AiInstanceController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = AiInstance::query();
-        
+
         if ($request->has('workspace_id')) {
             $query->where('workspace_id', $request->input('workspace_id'));
         }
@@ -72,6 +72,7 @@ class AiInstanceController extends Controller
     public function destroy(AiInstance $aiInstance): JsonResponse
     {
         $aiInstance->delete();
+
         return response()->json(['success' => true, 'message' => 'Instance deleted successfully.']);
     }
 }

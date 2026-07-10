@@ -26,7 +26,7 @@ return new class extends Migration
     {
         Schema::table('memories', function (Blueprint $table) {
             $table->dropIndex(['contact_id', 'is_extracted']);
-            
+
             $table->dropColumn('is_extracted');
             $table->dropColumn('source_type');
         });

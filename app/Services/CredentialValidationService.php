@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Setting;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 
 /**
  * CredentialValidationService
@@ -18,7 +18,7 @@ class CredentialValidationService
     public function testPinecone(string $apiKey): array
     {
         try {
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
+            $response = Http::withHeaders([
                 'Authorization' => "Bearer {$apiKey}",
             ])->timeout(5)->get('https://api.pinecone.io/indexes');
 
@@ -38,7 +38,7 @@ class CredentialValidationService
     public function testNeo4j(string $host, string $username, string $password): array
     {
         try {
-            $response = \Illuminate\Support\Facades\Http::withBasicAuth($username, $password)
+            $response = Http::withBasicAuth($username, $password)
                 ->timeout(5)
                 ->get("http://{$host}:7474/db/neo4j/tx");
 
@@ -58,7 +58,7 @@ class CredentialValidationService
     public function testWaha(string $apiUrl, string $apiToken): array
     {
         try {
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
+            $response = Http::withHeaders([
                 'Authorization' => "Bearer {$apiToken}",
             ])->timeout(5)->get("{$apiUrl}/health");
 
@@ -78,7 +78,7 @@ class CredentialValidationService
     public function testOpenAi(string $apiKey): array
     {
         try {
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
+            $response = Http::withHeaders([
                 'Authorization' => "Bearer {$apiKey}",
             ])->timeout(5)->get('https://api.openai.com/v1/models');
 
@@ -98,7 +98,7 @@ class CredentialValidationService
     public function testAnthropic(string $apiKey): array
     {
         try {
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
+            $response = Http::withHeaders([
                 'x-api-key' => $apiKey,
             ])->timeout(5)->get('https://api.anthropic.com/v1/models');
 
@@ -118,7 +118,7 @@ class CredentialValidationService
     public function testGemini(string $apiKey): array
     {
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(5)->get("https://generativelanguage.googleapis.com/v1beta/models?key={$apiKey}");
+            $response = Http::timeout(5)->get("https://generativelanguage.googleapis.com/v1beta/models?key={$apiKey}");
 
             return [
                 'valid' => $response->successful(),
@@ -136,7 +136,7 @@ class CredentialValidationService
     public function testGroq(string $apiKey): array
     {
         try {
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
+            $response = Http::withHeaders([
                 'Authorization' => "Bearer {$apiKey}",
             ])->timeout(5)->get('https://api.groq.com/openai/v1/models');
 
@@ -162,7 +162,7 @@ class CredentialValidationService
 
         foreach ($settings as $setting) {
             if ($setting->is_encrypted) {
-                $value = (new CredentialEncryptionService())->decrypt($setting->value);
+                $value = (new CredentialEncryptionService)->decrypt($setting->value);
             } else {
                 $value = $setting->value;
             }
@@ -175,7 +175,7 @@ class CredentialValidationService
             'timestamp' => now()->toIso8601String(),
             'results' => $results,
             'valid_count' => collect($results)->filter(fn ($r) => $r['valid'])->count(),
-            'invalid_count' => collect($results)->filter(fn ($r) => !$r['valid'])->count(),
+            'invalid_count' => collect($results)->filter(fn ($r) => ! $r['valid'])->count(),
             'total' => count($results),
         ];
     }

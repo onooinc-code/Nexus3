@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Notifications\TestPushbulletNotification;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
-use App\Notifications\TestPushbulletNotification;
 use Illuminate\Notifications\Notifiable;
 
 #[Signature('app:send-pushbullet-test-notification {--action=hedra : Action key for the test notification}')]
@@ -23,7 +23,8 @@ class SendPushbulletTestNotification extends Command
 
         try {
             // Create a simple notifiable object
-            $notifiable = new class {
+            $notifiable = new class
+            {
                 use Notifiable;
 
                 public function routeNotificationForPushbullet(): string

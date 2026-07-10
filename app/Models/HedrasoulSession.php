@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class HedrasoulSession extends Model
 {
-    use \Illuminate\Database\Eloquent\Factories\HasFactory;
-protected $fillable = [
+    use HasFactory;
+
+    protected $fillable = [
         'user_id',
         'title',
         'status',
@@ -27,7 +29,7 @@ protected $fillable = [
     {
         static::creating(function ($model) {
             if (empty($model->title)) {
-                $model->title = 'HedraSoul Session ' . now()->toDateTimeString();
+                $model->title = 'HedraSoul Session '.now()->toDateTimeString();
             }
         });
     }
@@ -41,7 +43,6 @@ protected $fillable = [
     {
         $this->attributes['last_autonomy_mode'] = $value;
     }
-
 
     protected $casts = [
         'opened_at' => 'datetime',

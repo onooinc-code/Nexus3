@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Log;
 class ModelSelector
 {
     protected array $providers = [];
+
     protected array $modelRegistry = [];
 
     public function __construct(array $providers = [])
@@ -63,7 +64,9 @@ class ModelSelector
 
             foreach ($provider->getAvailableModels() as $model) {
                 $score = $this->scoreModel($provider, $model, $criteria);
-                if ($score === null) continue;
+                if ($score === null) {
+                    continue;
+                }
 
                 $candidates[] = [
                     'provider' => $provider,
@@ -74,11 +77,12 @@ class ModelSelector
         }
 
         if (empty($candidates)) {
-            Log::warning('No model candidates found for criteria: ' . json_encode($criteria));
+            Log::warning('No model candidates found for criteria: '.json_encode($criteria));
+
             return null;
         }
 
-        usort($candidates, fn($a, $b) => $b['score'] <=> $a['score']);
+        usort($candidates, fn ($a, $b) => $b['score'] <=> $a['score']);
 
         return $candidates[0];
     }
@@ -92,19 +96,25 @@ class ModelSelector
 
         if ($maxCost !== null) {
             $cost = $provider->estimateCost($model, 1000, 1000);
-            if ($cost > $maxCost) return null;
+            if ($cost > $maxCost) {
+                return null;
+            }
             $score += ($maxCost - $cost) * 10;
         }
 
         if ($minQuality !== null) {
             $quality = $this->getModelQuality($model);
-            if ($quality < $minQuality) return null;
+            if ($quality < $minQuality) {
+                return null;
+            }
             $score += $quality * 20;
         }
 
         if ($maxLatency !== null) {
             $latency = $this->getModelLatency($model);
-            if ($latency > $maxLatency) return null;
+            if ($latency > $maxLatency) {
+                return null;
+            }
             $score += ($maxLatency - $latency) * 0.1;
         }
 
@@ -163,9 +173,11 @@ class ModelSelector
     public function getModelsByProvider(string $providerName): array
     {
         $provider = $this->providers[$providerName] ?? null;
-        if (!$provider) return [];
+        if (! $provider) {
+            return [];
+        }
 
-        return array_map(fn($model) => [
+        return array_map(fn ($model) => [
             'provider' => $providerName,
             'model' => $model,
         ], $provider->getAvailableModels());
@@ -174,7 +186,9 @@ class ModelSelector
     public function getProviderForModel(string $model): ?ProviderInterface
     {
         $entry = $this->modelRegistry[$model] ?? null;
-        if (!$entry) return null;
+        if (! $entry) {
+            return null;
+        }
 
         return $this->providers[$entry['provider']] ?? null;
     }

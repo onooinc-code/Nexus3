@@ -2,12 +2,13 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Log;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class ProcessManager
 {
     private $pidFile = '../logs/pids.json';
+
     private $isWindows;
 
     public function __construct()
@@ -22,18 +23,18 @@ class ProcessManager
     {
         try {
             $command = $this->getStartCommand($service);
-            if (!$command) {
+            if (! $command) {
                 return ['error' => "Unknown service: $service"];
             }
 
             Log::info("Starting service: $service", ['command' => $command]);
-            
+
             if ($this->isWindows) {
                 // Windows: Start process in background
                 shell_exec($command);
             } else {
                 // Linux/Mac: Use nohup
-                shell_exec($command . ' > /dev/null 2>&1 &');
+                shell_exec($command.' > /dev/null 2>&1 &');
             }
 
             // Wait a bit for process to start
@@ -42,8 +43,8 @@ class ProcessManager
             $pid = $this->detectProcessPid($service);
             $this->savePid($service, $pid);
 
-            Log::info("Service started", ['service' => $service, 'pid' => $pid]);
-            
+            Log::info('Service started', ['service' => $service, 'pid' => $pid]);
+
             return [
                 'status' => 'success',
                 'message' => "$service started successfully",
@@ -52,6 +53,7 @@ class ProcessManager
             ];
         } catch (Exception $e) {
             Log::error("Failed to start service: $service", ['error' => $e->getMessage()]);
+
             return ['error' => $e->getMessage()];
         }
     }
@@ -63,12 +65,12 @@ class ProcessManager
     {
         try {
             $pid = $this->getPid($service);
-            
-            if (!$pid) {
+
+            if (! $pid) {
                 return ['error' => "Service $service not running or PID not found"];
             }
 
-            Log::info("Stopping service", ['service' => $service, 'pid' => $pid]);
+            Log::info('Stopping service', ['service' => $service, 'pid' => $pid]);
 
             if ($this->isWindows) {
                 shell_exec("taskkill /PID $pid /T /F 2>NUL");
@@ -80,9 +82,9 @@ class ProcessManager
             sleep(1);
 
             $this->removePid($service);
-            
-            Log::info("Service stopped", ['service' => $service]);
-            
+
+            Log::info('Service stopped', ['service' => $service]);
+
             return [
                 'status' => 'success',
                 'message' => "$service stopped successfully",
@@ -90,6 +92,7 @@ class ProcessManager
             ];
         } catch (Exception $e) {
             Log::error("Failed to stop service: $service", ['error' => $e->getMessage()]);
+
             return ['error' => $e->getMessage()];
         }
     }
@@ -100,12 +103,13 @@ class ProcessManager
     public function restartService(string $service): array
     {
         $stopResult = $this->stopService($service);
-        
+
         if (isset($stopResult['error'])) {
-            Log::warning("Could not stop service, attempting start anyway", ['service' => $service]);
+            Log::warning('Could not stop service, attempting start anyway', ['service' => $service]);
         }
 
         sleep(2);
+
         return $this->startService($service);
     }
 
@@ -116,12 +120,12 @@ class ProcessManager
     {
         $baseDir = base_path('..');
         $logDir = "$baseDir/logs";
-        
+
         // Ensure logs directory exists
         @mkdir($logDir, 0755, true);
 
         $logFile = "$logDir/{$service}.log";
-        
+
         $commands = [
             'api' => [
                 'windows' => "START /B php \"$baseDir\\Nexus-backend\\artisan\" serve --host=127.0.0.1 --port=8000 >> \"$logFile\" 2>&1",
@@ -145,7 +149,7 @@ class ProcessManager
             ],
         ];
 
-        if (!isset($commands[$service])) {
+        if (! isset($commands[$service])) {
             return null;
         }
 
@@ -163,10 +167,11 @@ class ProcessManager
                     $output = shell_exec("powershell -Command \"Get-CimInstance Win32_Process -Filter 'name = ''php.exe'' and CommandLine like ''%queue:work%''' | Select-Object -ExpandProperty ProcessId\"");
                     if ($output) {
                         $pids = array_filter(array_map('trim', explode("\n", trim($output))));
-                        if (!empty($pids)) {
+                        if (! empty($pids)) {
                             return (int) reset($pids);
                         }
                     }
+
                     return null;
                 }
 
@@ -177,16 +182,16 @@ class ProcessManager
                     'vite' => 5173,
                 ];
 
-                if (!isset($ports[$service])) {
+                if (! isset($ports[$service])) {
                     return null;
                 }
 
                 $port = $ports[$service];
                 $output = shell_exec("netstat -ano | findstr \":$port\"");
-                
+
                 if ($output) {
                     preg_match('/\d+\s*$/', trim(explode("\n", $output)[0]), $matches);
-                    if (!empty($matches)) {
+                    if (! empty($matches)) {
                         return (int) trim($matches[0]);
                     }
                 }
@@ -196,10 +201,11 @@ class ProcessManager
                     $output = shell_exec("ps aux | grep 'queue:work' | grep -v grep | awk '{print $2}'");
                     if ($output) {
                         $pids = array_filter(array_map('trim', explode("\n", trim($output))));
-                        if (!empty($pids)) {
+                        if (! empty($pids)) {
                             return (int) reset($pids);
                         }
                     }
+
                     return null;
                 }
 
@@ -210,13 +216,13 @@ class ProcessManager
                     'vite' => 5173,
                 ];
 
-                if (!isset($ports[$service])) {
+                if (! isset($ports[$service])) {
                     return null;
                 }
 
                 $port = $ports[$service];
                 $output = shell_exec("lsof -i :$port 2>/dev/null | grep LISTEN");
-                
+
                 if ($output) {
                     $parts = preg_split('/\s+/', trim($output));
                     if (isset($parts[1])) {
@@ -239,7 +245,8 @@ class ProcessManager
         try {
             if ($this->isWindows) {
                 $output = shell_exec("tasklist /FI \"PID eq $pid\" 2>NUL");
-                return $output !== null && strpos($output, (string)$pid) !== false;
+
+                return $output !== null && strpos($output, (string) $pid) !== false;
             } else {
                 return posix_kill($pid, 0);
             }
@@ -255,9 +262,11 @@ class ProcessManager
     {
         try {
             $pids = $this->loadPids();
+
             return $pids[$service] ?? null;
         } catch (Exception $e) {
-            Log::warning("Could not load PIDs", ['error' => $e->getMessage()]);
+            Log::warning('Could not load PIDs', ['error' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -270,16 +279,16 @@ class ProcessManager
         try {
             $pids = $this->loadPids();
             $pids[$service] = $pid;
-            
-            $pidPath = base_path('..' . DIRECTORY_SEPARATOR . 'logs');
+
+            $pidPath = base_path('..'.DIRECTORY_SEPARATOR.'logs');
             @mkdir($pidPath, 0755, true);
-            
+
             file_put_contents(
-                $pidPath . DIRECTORY_SEPARATOR . 'pids.json',
+                $pidPath.DIRECTORY_SEPARATOR.'pids.json',
                 json_encode($pids, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
             );
         } catch (Exception $e) {
-            Log::warning("Could not save PIDs", ['error' => $e->getMessage()]);
+            Log::warning('Could not save PIDs', ['error' => $e->getMessage()]);
         }
     }
 
@@ -291,16 +300,16 @@ class ProcessManager
         try {
             $pids = $this->loadPids();
             unset($pids[$service]);
-            
-            $pidPath = base_path('..' . DIRECTORY_SEPARATOR . 'logs');
+
+            $pidPath = base_path('..'.DIRECTORY_SEPARATOR.'logs');
             @mkdir($pidPath, 0755, true);
-            
+
             file_put_contents(
-                $pidPath . DIRECTORY_SEPARATOR . 'pids.json',
+                $pidPath.DIRECTORY_SEPARATOR.'pids.json',
                 json_encode($pids, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
             );
         } catch (Exception $e) {
-            Log::warning("Could not remove PID", ['error' => $e->getMessage()]);
+            Log::warning('Could not remove PID', ['error' => $e->getMessage()]);
         }
     }
 
@@ -310,15 +319,16 @@ class ProcessManager
     private function loadPids(): array
     {
         try {
-            $pidFile = base_path('..' . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'pids.json');
-            
+            $pidFile = base_path('..'.DIRECTORY_SEPARATOR.'logs'.DIRECTORY_SEPARATOR.'pids.json');
+
             if (file_exists($pidFile)) {
                 $content = file_get_contents($pidFile);
                 $data = json_decode($content, true);
+
                 return is_array($data) ? $data : [];
             }
         } catch (Exception $e) {
-            Log::warning("Could not load PIDs file", ['error' => $e->getMessage()]);
+            Log::warning('Could not load PIDs file', ['error' => $e->getMessage()]);
         }
 
         return [];
@@ -335,8 +345,8 @@ class ProcessManager
         foreach ($services as $service) {
             $pid = $this->getPid($service);
             $isRunning = $pid && $this->isProcessRunning($pid);
-            
-            if (!$isRunning) {
+
+            if (! $isRunning) {
                 $detectedPid = $this->detectProcessPid($service);
                 if ($detectedPid && $this->isProcessRunning($detectedPid)) {
                     $pid = $detectedPid;
@@ -344,7 +354,7 @@ class ProcessManager
                     $this->savePid($service, $pid);
                 }
             }
-            
+
             $statuses[$service] = [
                 'status' => $isRunning ? 'running' : 'stopped',
                 'pid' => $isRunning ? $pid : null,

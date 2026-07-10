@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Agent;
 use App\Models\AgentPersona;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class AgentSeeder extends Seeder
 {
@@ -60,6 +59,6 @@ class AgentSeeder extends Seeder
             Agent::updateOrCreate(['name' => $agentData['name']], $agentData);
         }
 
-        $this->command->info('✅ AgentSeeder complete — ' . count($agents) . ' agents seeded.');
+        $this->command->info('✅ AgentSeeder complete — '.count($agents).' agents seeded.');
     }
 }

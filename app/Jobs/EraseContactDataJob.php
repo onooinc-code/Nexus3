@@ -2,12 +2,14 @@
 
 namespace App\Jobs;
 
+use App\Events\ContactDeleted;
 use App\Models\Contact;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class EraseContactDataJob implements ShouldQueue
 {
@@ -21,7 +23,7 @@ class EraseContactDataJob implements ShouldQueue
     public function handle(): void
     {
         $contact = Contact::find($this->contactId);
-        if (!$contact) {
+        if (! $contact) {
             return;
         }
 
@@ -29,10 +31,10 @@ class EraseContactDataJob implements ShouldQueue
         $contact->memories()->delete();
         $contact->analysisFindings()->delete();
 
-        event(new \App\Events\ContactDeleted($contact));
+        event(new ContactDeleted($contact));
 
         $contact->delete();
-        
-        \Illuminate\Support\Facades\Log::info("Contact {$this->contactId} erased by {$this->actorId}");
+
+        Log::info("Contact {$this->contactId} erased by {$this->actorId}");
     }
 }

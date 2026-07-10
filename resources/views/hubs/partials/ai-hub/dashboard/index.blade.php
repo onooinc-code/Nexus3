@@ -38,118 +38,146 @@
             });
         }
 
-        // Mini Doughnuts
+        // Mini Doughnuts options
         const doughnutOptions = {
             ...commonOptions,
             cutout: '75%',
             events: []
         };
         
-        if(document.getElementById('chart-success-rate')) {
-            new Chart(document.getElementById('chart-success-rate'), {
-                type: 'doughnut',
-                data: {
-                    datasets: [{
-                        data: [98.7, 1.3],
-                        backgroundColor: ['#10b981', '#334155'],
-                        borderWidth: 0
-                    }]
-                },
-                options: doughnutOptions
-            });
-        }
+        // Fetch and load dynamic telemetry for dashboard
+        fetch('{{ route("hub.models.telemetry") }}')
+            .then(res => res.json())
+            .then(json => {
+                if (json.success) {
+                    const data = json.data;
 
-        if(document.getElementById('chart-cache-rate')) {
-            new Chart(document.getElementById('chart-cache-rate'), {
-                type: 'doughnut',
-                data: {
-                    datasets: [{
-                        data: [43, 57],
-                        backgroundColor: ['#8b5cf6', '#334155'],
-                        borderWidth: 0
-                    }]
-                },
-                options: doughnutOptions
-            });
-        }
-        
-        // Main Tokens Chart
-        if(document.getElementById('chart-tokens-timeline')) {
-            new Chart(document.getElementById('chart-tokens-timeline'), {
-                type: 'line',
-                data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [
-                        {
-                            label: 'Input Tokens',
-                            data: [1.2, 1.9, 1.5, 2.1, 1.8, 2.5, 2.2],
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            borderWidth: 2,
-                            tension: 0.4,
-                            fill: true
-                        },
-                        {
-                            label: 'Output Tokens',
-                            data: [0.8, 1.1, 0.9, 1.5, 1.2, 1.7, 1.4],
-                            borderColor: '#f59e0b',
-                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                            borderWidth: 2,
-                            tension: 0.4,
-                            fill: true
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: '#94a3b8' } }
-                    },
-                    scales: {
-                        y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                    // Update Card Values
+                    $('#card-total-requests').text(Number(data.total_requests_24h).toLocaleString());
+                    $('#card-success-rate-val').text(data.success_rate + '%');
+                    $('#card-avg-latency').html(data.avg_latency + '<span class="fs-6 text-muted">ms</span>');
+                    $('#card-total-cost').text('$' + Number(data.total_cost_month).toFixed(2));
+                    $('#card-cache-hit-val').text(data.cache_hit_rate + '%');
+
+                    // Success Rate Doughnut
+                    if(document.getElementById('chart-success-rate')) {
+                        new Chart(document.getElementById('chart-success-rate'), {
+                            type: 'doughnut',
+                            data: {
+                                datasets: [{
+                                    data: [data.success_rate, 100 - data.success_rate],
+                                    backgroundColor: ['#10b981', '#334155'],
+                                    borderWidth: 0
+                                }]
+                            },
+                            options: doughnutOptions
+                        });
+                    }
+
+                    // Cache Rate Doughnut
+                    if(document.getElementById('chart-cache-rate')) {
+                        new Chart(document.getElementById('chart-cache-rate'), {
+                            type: 'doughnut',
+                            data: {
+                                datasets: [{
+                                    data: [data.cache_hit_rate, 100 - data.cache_hit_rate],
+                                    backgroundColor: ['#8b5cf6', '#334155'],
+                                    borderWidth: 0
+                                }]
+                            },
+                            options: doughnutOptions
+                        });
+                    }
+
+                    // Main Tokens Chart (7 Days)
+                    if(document.getElementById('chart-tokens-timeline')) {
+                        new Chart(document.getElementById('chart-tokens-timeline'), {
+                            type: 'line',
+                            data: {
+                                labels: data.token_timeline.labels,
+                                datasets: [
+                                    {
+                                        label: 'Input Tokens (K)',
+                                        data: data.token_timeline.input,
+                                        borderColor: '#3b82f6',
+                                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                        borderWidth: 2,
+                                        tension: 0.4,
+                                        fill: true
+                                    },
+                                    {
+                                        label: 'Output Tokens (K)',
+                                        data: data.token_timeline.output,
+                                        borderColor: '#f59e0b',
+                                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                        borderWidth: 2,
+                                        tension: 0.4,
+                                        fill: true
+                                    }
+                                ]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { labels: { color: '#94a3b8' } }
+                                },
+                                scales: {
+                                    y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                                }
+                            }
+                        });
                     }
                 }
-            });
-        }
+            })
+            .catch(err => console.error('Failed to load telemetry data:', err));
         
         // Stacked Bar Cost Provider
         if(document.getElementById('chart-cost-provider')) {
-            new Chart(document.getElementById('chart-cost-provider'), {
+            const ctx = document.getElementById('chart-cost-provider');
+            let costChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [
-                        {
-                            label: 'OpenAI',
-                            data: [12, 15, 10, 22, 18, 25, 20],
-                            backgroundColor: '#10b981'
-                        },
-                        {
-                            label: 'Anthropic',
-                            data: [5, 8, 4, 10, 12, 15, 10],
-                            backgroundColor: '#f59e0b'
-                        },
-                        {
-                            label: 'Google',
-                            data: [3, 2, 5, 4, 3, 5, 6],
-                            backgroundColor: '#3b82f6'
-                        }
-                    ]
+                    labels: ['Loading...'],
+                    datasets: [{ label: 'Provider Cost', data: [0], backgroundColor: '#334155' }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: '#94a3b8', boxWidth: 12 } }
-                    },
+                    plugins: { legend: { labels: { color: '#94a3b8', boxWidth: 12 } } },
                     scales: {
                         x: { stacked: true, grid: { display: false }, ticks: { color: '#94a3b8' } },
                         y: { stacked: true, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
                     }
                 }
             });
+
+            fetch('{{ route("hub.models.cost-charts") }}')
+                .then(res => res.json())
+                .then(json => {
+                    if (json.success && json.data.dates.length > 0) {
+                        const colors = ['#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ef4444'];
+                        let datasets = [];
+                        let i = 0;
+                        for (const [provider, data] of Object.entries(json.data.series)) {
+                            datasets.push({
+                                label: provider,
+                                data: data,
+                                backgroundColor: colors[i % colors.length]
+                            });
+                            i++;
+                        }
+                        costChart.data.labels = json.data.dates;
+                        costChart.data.datasets = datasets;
+                        costChart.update();
+                    } else if (json.success) {
+                        costChart.data.labels = ['No Data'];
+                        costChart.data.datasets = [];
+                        costChart.update();
+                    }
+                })
+                .catch(err => console.error('Failed to load cost chart:', err));
         }
     });
 </script>

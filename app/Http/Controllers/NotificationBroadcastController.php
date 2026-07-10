@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\NotificationBroadcasted;
 use App\Models\UserPushToken;
 use App\Services\FirebasePushService;
+use App\Services\SettingCacheService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -40,7 +41,7 @@ class NotificationBroadcastController extends Controller
         $payloadData = $notificationData['data'];
 
         try {
-            $driver = app(\App\Services\SettingCacheService::class)->get('notifications.driver', config('notifications.driver', 'reverb'));
+            $driver = app(SettingCacheService::class)->get('notifications.driver', config('notifications.driver', 'reverb'));
 
             if ($driver === 'fcm') {
                 $success = app(FirebasePushService::class)->sendToUsers([
@@ -113,7 +114,7 @@ class NotificationBroadcastController extends Controller
         ];
 
         try {
-            $driver = app(\App\Services\SettingCacheService::class)->get('notifications.driver', config('notifications.driver', 'reverb'));
+            $driver = app(SettingCacheService::class)->get('notifications.driver', config('notifications.driver', 'reverb'));
 
             if ($driver === 'fcm') {
                 $success = app(FirebasePushService::class)->sendToUsers($validated['user_ids'], $notificationData, [

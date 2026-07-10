@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
-use App\Services\Proactive\NlpParserService;
+use App\Models\AutonomousLog;
 use App\Models\EcaRule;
 use App\Models\ProactiveTrigger;
-use App\Models\AutonomousLog;
+use App\Services\Proactive\NlpParserService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class ProactiveAIController extends Controller
 {
@@ -26,6 +24,7 @@ class ProactiveAIController extends Controller
     public function indexRules()
     {
         $rules = EcaRule::orderByDesc('created_at')->get();
+
         return response()->json(['success' => true, 'data' => $rules]);
     }
 
@@ -68,7 +67,8 @@ class ProactiveAIController extends Controller
 
             return response()->json(['success' => true, 'data' => $rule], 201);
         } catch (\Exception $e) {
-            Log::error('Failed to create ECA rule: ' . $e->getMessage());
+            Log::error('Failed to create ECA rule: '.$e->getMessage());
+
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
@@ -76,12 +76,12 @@ class ProactiveAIController extends Controller
     public function toggleRule(int $id)
     {
         $rule = EcaRule::find($id);
-        if (!$rule) {
+        if (! $rule) {
             return response()->json(['success' => false, 'message' => 'Rule not found'], 404);
         }
 
         $rule->update([
-            'is_active' => !$rule->is_active,
+            'is_active' => ! $rule->is_active,
         ]);
 
         return response()->json(['success' => true, 'is_active' => $rule->is_active]);
@@ -91,6 +91,7 @@ class ProactiveAIController extends Controller
     {
         ProactiveTrigger::where('eca_rule_id', $id)->delete();
         EcaRule::where('id', $id)->delete();
+
         return response()->json(['success' => true]);
     }
 
@@ -99,6 +100,7 @@ class ProactiveAIController extends Controller
     public function indexTriggers()
     {
         $triggers = ProactiveTrigger::orderByDesc('created_at')->limit(50)->get();
+
         return response()->json(['success' => true, 'data' => $triggers]);
     }
 
@@ -107,7 +109,7 @@ class ProactiveAIController extends Controller
     public function indexLogs()
     {
         $logs = AutonomousLog::orderByDesc('created_at')->limit(100)->get();
+
         return response()->json(['success' => true, 'data' => $logs]);
     }
 }
-

@@ -7,8 +7,11 @@ use Illuminate\Support\Facades\Log;
 class CostOptimizer
 {
     protected ModelSelector $selector;
+
     protected float $budgetLimit = 0.0;
+
     protected float $spentThisPeriod = 0.0;
+
     protected string $period = 'monthly';
 
     public function __construct(ModelSelector $selector)
@@ -42,12 +45,13 @@ class CostOptimizer
         ];
     }
 
-    public function optimize(array $request, float $maxCostPerRequest = null): array
+    public function optimize(array $request, ?float $maxCostPerRequest = null): array
     {
         $maxCost = $maxCostPerRequest ?? ($this->budgetLimit - $this->spentThisPeriod);
 
         if ($maxCost <= 0) {
             Log::warning('Budget exhausted, cannot fulfill request within cost constraints');
+
             return [
                 'success' => false,
                 'error' => 'Budget exhausted',
@@ -65,7 +69,7 @@ class CostOptimizer
 
         $selection = $this->selector->select($criteria);
 
-        if (!$selection) {
+        if (! $selection) {
             return [
                 'success' => false,
                 'error' => 'No model found within cost constraints',
@@ -100,16 +104,22 @@ class CostOptimizer
     public function suggestCheaperAlternative(string $currentModel, string $currentProvider): ?array
     {
         $provider = $this->selector->getProviderForModel($currentModel);
-        if (!$provider) return null;
+        if (! $provider) {
+            return null;
+        }
 
         $currentCost = $provider->estimateCost($currentModel, 1000, 1000);
 
         $cheaper = [];
         foreach ($this->selector->getAllModels() as $entry) {
-            if ($entry['model'] === $currentModel) continue;
+            if ($entry['model'] === $currentModel) {
+                continue;
+            }
 
             $altProvider = $this->selector->getProviderForModel($entry['model']);
-            if (!$altProvider) continue;
+            if (! $altProvider) {
+                continue;
+            }
 
             $cost = $altProvider->estimateCost($entry['model'], 1000, 1000);
             if ($cost < $currentCost * 0.8) {
@@ -122,7 +132,7 @@ class CostOptimizer
             }
         }
 
-        usort($cheaper, fn($a, $b) => $a['cost_per_1k'] <=> $b['cost_per_1k']);
+        usort($cheaper, fn ($a, $b) => $a['cost_per_1k'] <=> $b['cost_per_1k']);
 
         return $cheaper[0] ?? null;
     }

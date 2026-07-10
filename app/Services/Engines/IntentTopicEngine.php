@@ -2,8 +2,6 @@
 
 namespace App\Services\Engines;
 
-use Illuminate\Support\Facades\Log;
-
 class IntentTopicEngine
 {
     protected array $intentPatterns = [

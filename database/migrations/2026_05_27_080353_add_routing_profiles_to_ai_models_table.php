@@ -35,7 +35,7 @@ return new class extends Migration
                 'security_class',
                 'language_support',
                 'version_tag',
-                'presets'
+                'presets',
             ]);
         });
     }

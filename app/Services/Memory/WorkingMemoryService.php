@@ -10,22 +10,22 @@ class WorkingMemoryService
     /**
      * Store data in working memory (Redis)
      *
-     * @param string $key
-     * @param mixed $value
-     * @param float|int $ttl Time to live in seconds (null for default)
-     * @return bool
+     * @param  mixed  $value
+     * @param  float|int  $ttl  Time to live in seconds (null for default)
      */
     public function store(string $key, $value, $ttl = null): bool
     {
         try {
             $ttl = $ttl ?? config('cache.ttl', 60); // Default TTL from config or 60 seconds
             Cache::put($key, $value, now()->addSeconds($ttl));
+
             return true;
         } catch (\Exception $e) {
             Log::error('WorkingMemoryService::store failed', [
                 'key' => $key,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -33,8 +33,7 @@ class WorkingMemoryService
     /**
      * Retrieve data from working memory
      *
-     * @param string $key
-     * @param mixed $default
+     * @param  mixed  $default
      * @return mixed
      */
     public function get(string $key, $default = null)
@@ -44,8 +43,9 @@ class WorkingMemoryService
         } catch (\Exception $e) {
             Log::error('WorkingMemoryService::get failed', [
                 'key' => $key,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return $default;
         }
     }
@@ -53,10 +53,8 @@ class WorkingMemoryService
     /**
      * Update data in working memory
      *
-     * @param string $key
-     * @param mixed $value
-     * @param float|int $ttl Time to live in seconds (null to keep existing TTL)
-     * @return bool
+     * @param  mixed  $value
+     * @param  float|int  $ttl  Time to live in seconds (null to keep existing TTL)
      */
     public function update(string $key, $value, $ttl = null): bool
     {
@@ -67,21 +65,20 @@ class WorkingMemoryService
                 $ttl = config('cache.ttl', 60);
             }
             Cache::put($key, $value, now()->addSeconds($ttl));
+
             return true;
         } catch (\Exception $e) {
             Log::error('WorkingMemoryService::update failed', [
                 'key' => $key,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
      * Delete data from working memory
-     *
-     * @param string $key
-     * @return bool
      */
     public function delete(string $key): bool
     {
@@ -90,17 +87,15 @@ class WorkingMemoryService
         } catch (\Exception $e) {
             Log::error('WorkingMemoryService::delete failed', [
                 'key' => $key,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
      * Check if a key exists in working memory
-     *
-     * @param string $key
-     * @return bool
      */
     public function has(string $key): bool
     {
@@ -109,8 +104,9 @@ class WorkingMemoryService
         } catch (\Exception $e) {
             Log::error('WorkingMemoryService::has failed', [
                 'key' => $key,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -118,8 +114,6 @@ class WorkingMemoryService
     /**
      * Increment a value in working memory
      *
-     * @param string $key
-     * @param int $step
      * @return int|false
      */
     public function increment(string $key, int $step = 1)
@@ -129,8 +123,9 @@ class WorkingMemoryService
         } catch (\Exception $e) {
             Log::error('WorkingMemoryService::increment failed', [
                 'key' => $key,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -138,8 +133,6 @@ class WorkingMemoryService
     /**
      * Decrement a value in working memory
      *
-     * @param string $key
-     * @param int $step
      * @return int|false
      */
     public function decrement(string $key, int $step = 1)
@@ -149,8 +142,9 @@ class WorkingMemoryService
         } catch (\Exception $e) {
             Log::error('WorkingMemoryService::decrement failed', [
                 'key' => $key,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -158,9 +152,7 @@ class WorkingMemoryService
     /**
      * Get multiple keys from working memory
      *
-     * @param array $keys
-     * @param mixed $default
-     * @return array
+     * @param  mixed  $default
      */
     public function getMany(array $keys, $default = null): array
     {
@@ -169,8 +161,9 @@ class WorkingMemoryService
         } catch (\Exception $e) {
             Log::error('WorkingMemoryService::getMany failed', [
                 'keys' => $keys,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return array_fill_keys($keys, $default);
         }
     }
@@ -178,9 +171,7 @@ class WorkingMemoryService
     /**
      * Store multiple keys in working memory
      *
-     * @param array $data
-     * @param float|int $ttl
-     * @return bool
+     * @param  float|int  $ttl
      */
     public function putMany(array $data, $ttl = null): bool
     {
@@ -190,21 +181,20 @@ class WorkingMemoryService
             foreach ($data as $key => $value) {
                 Cache::put($key, $value, $expiration);
             }
+
             return true;
         } catch (\Exception $e) {
             Log::error('WorkingMemoryService::putMany failed', [
                 'data' => $data,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
      * Delete multiple keys from working memory
-     *
-     * @param array $keys
-     * @return bool
      */
     public function forgetMany(array $keys): bool
     {
@@ -212,12 +202,14 @@ class WorkingMemoryService
             foreach ($keys as $key) {
                 Cache::forget($key);
             }
+
             return true;
         } catch (\Exception $e) {
             Log::error('WorkingMemoryService::forgetMany failed', [
                 'keys' => $keys,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }

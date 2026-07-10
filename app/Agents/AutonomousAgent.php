@@ -3,18 +3,21 @@
 namespace App\Agents;
 
 use App\Models\Agent;
-use App\Models\AgentTask;
-use App\Services\AgentLifecycleService;
 use App\Services\AgentConfigurationService;
+use App\Services\AgentLifecycleService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class AutonomousAgent
 {
     protected Agent $agent;
+
     protected AgentLifecycleService $lifecycle;
+
     protected AgentConfigurationService $config;
+
     protected array $executionLog = [];
+
     protected bool $shouldStop = false;
 
     public function __construct(Agent $agent)
@@ -34,7 +37,7 @@ class AutonomousAgent
             $maxIterations = $this->config->get($this->agent, 'max_execution_time', 10);
             $iteration = 0;
 
-            while ($iteration < $maxIterations && !$this->shouldStop) {
+            while ($iteration < $maxIterations && ! $this->shouldStop) {
                 $iteration++;
                 Log::info("Autonomous agent iteration {$iteration} for {$this->agent->name}");
 
@@ -47,6 +50,7 @@ class AutonomousAgent
 
                 if ($result['success'] ?? false) {
                     $this->lifecycle->complete($this->agent);
+
                     return [
                         'success' => true,
                         'iterations' => $iteration,
@@ -63,13 +67,14 @@ class AutonomousAgent
             }
 
             return [
-                'success' => !$this->shouldStop,
+                'success' => ! $this->shouldStop,
                 'iterations' => $iteration,
                 'log' => $this->executionLog,
                 'final_result' => $this->executionLog[count($this->executionLog) - 1] ?? null,
             ];
         } catch (\Throwable $e) {
             $this->lifecycle->fail($this->agent, $e->getMessage());
+
             return [
                 'success' => false,
                 'error' => $e->getMessage(),

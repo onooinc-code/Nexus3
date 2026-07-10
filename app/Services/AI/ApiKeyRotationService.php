@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 class ApiKeyRotationService
 {
     protected ApiKeyPool $keyPool;
+
     protected int $rotationCheckIntervalHours = 24;
 
     public function __construct(ApiKeyPool $keyPool)
@@ -43,14 +44,14 @@ class ApiKeyRotationService
 
         Log::info("API key rotated for provider: {$provider}", [
             'key_id' => $key->id,
-            'old_key' => substr($oldKey, 0, 8) . '...',
+            'old_key' => substr($oldKey, 0, 8).'...',
         ]);
 
         return [
             'success' => true,
             'key_id' => $key->id,
             'provider' => $provider,
-            'old_key_prefix' => substr($oldKey, 0, 8) . '...',
+            'old_key_prefix' => substr($oldKey, 0, 8).'...',
             'message' => 'Key deactivated. Replace with new key in database.',
         ];
     }
@@ -63,7 +64,7 @@ class ApiKeyRotationService
             ->orderBy('created_at', 'desc')
             ->first();
 
-        if (!$key) {
+        if (! $key) {
             return [
                 'success' => false,
                 'error' => "No active key found for provider: {$provider}",
@@ -91,6 +92,7 @@ class ApiKeyRotationService
 
         return $keys->map(function ($key) {
             $daysUntilExpiry = now()->diffInDays($key->expires_at, false);
+
             return [
                 'key_id' => $key->id,
                 'name' => $key->name,

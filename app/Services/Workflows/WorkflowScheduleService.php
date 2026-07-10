@@ -3,8 +3,8 @@
 namespace App\Services\Workflows;
 
 use App\Models\WorkflowSchedule;
-use App\Services\WorkflowExecutor;
 use App\Services\LogService;
+use App\Services\WorkflowExecutor;
 use Cron\CronExpression;
 
 class WorkflowScheduleService
@@ -20,12 +20,12 @@ class WorkflowScheduleService
 
         foreach ($schedules as $schedule) {
             try {
-                if (!$schedule->workflow || !$schedule->workflow->is_active) {
+                if (! $schedule->workflow || ! $schedule->workflow->is_active) {
                     continue;
                 }
 
                 $cron = new CronExpression($schedule->cron_expression);
-                
+
                 // If it's due now, or if next_run_at is <= now
                 if ($cron->isDue(now()) || ($schedule->next_run_at && $schedule->next_run_at <= now())) {
                     $this->logService->info('Executing scheduled workflow', [
@@ -51,8 +51,8 @@ class WorkflowScheduleService
                     'related_type' => 'App\Models\Workflow',
                     'context' => [
                         'schedule_id' => $schedule->id,
-                        'error' => $e->getMessage()
-                    ]
+                        'error' => $e->getMessage(),
+                    ],
                 ]);
             }
         }

@@ -14,7 +14,7 @@ class RelationshipGraphService
         $edges = [];
 
         foreach ($contact->rules as $rule) {
-            if (!empty($rule->metadata['related_contact_id'])) {
+            if (! empty($rule->metadata['related_contact_id'])) {
                 $target = (int) $rule->metadata['related_contact_id'];
                 $edges[] = [
                     'source' => $contact->id,

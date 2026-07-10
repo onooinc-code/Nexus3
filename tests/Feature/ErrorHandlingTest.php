@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Agent;
+use App\Models\User;
 use App\Models\Workflow;
-use App\Models\Contact;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,7 +15,7 @@ class ErrorHandlingTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->actingAs(\App\Models\User::factory()->create(), 'sanctum');
+        $this->actingAs(User::factory()->create(), 'sanctum');
     }
 
     // ─── Validation Errors ───────────────────────────────────────────────

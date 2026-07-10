@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Conversation;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -12,10 +14,10 @@ class ConversationHubTest extends TestCase
     public function test_conversation_messages_payload_contains_channel_thread_and_metadata(): void
     {
         $this->markTestSkipped('Legacy conversation hub endpoints deprecated.');
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user, 'sanctum');
 
-        $conversation = \App\Models\Conversation::factory()->create();
+        $conversation = Conversation::factory()->create();
 
         $response = $this->getJson("/api/v1/conversations/{$conversation->id}/messages");
 
@@ -35,10 +37,10 @@ class ConversationHubTest extends TestCase
     public function test_send_message_accepts_channel_thread_and_metadata(): void
     {
         $this->markTestSkipped('Legacy conversation hub endpoints deprecated.');
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user, 'sanctum');
 
-        $conversation = \App\Models\Conversation::factory()->create();
+        $conversation = Conversation::factory()->create();
 
         $payload = [
             'sender' => 'agent',

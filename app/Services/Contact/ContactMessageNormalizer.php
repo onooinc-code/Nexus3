@@ -5,21 +5,17 @@ namespace App\Services\Contact;
 use App\Models\Contact;
 use App\Models\ContactMessage;
 use App\Models\ContactMessageThread;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class ContactMessageNormalizer
 {
     private array $existingHashes = [];
+
     private array $resolvedContactsCache = [];
 
     /**
      * Normalize and create messages from parsed data
      *
-     * @param array $parsedMessages
-     * @param Contact $contact
-     * @param string $source
-     * @param int|null $importBatchId
      * @return array ['created' => int, 'duplicates' => int, 'errors' => array]
      */
     public function normalizeAndCreate(
@@ -52,6 +48,7 @@ class ContactMessageNormalizer
                 // Check if message already exists for this contact (per-contact duplicate detection)
                 if (isset($this->existingHashes[$dedupeHash])) {
                     $result['duplicates']++;
+
                     continue;
                 }
 
@@ -90,7 +87,7 @@ class ContactMessageNormalizer
                 $result['created']++;
 
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error("Message creation failed: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+                Log::error('Message creation failed: '.$e->getMessage()."\n".$e->getTraceAsString());
                 $result['errors'][] = [
                     'message' => $parsedMsg['body'] ?? 'Unknown',
                     'error' => $e->getMessage(),
@@ -114,11 +111,6 @@ class ContactMessageNormalizer
 
     /**
      * Get or create message thread
-     *
-     * @param Contact $contact
-     * @param string $source
-     * @param array $messages
-     * @return ContactMessageThread|null
      */
     private function getOrCreateThread(Contact $contact, string $source, array $messages): ?ContactMessageThread
     {
@@ -130,9 +122,9 @@ class ContactMessageNormalizer
         $sourceThreadId = $messages[0]['source_thread_id'] ?? null;
 
         // For single-contact conversations, use contact ID as thread ID
-        $threadName = match($source) {
-            'whatsapp' => 'WhatsApp - ' . ($contact->whatsapp_number ?? $contact->name),
-            'facebook' => 'Facebook - ' . $contact->name,
+        $threadName = match ($source) {
+            'whatsapp' => 'WhatsApp - '.($contact->whatsapp_number ?? $contact->name),
+            'facebook' => 'Facebook - '.$contact->name,
             default => $contact->name,
         };
 
@@ -143,7 +135,7 @@ class ContactMessageNormalizer
                 'source_thread_id' => $sourceThreadId,
             ],
             [
-                'channel' => match($source) {
+                'channel' => match ($source) {
                     'whatsapp' => 'whatsapp',
                     'facebook' => 'facebook_messenger',
                     default => 'unknown',
@@ -155,10 +147,6 @@ class ContactMessageNormalizer
 
     /**
      * Resolve sender to a Contact record
-     *
-     * @param array $parsedMsg
-     * @param Contact $mainContact
-     * @return Contact|null
      */
     private function resolveSenderContact(array $parsedMsg, Contact $mainContact): ?Contact
     {
@@ -168,33 +156,35 @@ class ContactMessageNormalizer
         if (empty($senderName) || empty($senderIdentifier)) {
             return null;
         }
-        
-        $cacheKey = $mainContact->id . '_' . $senderIdentifier;
+
+        $cacheKey = $mainContact->id.'_'.$senderIdentifier;
         if (array_key_exists($cacheKey, $this->resolvedContactsCache)) {
             return $this->resolvedContactsCache[$cacheKey];
         }
 
         // Try to find existing contact by identifier
         $contact = Contact::whereHas('identifiers', function ($q) use ($senderIdentifier) {
-            $q->where('value', 'LIKE', '%' . $senderIdentifier . '%');
+            $q->where('value', 'LIKE', '%'.$senderIdentifier.'%');
         })->first();
 
         // If found, return it
         if ($contact) {
             $this->resolvedContactsCache[$cacheKey] = $contact;
+
             return $contact;
         }
 
         // Try to find by name similarity
-        $contact = Contact::where('name', 'LIKE', '%' . $senderName . '%')->first();
+        $contact = Contact::where('name', 'LIKE', '%'.$senderName.'%')->first();
         if ($contact) {
             $this->resolvedContactsCache[$cacheKey] = $contact;
+
             return $contact;
         }
 
         // Create new contact for sender if it's likely a new contact
         // (only if not just a variation of main contact's name)
-        if (!$this->isSameContact($senderName, $mainContact->name)) {
+        if (! $this->isSameContact($senderName, $mainContact->name)) {
             try {
                 $contact = Contact::create([
                     'name' => $senderName,
@@ -203,23 +193,22 @@ class ContactMessageNormalizer
                     'display_name' => $senderName,
                 ]);
                 $this->resolvedContactsCache[$cacheKey] = $contact;
+
                 return $contact;
             } catch (\Exception $e) {
                 $this->resolvedContactsCache[$cacheKey] = null;
+
                 return null;
             }
         }
 
         $this->resolvedContactsCache[$cacheKey] = null;
+
         return null;
     }
 
     /**
      * Check if two names represent the same contact
-     *
-     * @param string $name1
-     * @param string $name2
-     * @return bool
      */
     private function isSameContact(string $name1, string $name2): bool
     {
@@ -241,20 +230,18 @@ class ContactMessageNormalizer
         if ($maxLen === 0) {
             return true;
         }
-        
+
         if ($maxLen > 255) {
             return false; // Avoid CPU spinning for massive strings
         }
 
         $similarity = 1 - (levenshtein($clean1, $clean2) / $maxLen);
+
         return $similarity > 0.8;
     }
 
     /**
      * Calculate dedupe hash for a message
-     *
-     * @param array $message
-     * @return string
      */
     private function calculateHash(array $message): string
     {
@@ -272,10 +259,6 @@ class ContactMessageNormalizer
      * Check if message already exists for the given contact.
      * Scoped to contact_id to prevent cross-contact hash collisions
      * (e.g. the same message text in a group chat imported for two contacts).
-     *
-     * @param string $dedupeHash
-     * @param int    $contactId
-     * @return bool
      */
     private function messageExists(string $dedupeHash, int $contactId): bool
     {
@@ -286,9 +269,6 @@ class ContactMessageNormalizer
 
     /**
      * Detect language of message body
-     *
-     * @param string $body
-     * @return string
      */
     private function detectLanguage(string $body): string
     {

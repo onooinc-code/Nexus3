@@ -3,6 +3,7 @@
 namespace App\Services\HedraSoul;
 
 use App\Models\HedrasoulNotification;
+use Carbon\Carbon;
 
 /**
  * HedraSoulNotificationService: Manages HedraSoulHub notifications.
@@ -53,8 +54,8 @@ class HedraSoulNotificationService
      */
     public function snooze(HedrasoulNotification $notif, string $until): void
     {
-        $snoozedUntil = strtotime($until) 
-            ? \Carbon\Carbon::createFromTimestamp(strtotime($until))
+        $snoozedUntil = strtotime($until)
+            ? Carbon::createFromTimestamp(strtotime($until))
             : now()->addHours(1);
 
         $notif->update(['snoozed_until' => $snoozedUntil]);

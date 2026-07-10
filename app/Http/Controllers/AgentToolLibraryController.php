@@ -3,16 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\AgentToolLibrary;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AgentToolLibraryController extends Controller
 {
     /**
      * Display a listing of the tools.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
@@ -29,21 +26,18 @@ class AgentToolLibraryController extends Controller
         if ($request->has('grouped') && $request->boolean('grouped')) {
             return response()->json([
                 'success' => true,
-                'data' => $query->get()->groupBy('category')
+                'data' => $query->get()->groupBy('category'),
             ]);
         }
 
         return response()->json([
             'success' => true,
-            'data' => $query->get()
+            'data' => $query->get(),
         ]);
     }
 
     /**
      * Display the specified tool.
-     *
-     * @param string $id
-     * @return JsonResponse
      */
     public function show(string $id): JsonResponse
     {
@@ -51,7 +45,7 @@ class AgentToolLibraryController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $tool
+            'data' => $tool,
         ]);
     }
 }

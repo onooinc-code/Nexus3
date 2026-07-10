@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Contact>
+ * @extends Factory<Contact>
  */
 class ContactFactory extends Factory
 {
@@ -19,7 +19,7 @@ class ContactFactory extends Factory
         return [
             'uuid' => (string) Str::uuid(),
             'user_id' => User::factory(),
-            'phone' => fake()->phoneNumber() . rand(1000, 9999),
+            'phone' => fake()->phoneNumber().rand(1000, 9999),
             'name' => fake()->name(),
             'email' => fake()->safeEmail(),
             'type' => 'contact',

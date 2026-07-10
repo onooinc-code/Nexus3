@@ -14,12 +14,15 @@ class SettingsHubAdminControllerTest extends TestCase
     use RefreshDatabase, WithFaker;
 
     protected User $adminUser;
+
     protected User $regularUser;
+
     protected Workspace $workspace;
 
     protected function setUp(): void
     {
         parent::setUp();
+        config(['cache.default' => 'array']);
 
         // Create users
         $this->adminUser = User::factory()->create(['is_admin' => true, 'is_super_admin' => true]);

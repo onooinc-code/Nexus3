@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\PeopleConnect\PropertyBased;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Contact;
 use App\Models\PeopleConnect\PeopleConnectConversation;
 use App\Models\PeopleConnect\PeopleConnectMessage;
 use App\Services\PeopleConnect\PeopleConnectReplyModeService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class ReplyModeSafetyPropertyTest extends TestCase
 {
@@ -26,14 +26,14 @@ class ReplyModeSafetyPropertyTest extends TestCase
             'provider_conversation_id' => '123@c.us',
             'reply_mode_effective' => 'manual',
         ]);
-        
+
         $message = PeopleConnectMessage::create([
             'conversation_id' => $conversation->id,
             'contact_id' => $contact->id,
             'provider_payload_hash' => 'hash123',
             'sender_type' => 'contact',
             'direction' => 'inbound',
-            'body' => 'trigger'
+            'body' => 'trigger',
         ]);
 
         $service = app(PeopleConnectReplyModeService::class);
@@ -42,7 +42,7 @@ class ReplyModeSafetyPropertyTest extends TestCase
 
         foreach ($modes as $mode) {
             $conversation->update(['reply_mode_effective' => $mode]);
-            
+
             $result = $service->checkAutopilotSafety($contact->id, $message);
             $this->assertTrue($result['blocked'], "Failed blocking on mode: {$mode}");
         }
@@ -61,14 +61,14 @@ class ReplyModeSafetyPropertyTest extends TestCase
             'provider_conversation_id' => '123@c.us',
             'reply_mode_effective' => 'autopilot',
         ]);
-        
+
         $message = PeopleConnectMessage::create([
             'conversation_id' => $conversation->id,
             'contact_id' => $contact->id,
             'provider_payload_hash' => 'hash123',
             'sender_type' => 'contact',
             'direction' => 'inbound',
-            'body' => 'trigger'
+            'body' => 'trigger',
         ]);
 
         // Insert 5 recent agent messages
@@ -76,17 +76,17 @@ class ReplyModeSafetyPropertyTest extends TestCase
             PeopleConnectMessage::create([
                 'conversation_id' => $conversation->id,
                 'contact_id' => $contact->id,
-                'provider_payload_hash' => 'agenthash' . $i,
+                'provider_payload_hash' => 'agenthash'.$i,
                 'sender_type' => 'agent',
                 'direction' => 'outbound',
                 'body' => 'agent reply',
-                'created_at' => now()->subMinutes(1)
+                'created_at' => now()->subMinutes(1),
             ]);
         }
 
         $service = app(PeopleConnectReplyModeService::class);
         $result = $service->checkAutopilotSafety($contact->id, $message);
-        
+
         $this->assertTrue($result['blocked']);
         $this->assertEquals('Rate limit exceeded', $result['reason']);
     }

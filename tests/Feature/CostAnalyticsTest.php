@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use App\Models\AiAuditTrail;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class CostAnalyticsTest extends TestCase
 {
@@ -26,17 +26,17 @@ class CostAnalyticsTest extends TestCase
         $response = $this->getJson('/api/v1/ai/cost/forecast');
 
         $response->assertStatus(200)
-                 ->assertJsonStructure([
-                     'success',
-                     'data' => [
-                         'current_spend',
-                         'monthly_limit',
-                         'remaining_budget',
-                         'forecasted_total',
-                         'daily_average',
-                         'status',
-                     ]
-                 ]);
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    'current_spend',
+                    'monthly_limit',
+                    'remaining_budget',
+                    'forecasted_total',
+                    'daily_average',
+                    'status',
+                ],
+            ]);
     }
 
     /** @test */
@@ -81,15 +81,15 @@ class CostAnalyticsTest extends TestCase
         $response = $this->getJson('/api/v1/ai/audit-trail');
 
         $response->assertStatus(200)
-                 ->assertJsonStructure([
-                     'success',
-                     'data' => [
-                         '*' => [
-                             'event_type',
-                             'status',
-                             'latency_ms',
-                         ]
-                     ]
-                 ]);
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    '*' => [
+                        'event_type',
+                        'status',
+                        'latency_ms',
+                    ],
+                ],
+            ]);
     }
 }

@@ -2,22 +2,17 @@
 
 namespace App\Services\Memory;
 
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class GraphMemoryService
 {
     /**
      * Add a node to the graph
      *
-     * @param string $label
-     * @param string $type
-     * @param int|null $relatedId
-     * @param string|null $relatedType
-     * @param array $properties
      * @return int|null Node ID
      */
-    public function addNode(string $label, string $type, int $relatedId = null, string $relatedType = null, array $properties = []): ?int
+    public function addNode(string $label, string $type, ?int $relatedId = null, ?string $relatedType = null, array $properties = []): ?int
     {
         try {
             $nodeId = DB::table('graph_nodes')->insertGetId([
@@ -35,8 +30,9 @@ class GraphMemoryService
             Log::error('GraphMemoryService::addNode failed', [
                 'label' => $label,
                 'type' => $type,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -44,10 +40,6 @@ class GraphMemoryService
     /**
      * Add an edge between two nodes
      *
-     * @param int $fromNodeId
-     * @param int $toNodeId
-     * @param string $label
-     * @param array $properties
      * @return int|null Edge ID
      */
     public function addEdge(int $fromNodeId, int $toNodeId, string $label, array $properties = []): ?int
@@ -57,11 +49,12 @@ class GraphMemoryService
             $fromNode = DB::table('graph_nodes')->where('id', $fromNodeId)->first();
             $toNode = DB::table('graph_nodes')->where('id', $toNodeId)->first();
 
-            if (!$fromNode || !$toNode) {
+            if (! $fromNode || ! $toNode) {
                 Log::warning('GraphMemoryService::addEdge - One or both nodes not found', [
                     'fromNodeId' => $fromNodeId,
-                    'toNodeId' => $toNodeId
+                    'toNodeId' => $toNodeId,
                 ]);
+
                 return null;
             }
 
@@ -80,22 +73,17 @@ class GraphMemoryService
                 'fromNodeId' => $fromNodeId,
                 'toNodeId' => $toNodeId,
                 'label' => $label,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
 
     /**
      * Get nodes by type and/or related entity
-     *
-     * @param string|null $type
-     * @param int|null $relatedId
-     * @param string|null $relatedType
-     * @param int $limit
-     * @return array
      */
-    public function getNodes(string $type = null, int $relatedId = null, string $relatedType = null, int $limit = 50): array
+    public function getNodes(?string $type = null, ?int $relatedId = null, ?string $relatedType = null, int $limit = 50): array
     {
         try {
             $query = DB::table('graph_nodes');
@@ -135,8 +123,9 @@ class GraphMemoryService
             Log::error('GraphMemoryService::getNodes failed', [
                 'type' => $type,
                 'relatedId' => $relatedId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return [];
         }
     }
@@ -144,12 +133,9 @@ class GraphMemoryService
     /**
      * Get edges for a node
      *
-     * @param int $nodeId
-     * @param string|null $direction 'in', 'out', or null for both
-     * @param int $limit
-     * @return array
+     * @param  string|null  $direction  'in', 'out', or null for both
      */
-    public function getEdges(int $nodeId, string $direction = null, int $limit = 50): array
+    public function getEdges(int $nodeId, ?string $direction = null, int $limit = 50): array
     {
         try {
             $query = DB::table('graph_edges');
@@ -186,17 +172,15 @@ class GraphMemoryService
             Log::error('GraphMemoryService::getEdges failed', [
                 'nodeId' => $nodeId,
                 'direction' => $direction,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return [];
         }
     }
 
     /**
      * Delete a node and its associated edges
-     *
-     * @param int $nodeId
-     * @return bool
      */
     public function deleteNode(int $nodeId): bool
     {
@@ -216,17 +200,15 @@ class GraphMemoryService
         } catch (\Exception $e) {
             Log::error('GraphMemoryService::deleteNode failed', [
                 'nodeId' => $nodeId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
      * Delete an edge
-     *
-     * @param int $edgeId
-     * @return bool
      */
     public function deleteEdge(int $edgeId): bool
     {
@@ -239,8 +221,9 @@ class GraphMemoryService
         } catch (\Exception $e) {
             Log::error('GraphMemoryService::deleteEdge failed', [
                 'edgeId' => $edgeId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -248,9 +231,6 @@ class GraphMemoryService
     /**
      * Find shortest path between two nodes (simplified BFS)
      *
-     * @param int $startNodeId
-     * @param int $endNodeId
-     * @param int $maxDepth
      * @return array|null Path as array of node IDs, or null if no path
      */
     public function findShortestPath(int $startNodeId, int $endNodeId, int $maxDepth = 10): ?array
@@ -264,7 +244,7 @@ class GraphMemoryService
             $queue = [[$startNodeId]]; // Each element is a path (array of node IDs)
             $visited = [$startNodeId => true];
 
-            while (!empty($queue) && count($queue[0]) <= $maxDepth) {
+            while (! empty($queue) && count($queue[0]) <= $maxDepth) {
                 $path = array_shift($queue);
                 $nodeId = end($path);
 
@@ -277,7 +257,7 @@ class GraphMemoryService
 
                 foreach ($edges as $edge) {
                     $neighborId = ($edge->from_node == $nodeId) ? $edge->to_node : $edge->from_node;
-                    if (!isset($visited[$neighborId])) {
+                    if (! isset($visited[$neighborId])) {
                         $neighbors[] = $neighborId;
                         $visited[$neighborId] = true;
                     }
@@ -297,8 +277,9 @@ class GraphMemoryService
             Log::error('GraphMemoryService::findShortestPath failed', [
                 'startNodeId' => $startNodeId,
                 'endNodeId' => $endNodeId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -306,13 +287,13 @@ class GraphMemoryService
     /**
      * Paginate graph nodes
      */
-    public function paginate(int $contactId = null, int $perPage = 25): array
+    public function paginate(?int $contactId = null, int $perPage = 25): array
     {
         try {
             $query = DB::table('graph_nodes');
             if ($contactId !== null) {
                 $query->where('related_id', $contactId)
-                      ->where('related_type', 'App\\Models\\Contact');
+                    ->where('related_type', 'App\\Models\\Contact');
             }
 
             $paginated = $query->orderBy('created_at', 'desc')->paginate($perPage);
@@ -340,6 +321,7 @@ class GraphMemoryService
             ];
         } catch (\Exception $e) {
             Log::error('GraphMemoryService::paginate failed', ['error' => $e->getMessage()]);
+
             return [
                 'data' => [],
                 'current_page' => 1,
@@ -356,6 +338,7 @@ class GraphMemoryService
     public function shortestPath(int $fromNodeId, int $toNodeId, int $maxDepth = 10): array
     {
         $path = $this->findShortestPath($fromNodeId, $toNodeId, $maxDepth);
+
         return $path ?: [];
     }
 }

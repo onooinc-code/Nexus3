@@ -3,7 +3,6 @@
 namespace App\Events;
 
 use App\Models\Agent;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -29,10 +28,10 @@ class AgentRegistered implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'id'        => $this->agent->id,
-            'name'      => $this->agent->name,
-            'type'      => $this->agent->type,
-            'status'    => $this->agent->status,
+            'id' => $this->agent->id,
+            'name' => $this->agent->name,
+            'type' => $this->agent->type,
+            'status' => $this->agent->status,
             'is_system' => $this->agent->is_system,
         ];
     }

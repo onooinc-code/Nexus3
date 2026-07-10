@@ -2,12 +2,12 @@
 
 namespace Tests\Unit\HedraSoul;
 
-use Tests\TestCase;
-use App\Models\HedrasoulSession;
-use App\Models\HedrasoulMessage;
 use App\Models\HedrasoulContextSnapshot;
+use App\Models\HedrasoulMessage;
+use App\Models\HedrasoulSession;
 use App\Services\HedraSoul\HedraSoulMessageService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class MessageServiceTest extends TestCase
 {
@@ -27,16 +27,15 @@ class MessageServiceTest extends TestCase
         ]);
 
         $service = app(HedraSoulMessageService::class);
-        
+
         $message = $service->storeMessage($session, 'Hello Hedra', 'user', []);
-        
+
         $this->assertInstanceOf(HedrasoulMessage::class, $message);
         $this->assertEquals('Hello Hedra', $message->body);
         $this->assertEquals('user', $message->sender_type);
         $this->assertDatabaseHas('hedrasoul_messages', [
             'id' => $message->id,
-            'body' => 'Hello Hedra'
+            'body' => 'Hello Hedra',
         ]);
     }
 }
-

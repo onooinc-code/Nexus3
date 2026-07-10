@@ -3,7 +3,6 @@
 namespace App\Jobs\HedraSoul;
 
 use App\Models\HedrasoulApprovalRequest;
-use App\Services\HedraSoul\HedraSoulRealtimeBroadcaster;
 use App\Services\HedraSoul\HedraSoulNotificationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -14,7 +13,7 @@ use Throwable;
 
 /**
  * DispatchApprovalReminderJob: Sends reminder for deferred approval requests.
- * 
+ *
  * Scheduled by ApprovalInboxService::defer() after user defers an approval decision.
  * Checks if approval is still in 'deferred' status and broadcasts a reminder notification
  * to prompt the user to revisit the approval decision.
@@ -24,6 +23,7 @@ class DispatchApprovalReminderJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 2;
+
     public int $timeout = 30;
 
     public function __construct(
@@ -43,6 +43,7 @@ class DispatchApprovalReminderJob implements ShouldQueue
                     'approval_id' => $this->request->id,
                     'current_status' => $this->request->status,
                 ]);
+
                 return;
             }
 
@@ -50,11 +51,11 @@ class DispatchApprovalReminderJob implements ShouldQueue
             $userId = $this->request->decided_by ?? auth()->id();
 
             // Broadcast reminder via notification service (creates DB record + broadcasts)
-            app(\App\Services\HedraSoul\HedraSoulNotificationService::class)->create(
+            app(HedraSoulNotificationService::class)->create(
                 type: 'approval_reminder',
                 priority: 'medium',
                 title: 'Approval Reminder',
-                body: 'Your deferred approval request needs your attention: ' . $this->request->action_description,
+                body: 'Your deferred approval request needs your attention: '.$this->request->action_description,
                 relatedId: $this->request->id,
                 relatedType: 'approval_request',
                 actionButtons: [

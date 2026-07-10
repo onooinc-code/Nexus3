@@ -7,7 +7,9 @@ use Illuminate\Support\Facades\Log;
 class PipelineErrorHandler
 {
     protected array $retryStrategies = [];
+
     protected array $fallbackHandlers = [];
+
     protected int $maxRetries = 3;
 
     public function __construct(array $retryStrategies = [], array $fallbackHandlers = [])
@@ -36,6 +38,7 @@ class PipelineErrorHandler
         if (isset($this->fallbackHandlers[$stage])) {
             try {
                 $result = ($this->fallbackHandlers[$stage])($error, $context);
+
                 return [
                     'success' => true,
                     'recovered' => true,
@@ -44,7 +47,7 @@ class PipelineErrorHandler
                     'method' => 'fallback',
                 ];
             } catch (\Throwable $e) {
-                Log::error("Fallback handler failed for stage {$stage}: " . $e->getMessage());
+                Log::error("Fallback handler failed for stage {$stage}: ".$e->getMessage());
             }
         }
 
@@ -75,12 +78,24 @@ class PipelineErrorHandler
     {
         $message = strtolower($error->getMessage());
 
-        if (str_contains($message, 'timeout')) return 'timeout';
-        if (str_contains($message, 'rate limit')) return 'rate_limit';
-        if (str_contains($message, 'connection')) return 'connection';
-        if (str_contains($message, 'api key')) return 'auth';
-        if (str_contains($message, 'validation')) return 'validation';
-        if (str_contains($message, 'not found')) return 'not_found';
+        if (str_contains($message, 'timeout')) {
+            return 'timeout';
+        }
+        if (str_contains($message, 'rate limit')) {
+            return 'rate_limit';
+        }
+        if (str_contains($message, 'connection')) {
+            return 'connection';
+        }
+        if (str_contains($message, 'api key')) {
+            return 'auth';
+        }
+        if (str_contains($message, 'validation')) {
+            return 'validation';
+        }
+        if (str_contains($message, 'not found')) {
+            return 'not_found';
+        }
 
         return 'unknown';
     }
@@ -88,8 +103,12 @@ class PipelineErrorHandler
     public function shouldRetry(string $errorType, int $attempt): bool
     {
         $retryableTypes = ['timeout', 'rate_limit', 'connection'];
-        if (!in_array($errorType, $retryableTypes)) return false;
-        if ($attempt >= $this->maxRetries) return false;
+        if (! in_array($errorType, $retryableTypes)) {
+            return false;
+        }
+        if ($attempt >= $this->maxRetries) {
+            return false;
+        }
 
         return true;
     }

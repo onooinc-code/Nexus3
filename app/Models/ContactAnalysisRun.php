@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ContactAnalysisRun extends Model
 {
-    use \Illuminate\Database\Eloquent\Factories\HasFactory;
-protected $fillable = [
+    use HasFactory;
+
+    protected $fillable = [
         'contact_id',
         'status',
         'options',

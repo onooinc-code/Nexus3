@@ -2,16 +2,17 @@
 
 namespace App\Jobs;
 
+use App\Events\JobProgressUpdated;
+use App\Models\Contact;
+use App\Models\ContactMessage;
+use App\Models\WahaSyncProcess;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Models\ContactMessage;
-use App\Models\Contact;
-use App\Models\WahaSyncProcess;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class ProcessWahaMessageChunkJob implements ShouldQueue
 {
@@ -20,7 +21,9 @@ class ProcessWahaMessageChunkJob implements ShouldQueue
     public $timeout = 300;
 
     protected $contactId;
+
     protected $chunk;
+
     protected $processId;
 
     public function __construct($contactId, array $chunk, $processId = null)
@@ -33,7 +36,7 @@ class ProcessWahaMessageChunkJob implements ShouldQueue
     public function handle(): void
     {
         $contact = Contact::find($this->contactId);
-        if (!$contact) {
+        if (! $contact) {
             return;
         }
 
@@ -41,6 +44,7 @@ class ProcessWahaMessageChunkJob implements ShouldQueue
 
         if ($process && $process->status === 'paused') {
             $this->release(60); // Release back to queue and delay 60 seconds
+
             return;
         }
 
@@ -48,7 +52,7 @@ class ProcessWahaMessageChunkJob implements ShouldQueue
 
         foreach ($this->chunk as $msg) {
             $msgId = $msg['id'] ?? null;
-            if (!$msgId) {
+            if (! $msgId) {
                 continue;
             }
 
@@ -91,8 +95,8 @@ class ProcessWahaMessageChunkJob implements ShouldQueue
                     'channel' => 'whatsapp',
                     'source' => 'waha_api',
                     'status' => 'delivered',
-                    'raw_metadata' => !empty($rawMetadata) ? $rawMetadata : null,
-                    'attachments_metadata' => !empty($attachmentsMetadata) ? $attachmentsMetadata : null,
+                    'raw_metadata' => ! empty($rawMetadata) ? $rawMetadata : null,
+                    'attachments_metadata' => ! empty($attachmentsMetadata) ? $attachmentsMetadata : null,
                     'source_timestamp' => $sourceTimestamp,
                     'external_id' => $msgId,
                     'sender_identifier' => $msg['from'] ?? null,
@@ -108,27 +112,27 @@ class ProcessWahaMessageChunkJob implements ShouldQueue
 
         if ($process) {
             $process->refresh();
-            
+
             $config = $process->config ?? [];
             $config['nexus_messages_inserted'] = ($config['nexus_messages_inserted'] ?? 0) + $inserted;
-            
+
             $processed = ($process->processed_items ?? 0) + count($this->chunk);
             $total = $process->total_items ?? 1;
-            
+
             $progress = $total > 0 ? round(($processed / $total) * 100) : 0;
-            
+
             $process->update([
                 'processed_items' => $processed,
                 'progress' => $progress > 100 ? 100 : $progress,
-                'config' => $config
+                'config' => $config,
             ]);
-            
+
             // Check if fully complete
             if ($processed >= $total) {
                 $process->update(['status' => 'completed', 'completed_at' => now(), 'progress' => 100]);
-                broadcast(new \App\Events\JobProgressUpdated($process->id, 'sync_messages', 100, $processed, $total, 'completed', 'Message synchronization complete.'));
+                broadcast(new JobProgressUpdated($process->id, 'sync_messages', 100, $processed, $total, 'completed', 'Message synchronization complete.'));
             } else {
-                broadcast(new \App\Events\JobProgressUpdated($process->id, 'sync_messages', $progress, $processed, $total, 'running', "Processing chunk..."));
+                broadcast(new JobProgressUpdated($process->id, 'sync_messages', $progress, $processed, $total, 'running', 'Processing chunk...'));
             }
         }
     }

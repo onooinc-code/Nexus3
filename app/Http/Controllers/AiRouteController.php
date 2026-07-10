@@ -2,30 +2,39 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
-use App\Services\AiModelsHub\IntentRoutingEngine;
-use App\Services\AiModelsHub\DynamicProviderRegistry;
-use App\Services\AiModelsHub\PayloadAdapterFactory;
-use App\Services\AiModelsHub\EncryptedApiKeyStorage;
-use App\Services\AiModelsHub\CircuitBreaker;
-use App\Services\AiModelsHub\UsageTracker;
-use App\Services\AiModelsHub\SemanticCache;
-use App\Services\AiModelsHub\ProviderHealthMonitor;
-use App\Models\AiAuditTrail;
+use App\Exceptions\AiProviderOfflineException;
+use App\Exceptions\AiRateLimitException;
 use App\Http\Middleware\SsrfProtectionMiddleware;
+use App\Models\AiAuditTrail;
+use App\Services\AiModelsHub\CircuitBreaker;
+use App\Services\AiModelsHub\DynamicProviderRegistry;
+use App\Services\AiModelsHub\EncryptedApiKeyStorage;
+use App\Services\AiModelsHub\IntentRoutingEngine;
+use App\Services\AiModelsHub\PayloadAdapterFactory;
+use App\Services\AiModelsHub\ProviderHealthMonitor;
+use App\Services\AiModelsHub\SemanticCache;
+use App\Services\AiModelsHub\UsageTracker;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class AiRouteController extends Controller
 {
     protected $intentRoutingEngine;
+
     protected $providerRegistry;
+
     protected $payloadAdapterFactory;
+
     protected $encryptedKeyStorage;
+
     protected $circuitBreaker;
+
     protected $usageTracker;
+
     protected $semanticCache;
+
     protected $healthMonitor;
 
     public function __construct(
@@ -75,7 +84,7 @@ class AiRouteController extends Controller
             $profiles = $request->only(['cost_profile', 'latency_profile', 'security_class', 'language']);
 
             // 1. Check semantic cache first (unless bypass requested)
-            if (!$request->boolean('bypass_cache')) {
+            if (! $request->boolean('bypass_cache')) {
                 $cached = $this->semanticCache->get(
                     $request->intent,
                     $request->prompt,
@@ -95,7 +104,7 @@ class AiRouteController extends Controller
                             'fallback_triggered' => false,
                             'cache_hit' => true,
                         ],
-                        'message' => 'AI request served from cache'
+                        'message' => 'AI request served from cache',
                     ], 200);
                 }
             }
@@ -103,12 +112,12 @@ class AiRouteController extends Controller
             // 2. Resolve intent with profiles
             $routing = $this->intentRoutingEngine->resolveIntentWithProfiles($request->intent, $profiles);
 
-            if (!$routing) {
+            if (! $routing) {
                 $this->recordAudit('route_executed', null, null, $request->intent, 'failed', 0, false, null, 0, 0, 'routing_not_found', 'No suitable routing configuration', $request, ['profiles' => $profiles]);
 
                 return response()->json([
                     'success' => false,
-                    'message' => 'Suitable routing configuration not found for intent and profiles'
+                    'message' => 'Suitable routing configuration not found for intent and profiles',
                 ], 404);
             }
 
@@ -136,13 +145,13 @@ class AiRouteController extends Controller
 
             $latency = round((microtime(true) - $startTime) * 1000);
 
-            if (!$result['success']) {
+            if (! $result['success']) {
                 $this->recordAudit('route_executed', $primaryProvider->id ?? null, $primaryModel->id ?? null, $request->intent, 'failed', $latency, true, count($fallbacks), 0, 0, 'all_providers_failed', $result['message'] ?? 'All providers failed', $request, ['profiles' => $profiles, 'errors' => $result['errors'] ?? []]);
 
                 return response()->json([
                     'success' => false,
                     'message' => 'AI request failed after attempting all fallback options',
-                    'errors' => $result['errors'] ?? []
+                    'errors' => $result['errors'] ?? [],
                 ], 500);
             }
 
@@ -179,18 +188,18 @@ class AiRouteController extends Controller
                     'cache_hit' => false,
                     'latency_ms' => $latency,
                 ],
-                'message' => 'AI request processed successfully'
+                'message' => 'AI request processed successfully',
             ], 200);
 
         } catch (\Exception $e) {
             $latency = round((microtime(true) - $startTime) * 1000);
-            Log::error('Error handling AI request in AiRouteController: ' . $e->getMessage());
+            Log::error('Error handling AI request in AiRouteController: '.$e->getMessage());
 
             $this->recordAudit('route_executed', null, null, $request->intent ?? null, 'failed', $latency, false, null, 0, 0, get_class($e), $e->getMessage(), $request, ['profiles' => $profiles ?? []]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to process AI request'
+                'message' => 'Failed to process AI request',
             ], 500);
         }
     }
@@ -205,13 +214,14 @@ class AiRouteController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $scorecard
+                'data' => $scorecard,
             ]);
         } catch (\Exception $e) {
-            Log::error('Error fetching provider health: ' . $e->getMessage());
+            Log::error('Error fetching provider health: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to fetch provider health'
+                'message' => 'Failed to fetch provider health',
             ], 500);
         }
     }
@@ -238,13 +248,14 @@ class AiRouteController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $trails
+                'data' => $trails,
             ]);
         } catch (\Exception $e) {
-            Log::error('Error fetching audit trail: ' . $e->getMessage());
+            Log::error('Error fetching audit trail: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to fetch audit trail'
+                'message' => 'Failed to fetch audit trail',
             ], 500);
         }
     }
@@ -256,13 +267,13 @@ class AiRouteController extends Controller
     {
         try {
             $last24h = now()->subHours(24);
-            
+
             $totalRequests = AiAuditTrail::where('created_at', '>=', $last24h)->count();
             $failedRequests = AiAuditTrail::where('created_at', '>=', $last24h)->where('status', 'failed')->count();
             $cacheHits = AiAuditTrail::where('created_at', '>=', $last24h)->whereJsonContains('metadata->cache_hit', true)->count();
-            
+
             $avgLatency = AiAuditTrail::where('created_at', '>=', $last24h)->where('status', 'success')->avg('latency_ms') ?? 0;
-            
+
             $providerUsage = AiAuditTrail::where('created_at', '>=', $last24h)
                 ->whereNotNull('provider_id')
                 ->select('provider_id', \DB::raw('count(*) as count'))
@@ -277,14 +288,15 @@ class AiRouteController extends Controller
                     'error_rate' => $totalRequests > 0 ? round(($failedRequests / $totalRequests) * 100, 2) : 0,
                     'cache_hit_rate' => $totalRequests > 0 ? round(($cacheHits / $totalRequests) * 100, 2) : 0,
                     'average_latency_ms' => round($avgLatency),
-                    'provider_usage' => $providerUsage
-                ]
+                    'provider_usage' => $providerUsage,
+                ],
             ]);
         } catch (\Exception $e) {
-            Log::error('Error fetching telemetry: ' . $e->getMessage());
+            Log::error('Error fetching telemetry: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to fetch telemetry data'
+                'message' => 'Failed to fetch telemetry data',
             ], 500);
         }
     }
@@ -296,7 +308,7 @@ class AiRouteController extends Controller
     {
         $apiKey = $this->encryptedKeyStorage->getDecryptedKey($provider->id);
 
-        if (!$apiKey) {
+        if (! $apiKey) {
             throw new \Exception("API key not found or unable to decrypt for provider: {$provider->name}");
         }
 
@@ -306,7 +318,7 @@ class AiRouteController extends Controller
                 'prompt' => $request->prompt,
                 'parameters' => $request->parameters ?? [],
                 'context' => $request->context ?? [],
-                'model_id' => $model->external_id ?? $model->name
+                'model_id' => $model->external_id ?? $model->name,
             ]
         );
 
@@ -333,10 +345,10 @@ class AiRouteController extends Controller
                 }
             }
         } else {
-            $headers['Authorization'] = 'Bearer ' . $apiKey;
+            $headers['Authorization'] = 'Bearer '.$apiKey;
         }
 
-        if (!SsrfProtectionMiddleware::validateUrl($provider->base_url)) {
+        if (! SsrfProtectionMiddleware::validateUrl($provider->base_url)) {
             throw new \Exception("SSRF protection blocked provider URL: {$provider->base_url}");
         }
 
@@ -344,16 +356,16 @@ class AiRouteController extends Controller
             ->withOptions(['verify' => config('services.ai.verify_ssl', true)])
             ->timeout(30)
             ->post(
-                $provider->base_url . '/' . ltrim($provider->generate_endpoint, '/'),
+                $provider->base_url.'/'.ltrim($provider->generate_endpoint, '/'),
                 $adaptedRequest
             );
 
         if ($response->status() === 429) {
-            throw new \App\Exceptions\AiRateLimitException();
+            throw new AiRateLimitException;
         }
 
-        if (!$response->successful()) {
-            throw new \App\Exceptions\AiProviderOfflineException("Provider request failed with status: {$response->status()}");
+        if (! $response->successful()) {
+            throw new AiProviderOfflineException("Provider request failed with status: {$response->status()}");
         }
 
         $adaptedResponse = $this->payloadAdapterFactory->adaptResponse(
@@ -366,7 +378,7 @@ class AiRouteController extends Controller
             'provider_id' => $provider->id,
             'model_id' => $model->id,
             'data' => $adaptedResponse,
-            'usage' => $adaptedResponse['usage'] ?? []
+            'usage' => $adaptedResponse['usage'] ?? [],
         ];
     }
 

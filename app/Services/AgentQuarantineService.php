@@ -2,10 +2,9 @@
 
 namespace App\Services;
 
+use App\Events\AgentQuarantined;
 use App\Models\Agent;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Queue;
-use App\Events\AgentQuarantined;
 
 /**
  * AgentQuarantineService
@@ -42,7 +41,7 @@ class AgentQuarantineService
         return [
             'success' => true,
             'message' => "Agent [{$agent->name}] has been quarantined.",
-            'reason'  => $reason,
+            'reason' => $reason,
         ];
     }
 
@@ -51,7 +50,7 @@ class AgentQuarantineService
      */
     public function unquarantine(Agent $agent): array
     {
-        if (!$agent->isQuarantined()) {
+        if (! $agent->isQuarantined()) {
             return [
                 'success' => false,
                 'message' => "Agent [{$agent->name}] is not quarantined.",
@@ -80,7 +79,7 @@ class AgentQuarantineService
             );
         }
 
-        if (!$agent->isActive()) {
+        if (! $agent->isActive()) {
             throw new \RuntimeException(
                 "Agent [{$agent->name}] is inactive and cannot execute tasks."
             );

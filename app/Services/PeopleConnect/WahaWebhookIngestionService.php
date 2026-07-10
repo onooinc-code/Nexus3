@@ -10,17 +10,15 @@ class WahaWebhookIngestionService
 {
     /**
      * Ingests a WAHA webhook payload.
-     *
-     * @param array $payload
-     * @return void
      */
     public function ingest(array $payload): void
     {
         $session = $payload['session'] ?? null;
         $messageId = $payload['payload']['id'] ?? null;
 
-        if (!$session || !$messageId) {
+        if (! $session || ! $messageId) {
             Log::warning('WAHA Webhook Ingestion: Missing session or payload id', ['payload' => $payload]);
+
             return;
         }
 
@@ -31,6 +29,7 @@ class WahaWebhookIngestionService
 
         if ($existing) {
             Log::info('WAHA Webhook Ingestion: Duplicate payload detected, skipping.', ['session' => $session, 'message_id' => $messageId]);
+
             return;
         }
 

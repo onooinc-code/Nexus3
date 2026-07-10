@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\AIProvider;
 use App\Models\Agent;
 use App\Models\AgentTask;
 use App\Models\Contact;

@@ -30,7 +30,7 @@ class ExecuteScheduledTask implements ShouldQueue
     public function handle(): void
     {
         Log::info("Executing scheduled task: {$this->task->name}");
-        
+
         try {
             // Simulated execution logic depending on task type
             // e.g., if ($this->task->type === 'agent_run') ...

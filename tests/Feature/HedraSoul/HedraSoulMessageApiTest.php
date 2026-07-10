@@ -2,21 +2,22 @@
 
 namespace Tests\Feature\HedraSoul;
 
-use Tests\TestCase;
-use App\Models\HedrasoulSession;
-use App\Models\HedrasoulMessage;
+use App\Jobs\HedraSoul\ProcessHedraSoulMessageJob;
 use App\Models\HedrasoulContextSnapshot;
+use App\Models\HedrasoulMessage;
+use App\Models\HedrasoulSession;
 use App\Models\SoulyActionTrace;
 use App\Models\User;
-use App\Jobs\HedraSoul\ProcessHedraSoulMessageJob;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
+use Tests\TestCase;
 
 class HedraSoulMessageApiTest extends TestCase
 {
     use RefreshDatabase;
 
     private User $user;
+
     private HedrasoulSession $session;
 
     protected function setUp(): void

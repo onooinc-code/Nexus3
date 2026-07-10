@@ -26,11 +26,11 @@ class AgentRateLimiter
         $executed = RateLimiter::attempt(
             $key,
             $limit,
-            fn() => true,
+            fn () => true,
             60 // decay in seconds
         );
 
-        if (!$executed) {
+        if (! $executed) {
             $seconds = RateLimiter::availableIn($key);
             throw new \RuntimeException(
                 "Agent [{$agent->name}] rate limit exceeded. Try again in {$seconds} seconds."
@@ -47,9 +47,9 @@ class AgentRateLimiter
         $limit = $agent->rate_limit_per_minute ?? 60;
 
         return [
-            'remaining'     => RateLimiter::remaining($key, $limit),
-            'limit'         => $limit,
-            'available_in'  => RateLimiter::availableIn($key),
+            'remaining' => RateLimiter::remaining($key, $limit),
+            'limit' => $limit,
+            'available_in' => RateLimiter::availableIn($key),
         ];
     }
 
@@ -64,6 +64,7 @@ class AgentRateLimiter
     protected function getKey(Agent $agent): string
     {
         $ownerId = $agent->owner_id ?? 'global';
+
         return "agent_exec:{$ownerId}:{$agent->id}";
     }
 }

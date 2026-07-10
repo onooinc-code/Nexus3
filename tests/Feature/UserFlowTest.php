@@ -3,10 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Agent;
-use App\Models\Workflow;
 use App\Models\Contact;
-use App\Models\Conversation;
-use App\Models\Message;
+use App\Models\User;
+use App\Models\Workflow;
+use App\Services\Workflows\WorkflowRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -18,7 +18,7 @@ class UserFlowTest extends TestCase
 
     public function test_contact_onboarding_flow(): void
     {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user, 'sanctum');
 
         $response = $this->postJson('/api/v1/contacts', [
@@ -51,12 +51,12 @@ class UserFlowTest extends TestCase
 
     public function test_workflow_execution_flow(): void
     {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user, 'sanctum');
 
-        $workflow = \App\Models\Workflow::factory()->create([
+        $workflow = Workflow::factory()->create([
             'name' => 'Test Workflow',
-            'status' => \App\Models\Workflow::STATUS_DRAFT,
+            'status' => Workflow::STATUS_DRAFT,
             'is_active' => true,
             'steps' => [
                 ['name' => 'Step 1', 'action' => 'log', 'message' => 'Step 1'],
@@ -64,7 +64,7 @@ class UserFlowTest extends TestCase
             ],
         ]);
 
-        $registry = app(\App\Services\Workflows\WorkflowRegistry::class);
+        $registry = app(WorkflowRegistry::class);
         $executeResponse = $this->postJson("/api/v1/workflows/{$workflow->id}/execute");
         $executeResponse->assertStatus(202);
 
@@ -73,8 +73,8 @@ class UserFlowTest extends TestCase
             ->assertJsonStructure([
                 'data' => [
                     'workflow' => ['progress', 'total_steps', 'completed_steps'],
-                    'latest_execution'
-                ]
+                    'latest_execution',
+                ],
             ]);
     }
 
@@ -82,7 +82,7 @@ class UserFlowTest extends TestCase
 
     public function test_agent_task_lifecycle_flow(): void
     {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user, 'sanctum');
 
         $agent = Agent::factory()->create();
@@ -111,7 +111,7 @@ class UserFlowTest extends TestCase
 
     public function test_memory_management_flow(): void
     {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user, 'sanctum');
 
         $contact = Contact::factory()->create();
@@ -144,7 +144,8 @@ class UserFlowTest extends TestCase
 
     public function test_settings_management_flow(): void
     {
-        $user = \App\Models\User::factory()->create(['is_admin' => true, 'is_super_admin' => true]);
+        \Illuminate\Support\Facades\Event::fake();
+        $user = User::factory()->create(['is_admin' => true, 'is_super_admin' => true]);
         $this->actingAs($user, 'sanctum');
 
         $createResponse = $this->postJson('/api/v1/settings', [

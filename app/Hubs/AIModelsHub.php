@@ -2,23 +2,30 @@
 
 namespace App\Hubs;
 
-use App\Services\AiModelsHub\IntentRoutingEngine;
-use App\Services\AiModelsHub\DynamicProviderRegistry;
-use App\Services\AiModelsHub\PayloadAdapterFactory;
-use App\Services\AiModelsHub\EncryptedApiKeyStorage;
-use App\Services\AiModelsHub\CircuitBreaker;
-use App\Services\AiModelsHub\UsageTracker;
 use App\Services\AiModelsHub\AiProviderInterface;
+use App\Services\AiModelsHub\CircuitBreaker;
+use App\Services\AiModelsHub\DynamicProviderRegistry;
+use App\Services\AiModelsHub\DynamicRestProvider;
+use App\Services\AiModelsHub\EncryptedApiKeyStorage;
+use App\Services\AiModelsHub\IntentRoutingEngine;
+use App\Services\AiModelsHub\PayloadAdapterFactory;
+use App\Services\AiModelsHub\UsageTracker;
 use Illuminate\Support\Facades\Log;
 
 class AIModelsHub
 {
     protected $intentRoutingEngine;
+
     protected $providerRegistry;
+
     protected $payloadAdapterFactory;
+
     protected $encryptedKeyStorage;
+
     protected $circuitBreaker;
+
     protected $usageTracker;
+
     protected $providers = [];
 
     public function __construct(
@@ -45,8 +52,8 @@ class AIModelsHub
         try {
             // Resolve intent to provider/model configuration
             $routing = $this->intentRoutingEngine->resolveIntent($intentName);
-            
-            if (!$routing) {
+
+            if (! $routing) {
                 return [
                     'success' => false,
                     'error' => "Intent routing not found: {$intentName}",
@@ -55,8 +62,8 @@ class AIModelsHub
 
             // Get provider configuration
             $provider = $this->providerRegistry->getProvider($routing['default_provider_id']);
-            
-            if (!$provider) {
+
+            if (! $provider) {
                 return [
                     'success' => false,
                     'error' => "Provider not found for intent: {$intentName}",
@@ -65,8 +72,8 @@ class AIModelsHub
 
             // Get decrypted API key
             $apiKey = $this->encryptedKeyStorage->getDecryptedKey($provider->id);
-            
-            if (!$apiKey) {
+
+            if (! $apiKey) {
                 return [
                     'success' => false,
                     'error' => "API key not found or unable to decrypt for provider: {$provider->name}",
@@ -75,8 +82,8 @@ class AIModelsHub
 
             // Get or create provider service instance
             $providerService = $this->getProviderService($provider->id, $provider->name, $apiKey);
-            
-            if (!$providerService) {
+
+            if (! $providerService) {
                 return [
                     'success' => false,
                     'error' => "Unable to initialize provider service: {$provider->name}",
@@ -105,7 +112,7 @@ class AIModelsHub
                 [] // For now, we'll handle fallbacks in the circuit breaker
             );
 
-            if (!$result['success']) {
+            if (! $result['success']) {
                 return $result;
             }
 
@@ -125,7 +132,8 @@ class AIModelsHub
                 'usage' => $result['usage'],
             ];
         } catch (\Exception $e) {
-            Log::error('Error processing intent request: ' . $e->getMessage());
+            Log::error('Error processing intent request: '.$e->getMessage());
+
             return [
                 'success' => false,
                 'error' => 'Failed to process AI request',
@@ -141,8 +149,8 @@ class AIModelsHub
         }
 
         // Dynamically instantiate the universal REST provider
-        $this->providers[$providerId] = new \App\Services\AiModelsHub\DynamicRestProvider(
-            $providerId, 
+        $this->providers[$providerId] = new DynamicRestProvider(
+            $providerId,
             $this->encryptedKeyStorage
         );
 
@@ -163,12 +171,12 @@ class AIModelsHub
     public function getProviderModels(string $providerId): array
     {
         $provider = $this->providerRegistry->getProvider($providerId);
-        if (!$provider) {
+        if (! $provider) {
             return [];
         }
 
         $providerService = $this->getProviderService($provider->id, $provider->name, '');
-        if (!$providerService) {
+        if (! $providerService) {
             return [];
         }
 
@@ -181,12 +189,12 @@ class AIModelsHub
     public function getDefaultModel(string $providerId): ?string
     {
         $provider = $this->providerRegistry->getProvider($providerId);
-        if (!$provider) {
+        if (! $provider) {
             return null;
         }
 
         $providerService = $this->getProviderService($provider->id, $provider->name, '');
-        if (!$providerService) {
+        if (! $providerService) {
             return null;
         }
 

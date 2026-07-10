@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\Contact;
 use App\Models\NotificationLog;
 use App\Models\NotificationTemplate;
-use App\Models\Contact;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class NotificationService
 {
@@ -29,10 +29,12 @@ class NotificationService
 
             if ($success) {
                 $notification->markSent();
+
                 return true;
             }
 
             $notification->markFailed('Failed to send notification');
+
             return false;
         } catch (\Exception $e) {
             $notification->markFailed($e->getMessage());
@@ -41,6 +43,7 @@ class NotificationService
                 'channel' => $channel,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -107,7 +110,7 @@ class NotificationService
         Contact $contact,
         string $templateKey,
         array $variables = [],
-        string $channel = null
+        ?string $channel = null
     ): NotificationLog {
         $template = NotificationTemplate::where('key', $templateKey)->firstOrFail();
 

@@ -14,7 +14,7 @@ use Throwable;
 
 /**
  * CreateHedraMemorySuggestionJob: Creates memory suggestion from message.
- * 
+ *
  * Called after ProcessHedraSoulMessageJob completes.
  * Extracts memory-worthy content from message, creates pending suggestion record,
  * broadcasts memory.suggested event for frontend review.
@@ -24,6 +24,7 @@ class CreateHedraMemorySuggestionJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 2;
+
     public int $timeout = 30;
 
     public function __construct(public HedrasoulMessage $message) {}

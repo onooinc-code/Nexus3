@@ -15,7 +15,7 @@ class AIApiKeyFactory extends Factory
         return [
             'id' => fake()->uuid(),
             'provider_id' => AIProvider::factory(),
-            'key_hash' => encrypt('sk-' . fake()->password(24)),
+            'key_hash' => encrypt('sk-'.fake()->password(24)),
             'name' => 'Test API Key',
             'is_active' => true,
         ];

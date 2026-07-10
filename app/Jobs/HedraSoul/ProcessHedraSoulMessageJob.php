@@ -4,12 +4,12 @@ namespace App\Jobs\HedraSoul;
 
 use App\Models\HedrasoulMessage;
 use App\Services\HedraSoul\CommandIntent;
-use App\Services\HedraSoul\SoulyCommandRouter;
+use App\Services\HedraSoul\HedraSoulNotificationService;
+use App\Services\HedraSoul\HedraSoulRealtimeBroadcaster;
 use App\Services\HedraSoul\SoulyActionPolicyService;
+use App\Services\HedraSoul\SoulyCommandRouter;
 use App\Services\HedraSoul\SoulyContextAssembler;
 use App\Services\HedraSoul\SoulyTraceService;
-use App\Services\HedraSoul\HedraSoulRealtimeBroadcaster;
-use App\Services\HedraSoul\HedraSoulNotificationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -19,7 +19,7 @@ use Throwable;
 
 /**
  * ProcessHedraSoulMessageJob: Main message processing pipeline.
- * 
+ *
  * Classifies intent → checks policy → assembles context → invokes AgentsHub →
  * records trace → dispatches follow-up jobs → broadcasts completion event.
  */
@@ -28,6 +28,7 @@ class ProcessHedraSoulMessageJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 120;
 
     public function __construct(public HedrasoulMessage $message) {}
@@ -38,7 +39,7 @@ class ProcessHedraSoulMessageJob implements ShouldQueue
             // Step 1: Classify command intent
             $commandRouter = app(SoulyCommandRouter::class);
             $commandIntent = $commandRouter->classify($this->message);
-            
+
             $this->message->update([
                 'intent' => $commandIntent->intent,
                 'risk_level' => $commandIntent->riskLevel,
@@ -49,10 +50,10 @@ class ProcessHedraSoulMessageJob implements ShouldQueue
             $policyService = app(SoulyActionPolicyService::class);
             $policyResult = $policyService->canExecute($commandIntent->intent, $commandIntent->riskLevel);
 
-            if (!$policyResult->allowed) {
+            if (! $policyResult->allowed) {
                 // Policy blocked - save status and broadcast failure
                 $this->message->update(['status' => 'blocked']);
-                
+
                 app(HedraSoulRealtimeBroadcaster::class)->broadcastCommandDetected([
                     'message_id' => $this->message->id,
                     'intent' => $commandIntent->intent,
@@ -123,7 +124,7 @@ class ProcessHedraSoulMessageJob implements ShouldQueue
 
     /**
      * Invoke AgentsHub with the assembled context.
-     * 
+     *
      * This is a placeholder implementation - the actual AgentsHub API should be called here.
      */
     private function invokeAgentsHub($contextSnapshot, CommandIntent $commandIntent): array

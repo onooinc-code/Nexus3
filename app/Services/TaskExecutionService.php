@@ -2,10 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\AgentTask;
 use App\Jobs\ExecuteAgentTaskJob;
-use App\Services\LogService;
-use Illuminate\Support\Facades\Bus;
+use App\Models\AgentTask;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -26,7 +24,7 @@ class TaskExecutionService
     public function execute(AgentTask $task, array $options = []): void
     {
         // Validate that the task can be executed
-        if (!$this->canExecute($task)) {
+        if (! $this->canExecute($task)) {
             throw new \InvalidArgumentException(
                 "Task {$task->id} cannot be executed in its current state ({$task->status})"
             );
@@ -35,6 +33,7 @@ class TaskExecutionService
         // Check for backpressure/queue overload
         if ($this->isQueueOverloaded()) {
             $this->handleBackpressure($task);
+
             return;
         }
 
@@ -63,7 +62,7 @@ class TaskExecutionService
     public function executeNow(AgentTask $task): void
     {
         // Validate that the task can be executed
-        if (!$this->canExecute($task)) {
+        if (! $this->canExecute($task)) {
             throw new \InvalidArgumentException(
                 "Task {$task->id} cannot be executed in its current state ({$task->status})"
             );
@@ -84,17 +83,17 @@ class TaskExecutionService
 
         try {
             if ($task->type === 'agent') {
-                if (!$task->agent) {
-                    throw new \Exception("Agent ID required for agent task execution");
+                if (! $task->agent) {
+                    throw new \Exception('Agent ID required for agent task execution');
                 }
-                $agentService = app(\App\Services\AgentExecutionService::class);
+                $agentService = app(AgentExecutionService::class);
                 $result = $agentService->runSync($task->agent, $task->payload_data ?? []);
             } elseif ($task->type === 'system') {
                 // System tasks run immediately and synchronously
                 $result = [
                     'status' => 'success',
                     'executed_at' => now()->toDateTimeString(),
-                    'message' => 'System pipeline executed successfully'
+                    'message' => 'System pipeline executed successfully',
                 ];
             } else {
                 throw new \Exception("Unsupported task type for synchronous execution: {$task->type}");
@@ -139,7 +138,7 @@ class TaskExecutionService
     public function canExecute(AgentTask $task): bool
     {
         // Only agent and system types can be auto-executed
-        if (!in_array($task->type, ['agent', 'system'], true)) {
+        if (! in_array($task->type, ['agent', 'system'], true)) {
             return false;
         }
 
@@ -155,7 +154,7 @@ class TaskExecutionService
         // Get queue stats - this would typically come from Redis/Horizon
         // For now, we'll simulate with a simple check
         // In a real implementation, this would check queue depth, worker count, etc.
-        
+
         // Placeholder implementation - always return false for now
         // In production, this would check actual queue metrics
         return false;
@@ -183,7 +182,7 @@ class TaskExecutionService
      */
     public function retry(AgentTask $task): void
     {
-        if (!$this->canRetry($task)) {
+        if (! $this->canRetry($task)) {
             throw new \InvalidArgumentException(
                 "Task {$task->id} cannot be retried"
             );

@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DeadLetterTask extends Model
 {
-    use \Illuminate\Database\Eloquent\Factories\HasFactory;
-protected $table = 'dead_letter_tasks';
+    use HasFactory;
+
+    protected $table = 'dead_letter_tasks';
 
     protected $fillable = [
         'task_id',

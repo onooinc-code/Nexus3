@@ -2,34 +2,34 @@
 
 namespace App\Services\Contact;
 
-use Illuminate\Support\Facades\Http;
+use App\Services\SettingCacheService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 
 class WahaImportService
 {
     protected string $wahaUrl;
+
     protected string $wahaSecret;
 
     public function __construct()
     {
-        $this->wahaUrl = app(\App\Services\SettingCacheService::class)->get('waha_url', config('services.waha.url', 'http://localhost:3000'));
-        $this->wahaSecret = app(\App\Services\SettingCacheService::class)->get('waha_api_key', config('services.waha.api_key', ''));
+        $this->wahaUrl = app(SettingCacheService::class)->get('waha_url', config('services.waha.url', 'http://localhost:3000'));
+        $this->wahaSecret = app(SettingCacheService::class)->get('waha_api_key', config('services.waha.api_key', ''));
     }
 
     /**
      * Fetch messages from WAHA API and parse them
      *
-     * @param string $session WAHA Session ID
-     * @param string $chatId Chat ID (e.g. 123456789@c.us)
-     * @param int|null $limit
-     * @return array
+     * @param  string  $session  WAHA Session ID
+     * @param  string  $chatId  Chat ID (e.g. 123456789@c.us)
      */
     public function fetchAndParseMessages(string $session, string $chatId, ?int $limit = 100): array
     {
         $client = Http::asJson();
         if ($this->wahaSecret) {
             $client = $client->withHeaders([
-                'Authorization' => "Bearer {$this->wahaSecret}"
+                'Authorization' => "Bearer {$this->wahaSecret}",
             ]);
         }
         $response = $client->timeout(15)->get("{$this->wahaUrl}/api/{$session}/chats/{$chatId}/messages", [
@@ -37,15 +37,15 @@ class WahaImportService
             'downloadMedia' => false,
         ]);
 
-        if (!$response->successful()) {
-            throw new \Exception("Failed to fetch WAHA messages: " . $response->body());
+        if (! $response->successful()) {
+            throw new \Exception('Failed to fetch WAHA messages: '.$response->body());
         }
 
         $messagesArray = $response->json();
         $messages = [];
 
         foreach ($messagesArray as $msg) {
-            if (!is_array($msg)) {
+            if (! is_array($msg)) {
                 continue;
             }
 
@@ -79,7 +79,7 @@ class WahaImportService
                 'channel' => 'whatsapp',
                 'attachments_metadata' => [],
                 'raw_metadata' => [
-                    'waha_raw' => $msg
+                    'waha_raw' => $msg,
                 ],
                 'dedupe_hash' => null, // Computed in normalizer
             ];

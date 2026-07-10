@@ -31,6 +31,7 @@ class AgentConfigurationService
     public function get(Agent $agent, string $key, mixed $default = null): mixed
     {
         $config = $this->load($agent);
+
         return Arr::get($config, $key, $default);
     }
 
@@ -39,7 +40,8 @@ class AgentConfigurationService
         $settings = $agent->settings ?? [];
         Arr::set($settings, $key, $value);
         $agent->update(['settings' => $settings]);
-        Log::info("Agent config updated: {$agent->name} - {$key} = " . json_encode($value));
+        Log::info("Agent config updated: {$agent->name} - {$key} = ".json_encode($value));
+
         return $agent;
     }
 
@@ -49,6 +51,7 @@ class AgentConfigurationService
         $merged = array_merge($currentSettings, $config);
         $agent->update(['settings' => $merged]);
         Log::info("Agent config bulk updated: {$agent->name}");
+
         return $agent;
     }
 
@@ -56,6 +59,7 @@ class AgentConfigurationService
     {
         $agent->update(['settings' => $this->defaultConfig]);
         Log::info("Agent config reset to defaults: {$agent->name}");
+
         return $agent;
     }
 
@@ -69,10 +73,10 @@ class AgentConfigurationService
             if ($rule === 'required' && is_null($value)) {
                 $errors[] = "Missing required config: {$key}";
             }
-            if ($rule === 'integer' && !is_int($value)) {
+            if ($rule === 'integer' && ! is_int($value)) {
                 $errors[] = "Config {$key} must be integer";
             }
-            if ($rule === 'boolean' && !is_bool($value)) {
+            if ($rule === 'boolean' && ! is_bool($value)) {
                 $errors[] = "Config {$key} must be boolean";
             }
         }
@@ -89,9 +93,11 @@ class AgentConfigurationService
                 $configKey = str_replace('agent.', '', $setting->key);
                 $result[$configKey] = $setting->value;
             }
+
             return $result;
         } catch (\Throwable $e) {
-            Log::warning('Failed to load global agent settings: ' . $e->getMessage());
+            Log::warning('Failed to load global agent settings: '.$e->getMessage());
+
             return [];
         }
     }

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Log;
+use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -17,8 +18,6 @@ class AlertService
 {
     /**
      * The cache key prefix for alert state.
-     *
-     * @var string
      */
     protected string $cachePrefix = 'alerts.';
 
@@ -98,8 +97,7 @@ class AlertService
     /**
      * Evaluate a single alert rule.
      *
-     * @param array<string, mixed> $rule
-     * @return bool
+     * @param  array<string, mixed>  $rule
      */
     protected function evaluateRule(array $rule): bool
     {
@@ -115,12 +113,8 @@ class AlertService
 
     /**
      * Check if error rate exceeds threshold.
-     *
-     * @param \Carbon\Carbon $since
-     * @param int $threshold
-     * @return bool
      */
-    protected function checkErrorRate(\Carbon\Carbon $since, int $threshold): bool
+    protected function checkErrorRate(Carbon $since, int $threshold): bool
     {
         $total = Log::where('created_at', '>=', $since)->count();
         if ($total === 0) {
@@ -137,18 +131,14 @@ class AlertService
             ->count();
 
         $rate = ($errors / $total) * 100;
+
         return $rate >= $threshold;
     }
 
     /**
      * Check if logs in a category at a level exceed threshold.
-     *
-     * @param \Carbon\Carbon $since
-     * @param string $category
-     * @param string $level
-     * @return bool
      */
-    protected function checkCategoryLevel(\Carbon\Carbon $since, string $category, string $level): bool
+    protected function checkCategoryLevel(Carbon $since, string $category, string $level): bool
     {
         return Log::where('created_at', '>=', $since)
             ->byCategory($category)
@@ -159,12 +149,11 @@ class AlertService
     /**
      * Record that an alert was triggered.
      *
-     * @param array<string, mixed> $rule
-     * @return void
+     * @param  array<string, mixed>  $rule
      */
     protected function recordAlert(array $rule): void
     {
-        $key = $this->cachePrefix . $rule['id'];
+        $key = $this->cachePrefix.$rule['id'];
         Cache::put($key, [
             'rule_id' => $rule['id'],
             'name' => $rule['name'],
@@ -187,7 +176,6 @@ class AlertService
     /**
      * Get a specific alert rule by ID.
      *
-     * @param string $ruleId
      * @return array<string, mixed>|null
      */
     public function getRule(string $ruleId): ?array
@@ -197,13 +185,14 @@ class AlertService
                 return $rule;
             }
         }
+
         return null;
     }
 
     /**
      * Add a new alert rule.
      *
-     * @param array<string, mixed> $rule
+     * @param  array<string, mixed>  $rule
      * @return array<string, mixed>
      */
     public function addRule(array $rule): array
@@ -214,14 +203,14 @@ class AlertService
         $rules[] = $rule;
 
         Config::set('alerts.rules', $rules);
+
         return $rule;
     }
 
     /**
      * Update an existing alert rule.
      *
-     * @param string $ruleId
-     * @param array<string, mixed> $updates
+     * @param  array<string, mixed>  $updates
      * @return array<string, mixed>|null
      */
     public function updateRule(string $ruleId, array $updates): ?array
@@ -231,17 +220,16 @@ class AlertService
             if ($rule['id'] === $ruleId) {
                 $rule = Arr::replace($rule, $updates);
                 Config::set('alerts.rules', $rules);
+
                 return $rule;
             }
         }
+
         return null;
     }
 
     /**
      * Delete an alert rule.
-     *
-     * @param string $ruleId
-     * @return bool
      */
     public function deleteRule(string $ruleId): bool
     {
@@ -253,34 +241,35 @@ class AlertService
         }
 
         Config::set('alerts.rules', array_values($filtered));
-        Cache::forget($this->cachePrefix . $ruleId);
+        Cache::forget($this->cachePrefix.$ruleId);
+
         return true;
     }
 
     /**
      * Get recently triggered alerts.
      *
-     * @param int $limit
      * @return array<int, array<string, mixed>>
      */
     public function getRecentAlerts(int $limit = 50): array
     {
-        $keys = Cache::get($this->cachePrefix . '*', []);
+        $keys = Cache::get($this->cachePrefix.'*', []);
         // Collect all alert keys from cache
-        $allKeys = collect(Cache::getRedis()->keys($this->cachePrefix . '*'))
+        $allKeys = collect(Cache::getRedis()->keys($this->cachePrefix.'*'))
             ->map(fn ($k) => str_replace($this->cachePrefix, '', $k))
             ->values()
             ->all();
 
         $alerts = [];
         foreach ($allKeys as $key) {
-            $alert = Cache::get($this->cachePrefix . $key);
+            $alert = Cache::get($this->cachePrefix.$key);
             if ($alert) {
                 $alerts[] = $alert;
             }
         }
 
         usort($alerts, fn ($a, $b) => strcmp($b['triggered_at'], $a['triggered_at']));
+
         return array_slice($alerts, 0, $limit);
     }
 }

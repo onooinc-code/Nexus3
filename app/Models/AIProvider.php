@@ -25,11 +25,23 @@ class AIProvider extends BaseModel
         'payload_format',
         'is_active',
         'last_synced_at',
+        'notes',
+        'tags',
+        'sort_order',
+        'is_favorite',
+        'auto_sync_interval',
+        'circuit_breaker_threshold',
+        'request_timeout_ms',
+        'max_retries',
+        'monthly_budget_cap',
     ];
 
     protected $casts = [
-        'is_active'      => 'boolean',
+        'is_active' => 'boolean',
         'last_synced_at' => 'datetime',
+        'tags' => 'array',
+        'is_favorite' => 'boolean',
+        'monthly_budget_cap' => 'decimal:4',
     ];
 
     public function getApiKeyAttribute()
@@ -41,5 +53,14 @@ class AIProvider extends BaseModel
     {
         return $this->hasMany(AIModel::class, 'provider_id');
     }
-}
 
+    public function apiKeys(): HasMany
+    {
+        return $this->hasMany(AIApiKey::class, 'provider_id');
+    }
+
+    public function healthMetrics(): HasMany
+    {
+        return $this->hasMany(\App\Models\ProviderHealthMetric::class, 'provider_id');
+    }
+}

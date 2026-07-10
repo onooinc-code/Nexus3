@@ -2,17 +2,14 @@
 
 namespace Tests\Feature\HedraSoul;
 
-use Tests\TestCase;
 use App\Models\HedrasoulSession;
-use App\Models\HedrasoulContextSnapshot;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class HedraSoulApiTest extends TestCase
 {
     use RefreshDatabase;
-
-
 
     public function test_it_can_post_a_message()
     {
@@ -25,13 +22,13 @@ class HedraSoulApiTest extends TestCase
 
         $response = $this->actingAs($user, 'sanctum')->postJson("/api/v1/hedrasoul/sessions/{$session->id}/messages", [
             'body' => 'Feature Test Message',
-            'sender_type' => 'user'
+            'sender_type' => 'user',
         ]);
 
         $response->assertStatus(202);
         $this->assertDatabaseHas('hedrasoul_messages', [
             'body' => 'Feature Test Message',
-            'session_id' => $session->id
+            'session_id' => $session->id,
         ]);
     }
 }

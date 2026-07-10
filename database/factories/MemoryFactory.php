@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
-use App\Models\Conversation;
 use App\Models\Contact;
+use App\Models\Conversation;
 use App\Models\Memory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Memory>
+ * @extends Factory<Memory>
  */
 class MemoryFactory extends Factory
 {

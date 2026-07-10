@@ -2,20 +2,20 @@
 
 namespace App\Jobs;
 
+use App\Exceptions\PeopleConnect\DuplicateMessageException;
+use App\Jobs\PeopleConnect\AnalyzePeopleConnectMessageJob;
+use App\Models\PeopleConnect\PeopleConnectRawProviderEvent;
+use App\Services\PeopleConnect\PeopleConnectContactResolver;
+use App\Services\PeopleConnect\PeopleConnectConversationService;
+use App\Services\PeopleConnect\PeopleConnectMessageService;
+use App\Services\PeopleConnect\PeopleConnectRealtimeBroadcaster;
+use App\Services\PeopleConnect\PeopleConnectSessionService;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Services\PeopleConnect\PeopleConnectContactResolver;
-use App\Services\PeopleConnect\PeopleConnectConversationService;
-use App\Services\PeopleConnect\PeopleConnectSessionService;
-use App\Services\PeopleConnect\PeopleConnectMessageService;
-use App\Services\PeopleConnect\PeopleConnectRealtimeBroadcaster;
-use App\Jobs\PeopleConnect\AnalyzePeopleConnectMessageJob;
-use App\Models\PeopleConnect\PeopleConnectRawProviderEvent;
-use App\Exceptions\PeopleConnect\DuplicateMessageException;
-use Carbon\Carbon;
 use Throwable;
 
 class ProcessWahaWebhookJob implements ShouldQueue
@@ -23,13 +23,11 @@ class ProcessWahaWebhookJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected array $payload;
+
     protected ?int $rawEventId;
 
     /**
      * Create a new job instance.
-     *
-     * @param array $payload
-     * @param int|null $rawEventId
      */
     public function __construct(array $payload, ?int $rawEventId = null)
     {
@@ -53,15 +51,16 @@ class ProcessWahaWebhookJob implements ShouldQueue
         $body = $this->payload['payload']['body'] ?? '';
         $timestamp = $this->payload['payload']['timestamp'] ?? time();
         $wahaMessageId = $this->payload['payload']['id'] ?? null;
-        
-        if (!$chatId || !$phone) {
+
+        if (! $chatId || ! $phone) {
             $this->markRawEventStatus('error');
+
             return;
         }
-        
+
         // Strip @c.us suffix if present for phone and chatId
         $phone = str_replace('@c.us', '', $phone);
-        
+
         // 1. Resolve Contact
         $contact = $contactResolver->resolve($chatId, $phone, $pushName);
 
@@ -90,9 +89,9 @@ class ProcessWahaWebhookJob implements ShouldQueue
             $conversation->update([
                 'last_message_at' => Carbon::createFromTimestamp($timestamp),
                 'last_message_preview' => substr($body, 0, 100),
-                'unread_count' => $conversation->unread_count + 1
+                'unread_count' => $conversation->unread_count + 1,
             ]);
-            
+
             // Update session count
             $session->increment('message_count');
 
@@ -101,9 +100,9 @@ class ProcessWahaWebhookJob implements ShouldQueue
 
             // 6. Realtime Broadcasting
             $broadcaster->messageReceived($message);
-            
+
             $this->markRawEventStatus('processed');
-            
+
         } catch (DuplicateMessageException $e) {
             $this->markRawEventStatus('processed');
         } catch (Throwable $e) {
@@ -111,18 +110,18 @@ class ProcessWahaWebhookJob implements ShouldQueue
             throw $e;
         }
     }
-    
+
     private function markRawEventStatus(string $status): void
     {
         if ($this->rawEventId) {
             PeopleConnectRawProviderEvent::where('id', $this->rawEventId)
                 ->update([
                     'processed_at' => now(),
-                    'processing_status' => $status
+                    'processing_status' => $status,
                 ]);
         }
     }
-    
+
     public function failed(Throwable $exception)
     {
         $this->markRawEventStatus('error');

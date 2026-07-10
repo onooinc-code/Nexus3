@@ -13,7 +13,7 @@ use Throwable;
 
 /**
  * RebuildHedraCloneProfileJob: Rebuilds Hedra clone profile embeddings.
- * 
+ *
  * Dispatched by profile maintenance operations or manual user triggers.
  * Calls HedraMemoryMaintenanceService to rebuild embeddings for all hedra_clone_sources.
  */
@@ -22,6 +22,7 @@ class RebuildHedraCloneProfileJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 2;
+
     public int $timeout = 300; // 5 minutes for full rebuild
 
     public function __construct(public ?int $userId = null) {}
@@ -30,7 +31,7 @@ class RebuildHedraCloneProfileJob implements ShouldQueue
     {
         try {
             $maintenanceService = app(HedraMemoryMaintenanceService::class);
-            
+
             // Rebuild embeddings for all clone sources
             // This is a long-running operation that may take several minutes
             $maintenanceService->rebuildEmbeddings();

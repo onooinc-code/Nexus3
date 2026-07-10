@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 class MemoryExtractionPipeline
 {
     protected array $extractors = [];
+
     protected array $filters = [];
 
     public function __construct(array $extractors = [], array $filters = [])
@@ -39,7 +40,7 @@ class MemoryExtractionPipeline
                     $extracted[$type] = $result;
                 }
             } catch (\Throwable $e) {
-                Log::warning("Memory extractor failed for type {$type}: " . $e->getMessage());
+                Log::warning("Memory extractor failed for type {$type}: ".$e->getMessage());
             }
         }
 
@@ -53,7 +54,9 @@ class MemoryExtractionPipeline
 
         foreach ($extracted as $type => $data) {
             $filtered = $this->applyFilters($data, $type);
-            if ($filtered === null) continue;
+            if ($filtered === null) {
+                continue;
+            }
 
             $memory = Memory::create([
                 'contact_id' => $contactId,
@@ -68,7 +71,7 @@ class MemoryExtractionPipeline
             ]);
 
             $stored[] = $memory;
-            Log::info("Memory extracted and stored", [
+            Log::info('Memory extracted and stored', [
                 'memory_id' => $memory->id,
                 'type' => $type,
                 'contact_id' => $contactId,
@@ -87,9 +90,12 @@ class MemoryExtractionPipeline
     {
         foreach ($this->filters as $filter) {
             $result = $filter($data, $type);
-            if ($result === null) return null;
+            if ($result === null) {
+                return null;
+            }
             $data = $result;
         }
+
         return $data;
     }
 

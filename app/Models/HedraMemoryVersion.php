@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class HedraMemoryVersion extends Model
 {
-    use \Illuminate\Database\Eloquent\Factories\HasFactory;
-protected $fillable = [
+    use HasFactory;
+
+    protected $fillable = [
         'fact_id',
         'content',
         'version_number',

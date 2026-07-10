@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\HedraSoul;
 
-use Tests\TestCase;
-use App\Models\SoulyInstructionVersion;
 use App\Models\SoulyActionTrace;
+use App\Models\SoulyInstructionVersion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class HedraSoulInstructionsApiTest extends TestCase
 {

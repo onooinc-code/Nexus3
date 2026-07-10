@@ -7,7 +7,6 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\PeopleConnect\PeopleConnectProcessingLog;
 
 class AutopilotBlocked implements ShouldBroadcast
 {
@@ -20,10 +19,13 @@ class AutopilotBlocked implements ShouldBroadcast
 
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('peopleconnect.conversation.' . $this->conversationId)];
+        return [new PrivateChannel('peopleconnect.conversation.'.$this->conversationId)];
     }
 
-    public function broadcastAs(): string { return 'autopilot.blocked'; }
+    public function broadcastAs(): string
+    {
+        return 'autopilot.blocked';
+    }
 
     public function broadcastWith(): array
     {

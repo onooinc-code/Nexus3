@@ -2,18 +2,18 @@
 
 namespace App\Services\PeopleConnect;
 
-use App\Models\PeopleConnect\PeopleConnectMessage;
-use App\Models\PeopleConnect\PeopleConnectMessageAnalysis;
-use App\Models\PeopleConnect\PeopleConnectSession;
-use App\Models\PeopleConnect\PeopleConnectReplyDraft;
-use App\Events\PeopleConnect\MessageReceived;
+use App\Events\PeopleConnect\AutopilotBlocked;
 use App\Events\PeopleConnect\MessageAnalyzed;
 use App\Events\PeopleConnect\MessageDelivered;
 use App\Events\PeopleConnect\MessageFailed;
-use App\Events\PeopleConnect\SessionOpened;
-use App\Events\PeopleConnect\SessionClosed;
+use App\Events\PeopleConnect\MessageReceived;
 use App\Events\PeopleConnect\ReplyDraftCreated;
-use App\Events\PeopleConnect\AutopilotBlocked;
+use App\Events\PeopleConnect\SessionClosed;
+use App\Events\PeopleConnect\SessionOpened;
+use App\Models\PeopleConnect\PeopleConnectMessage;
+use App\Models\PeopleConnect\PeopleConnectMessageAnalysis;
+use App\Models\PeopleConnect\PeopleConnectReplyDraft;
+use App\Models\PeopleConnect\PeopleConnectSession;
 
 class PeopleConnectRealtimeBroadcaster
 {
@@ -57,4 +57,3 @@ class PeopleConnectRealtimeBroadcaster
         event(new AutopilotBlocked($conversationId, $reason));
     }
 }
-

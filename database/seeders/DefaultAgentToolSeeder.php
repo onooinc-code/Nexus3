@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class DefaultAgentToolSeeder extends Seeder
 {
@@ -201,13 +201,13 @@ class DefaultAgentToolSeeder extends Seeder
         ];
 
         foreach ($tools as $tool) {
-            if (!DB::table('agent_tools_library')->where('name', $tool['name'])->exists()) {
+            if (! DB::table('agent_tools_library')->where('name', $tool['name'])->exists()) {
                 DB::table('agent_tools_library')->insert(array_merge(['id' => Str::uuid()], $tool));
                 $this->command->line("  ✓ Tool: {$tool['name']} ({$tool['category']})");
             }
         }
 
         $this->command->newLine();
-        $this->command->info('✅ DefaultAgentToolSeeder complete — ' . count($tools) . ' system tools seeded.');
+        $this->command->info('✅ DefaultAgentToolSeeder complete — '.count($tools).' system tools seeded.');
     }
 }

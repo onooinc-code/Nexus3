@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Agent;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class SystemAgentSeeder extends Seeder
 {
@@ -94,7 +93,7 @@ class SystemAgentSeeder extends Seeder
             );
         }
 
-        $this->command->info('✅ SystemAgentSeeder complete — ' . count($systemAgents) . ' system agents seeded.');
+        $this->command->info('✅ SystemAgentSeeder complete — '.count($systemAgents).' system agents seeded.');
         $this->command->warn('⚠️ System agents are protected and cannot be deleted.');
     }
 }

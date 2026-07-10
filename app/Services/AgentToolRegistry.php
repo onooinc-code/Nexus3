@@ -8,9 +8,10 @@ use Illuminate\Support\Facades\Log;
 class AgentToolRegistry
 {
     protected array $tools = [];
+
     protected array $executors = [];
 
-    public function register(string $name, array $definition, callable $executor = null): void
+    public function register(string $name, array $definition, ?callable $executor = null): void
     {
         $this->tools[$name] = array_merge([
             'name' => $name,
@@ -44,7 +45,7 @@ class AgentToolRegistry
 
     public function execute(string $name, array $params = []): mixed
     {
-        if (!isset($this->tools[$name])) {
+        if (! isset($this->tools[$name])) {
             throw new \InvalidArgumentException("Tool not found: {$name}");
         }
 
@@ -54,6 +55,7 @@ class AgentToolRegistry
         if (isset($this->executors[$name])) {
             $result = ($this->executors[$name])($params);
             Log::info("Tool executed via callback: {$name}");
+
             return $result;
         }
 
@@ -66,7 +68,7 @@ class AgentToolRegistry
         $required = $tool['required'] ?? [];
 
         foreach ($required as $param) {
-            if (!array_key_exists($param, $params)) {
+            if (! array_key_exists($param, $params)) {
                 throw new \InvalidArgumentException("Missing required parameter: {$param} for tool {$name}");
             }
         }
@@ -102,6 +104,7 @@ class AgentToolRegistry
     public function unregister(string $name): bool
     {
         unset($this->tools[$name], $this->executors[$name]);
+
         return true;
     }
 

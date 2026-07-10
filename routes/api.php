@@ -697,10 +697,31 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'auth:sanctum']], functi
     Route::get('/ai/providers/health', [AiRouteController::class, 'providerHealth'])
         ->name('ai.providers.health');
 
+    Route::get('/ai/providers/health-summary', [AiProviderController::class, 'healthSummary'])
+        ->name('ai.providers.health-summary');
+    Route::post('/ai/providers/reorder', [AiProviderController::class, 'reorder'])
+        ->name('ai.providers.reorder');
+    Route::post('/ai/providers/sync-all', [AiProviderController::class, 'syncAll'])
+        ->name('ai.providers.sync-all');
+    Route::post('/ai/providers/bulk-action', [AiProviderController::class, 'bulkAction'])
+        ->name('ai.providers.bulk-action');
+
     Route::get('/ai/providers', [AiProviderController::class, 'index'])
         ->name('ai.providers.index');
     Route::post('/ai/providers', [AiProviderController::class, 'store'])
         ->name('ai.providers.store');
+    
+    Route::get('/ai/providers/{id}/details', [AiProviderController::class, 'details'])
+        ->name('ai.providers.details');
+    Route::patch('/ai/providers/{id}/meta', [AiProviderController::class, 'updateMeta'])
+        ->name('ai.providers.update-meta');
+    Route::get('/ai/providers/{id}/usage-stats', [AiProviderController::class, 'usageStats'])
+        ->name('ai.providers.usage-stats');
+    Route::get('/ai/providers/{id}/nexus-apis', [AiProviderController::class, 'nexusApis'])
+        ->name('ai.providers.nexus-apis');
+    Route::post('/ai/providers/{id}/duplicate', [AiProviderController::class, 'duplicate'])
+        ->name('ai.providers.duplicate');
+
     Route::get('/ai/providers/{id}', [AiProviderController::class, 'show'])
         ->name('ai.providers.show');
     Route::put('/ai/providers/{id}', [AiProviderController::class, 'update'])
@@ -713,6 +734,16 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'auth:sanctum']], functi
         ->name('ai.providers.sync-models');
     Route::patch('/ai/providers/{id}/toggle-active', [AiProviderController::class, 'toggleActive'])
         ->name('ai.providers.toggle-active');
+
+    // API Keys Sub-resource
+    Route::get('/ai/providers/{id}/keys', [\App\Http\Controllers\AIApiKeyController::class, 'indexForProvider'])
+        ->name('ai.providers.keys.index');
+    Route::post('/ai/providers/{id}/keys', [\App\Http\Controllers\AIApiKeyController::class, 'store'])
+        ->name('ai.providers.keys.store');
+    Route::delete('/ai/api-keys/{keyId}', [\App\Http\Controllers\AIApiKeyController::class, 'destroy'])
+        ->name('ai.api-keys.destroy');
+    Route::post('/ai/api-keys/{keyId}/set-default', [\App\Http\Controllers\AIApiKeyController::class, 'setDefault'])
+        ->name('ai.api-keys.set-default');
     Route::get('/ai/intents/routing', [AiRequestController::class, 'getRoutingMatrix'])
         ->name('ai.intents.routing.index');
     Route::put('/ai/intents/routing', [AiRequestController::class, 'routeIntent'])
@@ -805,6 +836,8 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'auth:sanctum']], functi
                 ->name('settings.admin.performance');
             Route::post('/export', [SettingsHubAdminController::class, 'exportSettings'])
                 ->name('settings.admin.export');
+            Route::post('/import', [SettingsHubAdminController::class, 'importSettings'])
+                ->name('settings.admin.import');
         });
 
         // Global System Telemetry

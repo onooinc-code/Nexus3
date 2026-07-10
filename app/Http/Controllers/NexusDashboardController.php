@@ -20,9 +20,11 @@ class NexusDashboardController extends Controller
     {
         try {
             $data = $this->service->aggregateStats($request->user());
+
             return response()->json($data);
         } catch (\Throwable $e) {
             Log::error('Dashboard stats aggregation failed', ['error' => $e->getMessage()]);
+
             return response()->json(['message' => 'Failed to aggregate dashboard stats.'], 500);
         }
     }
@@ -35,9 +37,11 @@ class NexusDashboardController extends Controller
     {
         try {
             $data = $this->service->getHealthStatus();
+
             return response()->json($data);
         } catch (\Throwable $e) {
             Log::error('Dashboard health probe failed', ['error' => $e->getMessage()]);
+
             return response()->json(['message' => 'Failed to probe service health.'], 500);
         }
     }
@@ -50,7 +54,7 @@ class NexusDashboardController extends Controller
     public function activityFeed(Request $request): JsonResponse
     {
         $request->validate([
-            'limit'  => 'nullable|integer|min:1|max:100',
+            'limit' => 'nullable|integer|min:1|max:100',
             'before' => 'nullable|string',
         ]);
 
@@ -59,9 +63,11 @@ class NexusDashboardController extends Controller
                 limit: (int) ($request->query('limit', 20)),
                 before: $request->query('before'),
             );
+
             return response()->json($data);
         } catch (\Throwable $e) {
             Log::error('Dashboard activity feed failed', ['error' => $e->getMessage()]);
+
             return response()->json(['message' => 'Failed to load activity feed.'], 500);
         }
     }

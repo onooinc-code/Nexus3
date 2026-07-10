@@ -2,9 +2,9 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Channels\BrowserNotificationChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use App\Notifications\Channels\BrowserNotificationChannel;
 
 class BrowserTestNotification extends Notification
 {

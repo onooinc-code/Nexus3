@@ -2,8 +2,8 @@
 
 namespace App\Services\HedraSoul;
 
-use App\Models\HedraProfileFact;
 use App\Models\HedraMemorySuggestion;
+use App\Models\HedraProfileFact;
 
 /**
  * HedraMemoryMaintenanceService: Performs cleanup and optimization on Hedra's memory.
@@ -12,6 +12,7 @@ use App\Models\HedraMemorySuggestion;
 class HedraMemoryMaintenanceService
 {
     const DECAY_THRESHOLD_DAYS = 90;
+
     const STALE_CONFIDENCE_THRESHOLD = 0.3;
 
     /**
@@ -130,10 +131,10 @@ class HedraMemoryMaintenanceService
 
         foreach ($oldFacts as $fact) {
             $ageMonths = $fact->created_at->diffInMonths(now());
-            
+
             // Reduce confidence by 5% per month (minimum 0.1)
             $newConfidence = max(0.1, $fact->confidence - ($ageMonths * 0.05));
-            
+
             if ($newConfidence < self::STALE_CONFIDENCE_THRESHOLD) {
                 $fact->update(['visibility_scope' => 'archived']);
                 $archived++;

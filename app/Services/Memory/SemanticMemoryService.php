@@ -2,13 +2,15 @@
 
 namespace App\Services\Memory;
 
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class SemanticMemoryService
 {
     protected $apiKey;
+
     protected $environment;
+
     protected $indexName;
 
     public function __construct()
@@ -20,11 +22,6 @@ class SemanticMemoryService
 
     /**
      * Store a vector embedding in semantic memory
-     *
-     * @param string $contactId
-     * @param string $content
-     * @param array $metadata
-     * @return bool
      */
     public function store(string $contactId, string $content, array $metadata = []): bool
     {
@@ -32,12 +29,12 @@ class SemanticMemoryService
             // In a real implementation, we would:
             // 1. Generate embedding from content using an embedding model
             // 2. Store the vector in Pinecone with metadata
-            
+
             // For now, we'll simulate the operation
             Log::info('Storing semantic memory', [
                 'contactId' => $contactId,
                 'contentLength' => strlen($content),
-                'metadata' => $metadata
+                'metadata' => $metadata,
             ]);
 
             // Simulate API call to Pinecone
@@ -60,19 +57,15 @@ class SemanticMemoryService
         } catch (\Exception $e) {
             Log::error('SemanticMemoryService::store failed', [
                 'contactId' => $contactId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
      * Retrieve semantically similar memories
-     *
-     * @param string $contactId
-     * @param string $query
-     * @param int $limit
-     * @return array
      */
     public function retrieve(string $contactId, string $query, int $limit = 10): array
     {
@@ -81,12 +74,12 @@ class SemanticMemoryService
             // 1. Generate embedding from query
             // 2. Search Pinecone for similar vectors
             // 3. Return results with metadata
-            
+
             // For now, we'll return empty results
             Log::info('Retrieving semantic memories', [
                 'contactId' => $contactId,
                 'query' => $query,
-                'limit' => $limit
+                'limit' => $limit,
             ]);
 
             // Simulate API call to Pinecone
@@ -104,18 +97,15 @@ class SemanticMemoryService
             Log::error('SemanticMemoryService::retrieve failed', [
                 'contactId' => $contactId,
                 'query' => $query,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return [];
         }
     }
 
     /**
      * Delete vectors from semantic memory
-     *
-     * @param string $contactId
-     * @param array $vectorIds
-     * @return bool
      */
     public function delete(string $contactId, array $vectorIds = []): bool
     {
@@ -123,7 +113,7 @@ class SemanticMemoryService
             // In a real implementation, we would delete vectors from Pinecone
             Log::info('Deleting semantic memories', [
                 'contactId' => $contactId,
-                'vectorIds' => $vectorIds
+                'vectorIds' => $vectorIds,
             ]);
 
             // Simulate API call to Pinecone
@@ -139,17 +129,15 @@ class SemanticMemoryService
         } catch (\Exception $e) {
             Log::error('SemanticMemoryService::delete failed', [
                 'contactId' => $contactId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
      * Generate embedding for text (placeholder)
-     *
-     * @param string $text
-     * @return array
      */
     protected function generateEmbedding(string $text): array
     {
@@ -168,7 +156,7 @@ class SemanticMemoryService
         } catch (\Exception $e) {
             Log::error('SemanticMemoryService::deleteNamespace failed', [
                 'contactId' => $contactId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -176,7 +164,7 @@ class SemanticMemoryService
     /**
      * Paginate semantic memories
      */
-    public function paginate(string $contactId = null, int $perPage = 25): array
+    public function paginate(?string $contactId = null, int $perPage = 25): array
     {
         // Pinecone does not support true pagination well. This is simulated.
         return [

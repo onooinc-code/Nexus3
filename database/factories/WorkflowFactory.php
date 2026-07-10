@@ -6,7 +6,7 @@ use App\Models\Workflow;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Workflow>
+ * @extends Factory<Workflow>
  */
 class WorkflowFactory extends Factory
 {
@@ -16,7 +16,7 @@ class WorkflowFactory extends Factory
     {
         return [
             'name' => fake()->words(3, true),
-            'key' => fake()->slug() . '-' . uniqid(),
+            'key' => fake()->slug().'-'.uniqid(),
             'description' => fake()->sentence(),
             'steps' => [
                 ['name' => 'Step 1', 'status' => 'pending'],

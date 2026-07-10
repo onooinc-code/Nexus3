@@ -7,7 +7,7 @@ use App\Models\ContactCustomField;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ContactCustomField>
+ * @extends Factory<ContactCustomField>
  */
 class ContactCustomFieldFactory extends Factory
 {

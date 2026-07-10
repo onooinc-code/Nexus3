@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\AgentTask;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class SystemTelemetryController extends Controller
 {
@@ -23,7 +25,7 @@ class SystemTelemetryController extends Controller
                 $cpuPercent = min(100, round($load[0] * 10));
             }
         } else {
-            $cpuPercent = random_int(1, 5); 
+            $cpuPercent = random_int(1, 5);
         }
 
         // 3. Queue Jobs Count
@@ -33,7 +35,8 @@ class SystemTelemetryController extends Controller
         $wahaStatus = Cache::remember('waha_connection_state', 10, function () {
             try {
                 $wahaUrl = config('services.waha.url', 'http://127.0.0.1:3333');
-                $response = \Illuminate\Support\Facades\Http::timeout(2)->get("{$wahaUrl}/api/session/status");
+                $response = Http::timeout(2)->get("{$wahaUrl}/api/session/status");
+
                 return $response->successful() ? 'Online' : 'Offline';
             } catch (\Exception $e) {
                 return 'Offline';
@@ -41,7 +44,7 @@ class SystemTelemetryController extends Controller
         });
 
         // 5. Agent Status
-        $activeAgentTasks = \App\Models\AgentTask::whereIn('status', ['pending', 'running'])->count();
+        $activeAgentTasks = AgentTask::whereIn('status', ['pending', 'running'])->count();
         $agentStatus = $activeAgentTasks > 0 ? 'Busy' : 'Online';
 
         return response()->json([
@@ -52,8 +55,8 @@ class SystemTelemetryController extends Controller
                 'queue_count' => $jobsCount,
                 'waha_status' => $wahaStatus,
                 'agent_status' => $agentStatus,
-                'time' => now()->format('H:i')
-            ]
+                'time' => now()->format('H:i'),
+            ],
         ]);
     }
 }

@@ -14,10 +14,10 @@ class AgentFailed implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public Agent  $agent,
+        public Agent $agent,
         public string $traceId,
         public string $error,
-        public bool   $escalation = false
+        public bool $escalation = false
     ) {}
 
     public function broadcastOn(): array
@@ -33,11 +33,11 @@ class AgentFailed implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'agent_id'   => $this->agent->id,
-            'trace_id'   => $this->traceId,
-            'error'      => $this->error,
+            'agent_id' => $this->agent->id,
+            'trace_id' => $this->traceId,
+            'error' => $this->error,
             'escalation' => $this->escalation,
-            'failed_at'  => now()->toISOString(),
+            'failed_at' => now()->toISOString(),
         ];
     }
 }

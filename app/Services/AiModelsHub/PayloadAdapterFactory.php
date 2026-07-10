@@ -56,8 +56,8 @@ class PayloadAdapterFactory
             'messages' => [
                 [
                     'role' => 'user',
-                    'content' => $data['prompt']
-                ]
+                    'content' => $data['prompt'],
+                ],
             ],
             'temperature' => $data['parameters']['temperature'] ?? 0.7,
             'max_tokens' => $data['parameters']['max_tokens'] ?? null,
@@ -77,8 +77,8 @@ class PayloadAdapterFactory
             'messages' => [
                 [
                     'role' => 'user',
-                    'content' => $data['prompt']
-                ]
+                    'content' => $data['prompt'],
+                ],
             ],
             'system' => $data['context']['system'] ?? null,
         ];
@@ -94,8 +94,8 @@ class PayloadAdapterFactory
             'messages' => [
                 [
                     'role' => 'user',
-                    'content' => $data['prompt']
-                ]
+                    'content' => $data['prompt'],
+                ],
             ],
             'temperature' => $data['parameters']['temperature'] ?? 0.7,
             'max_tokens' => $data['parameters']['max_tokens'] ?? null,
@@ -114,10 +114,10 @@ class PayloadAdapterFactory
                 [
                     'parts' => [
                         [
-                            'text' => $data['prompt']
-                        ]
-                    ]
-                ]
+                            'text' => $data['prompt'],
+                        ],
+                    ],
+                ],
             ],
             'generationConfig' => [
                 'temperature' => $data['parameters']['temperature'] ?? 0.7,

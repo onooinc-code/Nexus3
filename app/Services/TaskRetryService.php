@@ -8,14 +8,15 @@ use Illuminate\Support\Facades\Log;
 class TaskRetryService
 {
     protected array $retryHistory = [];
+
     protected array $backoffStrategies = [];
 
     public function __construct()
     {
         $this->backoffStrategies = [
-            'fixed' => fn(int $attempt, int $delay) => $delay,
-            'linear' => fn(int $attempt, int $delay) => $delay * $attempt,
-            'exponential' => fn(int $attempt, int $delay) => $delay * (2 ** ($attempt - 1)),
+            'fixed' => fn (int $attempt, int $delay) => $delay,
+            'linear' => fn (int $attempt, int $delay) => $delay * $attempt,
+            'exponential' => fn (int $attempt, int $delay) => $delay * (2 ** ($attempt - 1)),
         ];
     }
 
@@ -28,7 +29,7 @@ class TaskRetryService
         $retryCount = $task->metadata['retry_count'] ?? 0;
 
         if ($retryCount >= $maxRetries) {
-            Log::warning("Max retries exceeded for task", [
+            Log::warning('Max retries exceeded for task', [
                 'task_id' => $task->id,
                 'retry_count' => $retryCount,
                 'max_retries' => $maxRetries,
@@ -48,7 +49,7 @@ class TaskRetryService
 
         $this->recordRetryAttempt($task, $retryCount + 1, $delay);
 
-        Log::info("Task scheduled for retry", [
+        Log::info('Task scheduled for retry', [
             'task_id' => $task->id,
             'attempt' => $retryCount + 1,
             'max_retries' => $maxRetries,
@@ -104,7 +105,7 @@ class TaskRetryService
 
         $task->update(['metadata' => $metadata]);
 
-        Log::info("Retry count incremented for task", [
+        Log::info('Retry count incremented for task', [
             'task_id' => $task->id,
             'retry_count' => $metadata['retry_count'],
         ]);
@@ -134,11 +135,12 @@ class TaskRetryService
         ];
     }
 
-    public function getRetryHistory(int $taskId = null): array
+    public function getRetryHistory(?int $taskId = null): array
     {
         if ($taskId) {
-            return array_filter($this->retryHistory, fn($h) => $h['task_id'] === $taskId);
+            return array_filter($this->retryHistory, fn ($h) => $h['task_id'] === $taskId);
         }
+
         return $this->retryHistory;
     }
 
@@ -150,6 +152,7 @@ class TaskRetryService
     public function calculateBackoff(string $strategy, int $attempt, int $baseDelay = 60): int
     {
         $backoffFn = $this->backoffStrategies[$strategy] ?? $this->backoffStrategies['exponential'];
+
         return min($backoffFn($attempt, $baseDelay), 300);
     }
 

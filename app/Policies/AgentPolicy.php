@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Agent;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class AgentPolicy
 {
@@ -49,6 +48,7 @@ class AgentPolicy
         if ($agent->is_system) {
             return false;
         }
+
         return (bool) ($agent->owner_id === null || $agent->owner_id === $user->id || $user->is_super_admin);
     }
 

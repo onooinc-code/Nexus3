@@ -4,7 +4,6 @@ namespace App\Services\HedraSoul;
 
 use App\Models\SoulyInstructionVersion;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 /**
  * SoulyInstructionVersionService: Manages versioned system instructions for Souly.
@@ -72,7 +71,7 @@ class SoulyInstructionVersionService
                 ->orderBy('version_number', 'desc')
                 ->first();
 
-            if (!$previousVersion) {
+            if (! $previousVersion) {
                 throw new \Exception('No previous version to rollback to');
             }
 
@@ -109,20 +108,20 @@ class SoulyInstructionVersionService
         $targetVersion = SoulyInstructionVersion::find($versionId);
         $activeVersion = SoulyInstructionVersion::active()->first();
 
-        if (!$targetVersion) {
+        if (! $targetVersion) {
             return ['error' => 'Version not found'];
         }
 
-        if (!$activeVersion) {
+        if (! $activeVersion) {
             return ['error' => 'No active version to compare against'];
         }
 
-        $targetContent = is_array($targetVersion->content) 
-            ? json_encode($targetVersion->content, JSON_PRETTY_PRINT) 
+        $targetContent = is_array($targetVersion->content)
+            ? json_encode($targetVersion->content, JSON_PRETTY_PRINT)
             : $targetVersion->content;
-        
-        $activeContent = is_array($activeVersion->content) 
-            ? json_encode($activeVersion->content, JSON_PRETTY_PRINT) 
+
+        $activeContent = is_array($activeVersion->content)
+            ? json_encode($activeVersion->content, JSON_PRETTY_PRINT)
             : $activeVersion->content;
 
         $targetLines = explode("\n", $targetContent);
@@ -164,7 +163,7 @@ class SoulyInstructionVersionService
     {
         // This would normally call AiModelsHub to run a test without persisting
         // For now, return a simulation response
-        return "Sandbox test completed for version {$version->version_number}: " . substr($testPrompt, 0, 50) . "...";
+        return "Sandbox test completed for version {$version->version_number}: ".substr($testPrompt, 0, 50).'...';
     }
 
     /**

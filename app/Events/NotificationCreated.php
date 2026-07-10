@@ -3,7 +3,6 @@
 namespace App\Events;
 
 use App\Models\NotificationLog;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -24,7 +23,7 @@ class NotificationCreated implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('user.' . $this->notification->contact?->user_id),
+            new PrivateChannel('user.'.$this->notification->contact?->user_id),
         ];
     }
 

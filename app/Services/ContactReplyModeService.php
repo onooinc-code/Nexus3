@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Contact;
 use App\Models\ContactAuditEvent;
-use App\Services\LogService;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -14,11 +13,14 @@ use Illuminate\Support\Facades\Cache;
  */
 class ContactReplyModeService
 {
-    public const GLOBAL_KEY    = 'contact_hub:global_reply_mode';
+    public const GLOBAL_KEY = 'contact_hub:global_reply_mode';
+
     public const AUDIT_CHANNEL = 'contact_reply_mode';
 
-    public const MODE_MANUAL   = 'manual';
-    public const MODE_COPILOT  = 'copilot';
+    public const MODE_MANUAL = 'manual';
+
+    public const MODE_COPILOT = 'copilot';
+
     public const MODE_AUTOPILOT = 'autopilot';
 
     public const VALID_MODES = [
@@ -41,7 +43,7 @@ class ContactReplyModeService
         $mode = Cache::get(self::GLOBAL_KEY, self::MODE_MANUAL);
 
         return [
-            'mode'       => $mode,
+            'mode' => $mode,
             'is_autopilot_active' => $mode === self::MODE_AUTOPILOT,
         ];
     }
@@ -49,8 +51,8 @@ class ContactReplyModeService
     /**
      * Update the hub-wide reply mode and log the change.
      *
-     * @param  string      $mode     One of the VALID_MODES constants.
-     * @param  int|null    $actorId  User ID making the change.
+     * @param  string  $mode  One of the VALID_MODES constants.
+     * @param  int|null  $actorId  User ID making the change.
      */
     public function setGlobal(string $mode, ?int $actorId = null): array
     {
@@ -60,15 +62,15 @@ class ContactReplyModeService
         Cache::put(self::GLOBAL_KEY, $mode, now()->addYears(1));
 
         $this->logService->info('Global reply mode changed', [
-            'channel'  => self::AUDIT_CHANNEL,
-            'type'     => 'global_mode_change',
-            'user_id'  => $actorId,
-            'context'  => ['from' => $previous, 'to' => $mode],
+            'channel' => self::AUDIT_CHANNEL,
+            'type' => 'global_mode_change',
+            'user_id' => $actorId,
+            'context' => ['from' => $previous, 'to' => $mode],
         ]);
 
         return [
-            'mode'       => $mode,
-            'previous'   => $previous,
+            'mode' => $mode,
+            'previous' => $previous,
             'changed_at' => now()->toIso8601String(),
         ];
     }
@@ -83,15 +85,15 @@ class ContactReplyModeService
      */
     public function getForContact(Contact $contact): array
     {
-        $global   = Cache::get(self::GLOBAL_KEY, self::MODE_MANUAL);
+        $global = Cache::get(self::GLOBAL_KEY, self::MODE_MANUAL);
         $override = $contact->reply_mode_override;
         $effective = $override ?? $global;
 
         return [
-            'contact_id'  => $contact->id,
+            'contact_id' => $contact->id,
             'global_mode' => $global,
-            'override'    => $override,
-            'effective'   => $effective,
+            'override' => $override,
+            'effective' => $effective,
             'is_autopilot_active' => $effective === self::MODE_AUTOPILOT,
         ];
     }
@@ -99,8 +101,7 @@ class ContactReplyModeService
     /**
      * Set (or clear) the per-contact reply-mode override and write an audit event.
      *
-     * @param  string|null  $mode   Pass null to remove the override.
-     * @param  int|null     $actorId
+     * @param  string|null  $mode  Pass null to remove the override.
      */
     public function setForContact(Contact $contact, ?string $mode, ?int $actorId = null): array
     {
@@ -114,21 +115,21 @@ class ContactReplyModeService
 
         // Write an audit event for traceability
         ContactAuditEvent::create([
-            'contact_id'   => $contact->id,
-            'actor_type'   => $actorId ? 'user' : 'system',
-            'actor_id'     => $actorId,
-            'action'       => 'reply_mode.changed',
+            'contact_id' => $contact->id,
+            'actor_type' => $actorId ? 'user' : 'system',
+            'actor_id' => $actorId,
+            'action' => 'reply_mode.changed',
             'before_state' => ['reply_mode_override' => $previous],
-            'after_state'  => ['reply_mode_override' => $mode],
+            'after_state' => ['reply_mode_override' => $mode],
         ]);
 
         $this->logService->info('Contact reply mode changed', [
-            'channel'  => self::AUDIT_CHANNEL,
-            'type'     => 'contact_mode_change',
-            'user_id'  => $actorId,
-            'related_id'   => $contact->id,
+            'channel' => self::AUDIT_CHANNEL,
+            'type' => 'contact_mode_change',
+            'user_id' => $actorId,
+            'related_id' => $contact->id,
             'related_type' => Contact::class,
-            'context'  => ['from' => $previous, 'to' => $mode],
+            'context' => ['from' => $previous, 'to' => $mode],
         ]);
 
         return $this->getForContact($contact->fresh());
@@ -140,9 +141,9 @@ class ContactReplyModeService
 
     private function assertValidMode(string $mode): void
     {
-        if (!in_array($mode, self::VALID_MODES, true)) {
+        if (! in_array($mode, self::VALID_MODES, true)) {
             throw new \InvalidArgumentException(
-                "Invalid reply mode '{$mode}'. Must be one of: " . implode(', ', self::VALID_MODES)
+                "Invalid reply mode '{$mode}'. Must be one of: ".implode(', ', self::VALID_MODES)
             );
         }
     }

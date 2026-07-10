@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ContactAnalysisFinding extends Model
 {
-    use \Illuminate\Database\Eloquent\Factories\HasFactory;
-use SoftDeletes;
+    use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'contact_id',
@@ -29,9 +30,9 @@ use SoftDeletes;
         'evidence_refs' => 'array',
         'evidence_references' => 'array',
         'source_message_ids' => 'array',
-        'metadata'      => 'array',
-        'content'       => 'array',
-        'confidence'    => 'decimal:2',
+        'metadata' => 'array',
+        'content' => 'array',
+        'confidence' => 'decimal:2',
         'confidence_score' => 'decimal:2',
     ];
 

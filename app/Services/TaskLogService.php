@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 class TaskLogService
 {
     protected array $logs = [];
+
     protected int $maxInMemoryLogs = 1000;
 
     public function log(AgentTask $task, string $level, string $message, array $context = []): void
@@ -43,7 +44,7 @@ class TaskLogService
                 'context' => $context,
             ]);
         } catch (\Throwable $e) {
-            Log::warning("Failed to persist task log: " . $e->getMessage());
+            Log::warning('Failed to persist task log: '.$e->getMessage());
         }
     }
 
@@ -89,7 +90,7 @@ class TaskLogService
 
     public function getLogsByLevel(string $level, int $limit = 100): array
     {
-        return array_filter($this->logs, fn($log) => $log['level'] === $level);
+        return array_filter($this->logs, fn ($log) => $log['level'] === $level);
     }
 
     public function getRecentLogs(int $limit = 100): array
@@ -97,10 +98,10 @@ class TaskLogService
         return array_slice($this->logs, -$limit);
     }
 
-    public function clearLogs(int $taskId = null): void
+    public function clearLogs(?int $taskId = null): void
     {
         if ($taskId) {
-            $this->logs = array_filter($this->logs, fn($log) => $log['task_id'] !== $taskId);
+            $this->logs = array_filter($this->logs, fn ($log) => $log['task_id'] !== $taskId);
         } else {
             $this->logs = [];
         }

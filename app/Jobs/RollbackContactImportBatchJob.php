@@ -2,9 +2,9 @@
 
 namespace App\Jobs;
 
+use App\Models\ContactAuditEvent;
 use App\Models\ContactImportBatch;
 use App\Services\Contact\ContactImportRollbackService;
-use App\Models\ContactAuditEvent;
 use Throwable;
 
 class RollbackContactImportBatchJob extends BaseJob
@@ -25,7 +25,7 @@ class RollbackContactImportBatchJob extends BaseJob
         ContactAuditEvent::create([
             'contact_id' => $this->batch->contact_id,
             'action' => 'rollback_failed',
-            'description' => "Rollback batch {$this->batch->id} failed: " . $exception->getMessage()
+            'description' => "Rollback batch {$this->batch->id} failed: ".$exception->getMessage(),
         ]);
     }
 }

@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NotificationBroadcasted;
 use App\Models\AgentTask;
-use App\Models\Workflow;
+use App\Services\HedraSoul\HedraSoulNotificationService;
 use App\Services\LogService;
-use App\Services\TaskQueueService;
-use App\Services\TaskRoutingService;
-use App\Services\TaskManagementService;
 use App\Services\TaskExecutionService;
 use App\Services\TaskLogService;
+use App\Services\TaskManagementService;
+use App\Services\TaskQueueService;
+use App\Services\TaskRoutingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -48,7 +49,7 @@ class TaskController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -71,17 +72,17 @@ class TaskController extends Controller
         $input = $request->all();
 
         // Normalize legacy parameters
-        if ($request->has('due_at') && !$request->has('due_date')) {
+        if ($request->has('due_at') && ! $request->has('due_date')) {
             $input['due_date'] = $request->input('due_at');
         }
-        if ($request->has('dueDate') && !$request->has('due_date')) {
+        if ($request->has('dueDate') && ! $request->has('due_date')) {
             $input['due_date'] = $request->input('dueDate');
         }
-        if ($request->has('metadata') && !$request->has('payload_data')) {
+        if ($request->has('metadata') && ! $request->has('payload_data')) {
             $metadata = $request->input('metadata');
             $input['payload_data'] = is_array($metadata) ? json_encode($metadata) : $metadata;
         }
-        if (!$request->has('type')) {
+        if (! $request->has('type')) {
             $input['type'] = 'agent';
         }
 
@@ -104,7 +105,7 @@ class TaskController extends Controller
 
             return response()->json([
                 'data' => $task,
-                'message' => 'Task created and queued'
+                'message' => 'Task created and queued',
             ], 201);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
@@ -112,8 +113,9 @@ class TaskController extends Controller
             $this->logService->error('Failed to create task in store', [
                 'channel' => 'task',
                 'type' => 'store_error',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -130,13 +132,13 @@ class TaskController extends Controller
         $input = $request->all();
 
         // Normalize legacy parameters
-        if ($request->has('due_at') && !$request->has('due_date')) {
+        if ($request->has('due_at') && ! $request->has('due_date')) {
             $input['due_date'] = $request->input('due_at');
         }
-        if ($request->has('dueDate') && !$request->has('due_date')) {
+        if ($request->has('dueDate') && ! $request->has('due_date')) {
             $input['due_date'] = $request->input('dueDate');
         }
-        if ($request->has('metadata') && !$request->has('payload_data')) {
+        if ($request->has('metadata') && ! $request->has('payload_data')) {
             $metadata = $request->input('metadata');
             $input['payload_data'] = is_array($metadata) ? json_encode($metadata) : $metadata;
         }
@@ -161,7 +163,7 @@ class TaskController extends Controller
 
             return response()->json([
                 'data' => $updatedTask,
-                'message' => 'Task updated successfully'
+                'message' => 'Task updated successfully',
             ]);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
@@ -171,8 +173,9 @@ class TaskController extends Controller
             $this->logService->error('Failed to update task in store', [
                 'channel' => 'task',
                 'type' => 'update_error',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -293,14 +296,14 @@ class TaskController extends Controller
     {
         try {
             $this->taskExecutionService->execute($task);
-            
+
             return response()->json([
                 'data' => $task->refresh(),
-                'message' => 'Task execution initiated'
+                'message' => 'Task execution initiated',
             ]);
         } catch (\InvalidArgumentException $e) {
             return response()->json([
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 422);
         } catch (\Throwable $e) {
             $this->logService->error('Error executing task', [
@@ -310,9 +313,9 @@ class TaskController extends Controller
                 'related_type' => 'App\Models\AgentTask',
                 'context' => ['error' => $e->getMessage()],
             ]);
-            
+
             return response()->json([
-                'error' => 'Failed to execute task'
+                'error' => 'Failed to execute task',
             ], 500);
         }
     }
@@ -324,9 +327,9 @@ class TaskController extends Controller
     {
         $limit = $request->query('limit', 100);
         $logs = $this->taskLogService->getLogs($task->id, $limit);
-        
+
         return response()->json([
-            'data' => $logs
+            'data' => $logs,
         ]);
     }
 
@@ -336,7 +339,7 @@ class TaskController extends Controller
     public function updateStatus(Request $request, AgentTask $task)
     {
         $input = $request->all();
-        
+
         // Normalize status
         if (isset($input['status'])) {
             $statusMap = [
@@ -356,14 +359,14 @@ class TaskController extends Controller
         }
 
         $newStatus = $validator->validated()['status'];
-        
+
         try {
             // Validate the transition
             $this->taskManagementService->validateStatusTransition($task->status, $newStatus);
-            
+
             // Update the task
             $task->update(['status' => $newStatus]);
-            
+
             $this->logService->info('Task status updated via state machine', [
                 'channel' => 'task',
                 'type' => 'status_update',
@@ -372,7 +375,7 @@ class TaskController extends Controller
                 'user_id' => $request->user()?->id,
                 'context' => [
                     'from_status' => $task->getOriginal('status'),
-                    'to_status' => $newStatus
+                    'to_status' => $newStatus,
                 ],
             ]);
 
@@ -381,38 +384,38 @@ class TaskController extends Controller
                 $type = $newStatus === 'failed' ? 'error' : 'success';
                 $title = $newStatus === 'failed' ? 'Task Failed' : 'Task Completed';
                 $priority = $newStatus === 'failed' ? 'high' : 'normal';
-                
+
                 // 1. Create HedraSoul Notification (Persistent DB)
-                app(\App\Services\HedraSoul\HedraSoulNotificationService::class)->create(
+                app(HedraSoulNotificationService::class)->create(
                     type: $type,
                     priority: $priority,
                     title: $title,
                     body: "Task #{$task->id} '{$task->title}' has been {$newStatus}.",
                     relatedId: $task->id,
                     relatedType: 'App\Models\AgentTask',
-                    actionButtons: [['label' => 'View Task', 'url' => url('/hub/tasks/' . $task->id)]]
+                    actionButtons: [['label' => 'View Task', 'url' => url('/hub/tasks/'.$task->id)]]
                 );
 
                 // 2. Broadcast via NotificationBroadcasted for Web & FCM
-                \App\Events\NotificationBroadcasted::dispatch(
+                NotificationBroadcasted::dispatch(
                     $request->user()?->id ?? 1,
                     [
                         'title' => $title,
                         'body' => "Task #{$task->id} '{$task->title}' has been {$newStatus}.",
-                        'actions' => [['label' => 'View Task', 'url' => url('/hub/tasks/' . $task->id)]],
-                        'data' => ['click_action' => url('/hub/tasks/' . $task->id)]
+                        'actions' => [['label' => 'View Task', 'url' => url('/hub/tasks/'.$task->id)]],
+                        'data' => ['click_action' => url('/hub/tasks/'.$task->id)],
                     ],
                     $type
                 );
             }
-            
+
             return response()->json([
                 'data' => $task->refresh(),
-                'message' => 'Task status updated successfully'
+                'message' => 'Task status updated successfully',
             ]);
         } catch (\InvalidArgumentException $e) {
             return response()->json([
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 422);
         } catch (\Throwable $e) {
             $this->logService->error('Error updating task status', [
@@ -422,9 +425,9 @@ class TaskController extends Controller
                 'related_type' => 'App\Models\AgentTask',
                 'context' => ['error' => $e->getMessage()],
             ]);
-            
+
             return response()->json([
-                'error' => 'Failed to update task status'
+                'error' => 'Failed to update task status',
             ], 500);
         }
     }
@@ -437,12 +440,12 @@ class TaskController extends Controller
         try {
             $data = $request->all();
             $data['type'] = 'manual';
-            
+
             $task = $this->taskManagementService->create($data, $request->user()?->id);
-            
+
             return response()->json([
                 'data' => $task,
-                'message' => 'Manual task created successfully'
+                'message' => 'Manual task created successfully',
             ], 201);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
@@ -452,9 +455,9 @@ class TaskController extends Controller
                 'type' => 'create_manual_error',
                 'context' => ['error' => $e->getMessage()],
             ]);
-            
+
             return response()->json([
-                'error' => 'Failed to create manual task'
+                'error' => 'Failed to create manual task',
             ], 500);
         }
     }
@@ -467,21 +470,21 @@ class TaskController extends Controller
         try {
             $data = $request->all();
             $data['type'] = 'agent';
-            
+
             $task = $this->taskManagementService->create($data, $request->user()?->id);
-            
+
             // Agent tasks are queued for execution automatically
             $this->taskExecutionService->execute($task);
-            
+
             return response()->json([
                 'data' => $task,
-                'message' => 'Agentic task created and queued for execution'
+                'message' => 'Agentic task created and queued for execution',
             ], 201);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
         } catch (\InvalidArgumentException $e) {
             return response()->json([
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 422);
         } catch (\Throwable $e) {
             $this->logService->error('Error creating agentic task', [
@@ -489,9 +492,9 @@ class TaskController extends Controller
                 'type' => 'create_agent_error',
                 'context' => ['error' => $e->getMessage()],
             ]);
-            
+
             return response()->json([
-                'error' => 'Failed to create agentic task'
+                'error' => 'Failed to create agentic task',
             ], 500);
         }
     }
@@ -504,21 +507,21 @@ class TaskController extends Controller
         try {
             $data = $request->all();
             $data['type'] = 'system';
-            
+
             $task = $this->taskManagementService->create($data, $request->user()?->id);
-            
+
             // System tasks start execution immediately
             $this->taskExecutionService->executeNow($task);
-            
+
             return response()->json([
                 'data' => $task,
-                'message' => 'System task created and executed'
+                'message' => 'System task created and executed',
             ], 201);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
         } catch (\InvalidArgumentException $e) {
             return response()->json([
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 422);
         } catch (\Throwable $e) {
             $this->logService->error('Error creating system task', [
@@ -526,9 +529,9 @@ class TaskController extends Controller
                 'type' => 'create_system_error',
                 'context' => ['error' => $e->getMessage()],
             ]);
-            
+
             return response()->json([
-                'error' => 'Failed to create system task'
+                'error' => 'Failed to create system task',
             ], 500);
         }
     }
@@ -539,16 +542,16 @@ class TaskController extends Controller
     public function getByType(string $type)
     {
         // Validate task type
-        if (!in_array($type, ['manual', 'agent', 'system'], true)) {
+        if (! in_array($type, ['manual', 'agent', 'system'], true)) {
             return response()->json([
-                'error' => 'Invalid task type'
+                'error' => 'Invalid task type',
             ], 422);
         }
-        
+
         $tasks = $this->taskManagementService->getByType($type);
-        
+
         return response()->json([
-            'data' => $tasks
+            'data' => $tasks,
         ]);
     }
 
@@ -558,9 +561,9 @@ class TaskController extends Controller
     public function getStatsByType()
     {
         $stats = $this->taskManagementService->getStatsByType();
-        
+
         return response()->json([
-            'data' => $stats
+            'data' => $stats,
         ]);
     }
 }

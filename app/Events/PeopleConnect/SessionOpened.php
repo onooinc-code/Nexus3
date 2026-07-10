@@ -2,12 +2,12 @@
 
 namespace App\Events\PeopleConnect;
 
+use App\Models\PeopleConnect\PeopleConnectSession;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\PeopleConnect\PeopleConnectSession;
 
 class SessionOpened implements ShouldBroadcast
 {
@@ -17,10 +17,13 @@ class SessionOpened implements ShouldBroadcast
 
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('peopleconnect.conversation.' . $this->session->conversation_id)];
+        return [new PrivateChannel('peopleconnect.conversation.'.$this->session->conversation_id)];
     }
 
-    public function broadcastAs(): string { return 'session.opened'; }
+    public function broadcastAs(): string
+    {
+        return 'session.opened';
+    }
 
     public function broadcastWith(): array
     {

@@ -4,19 +4,18 @@ namespace App\Jobs;
 
 use App\Events\AiModelExecutionCompleted;
 use App\Models\ApiKey;
-use App\Services\AI\GoogleGeminiProvider;
-use App\Services\AI\OpenAIProvider;
 use App\Services\AI\AnthropicProvider;
+use App\Services\AI\GoogleGeminiProvider;
 use App\Services\AI\GroqProvider;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
+use App\Services\AI\OpenAIProvider;
 use Exception;
 
 class ExecuteAiModelJob extends BaseJob
 {
     public $queue = 'llm-inference';
+
     public int $timeout = 600;
+
     public int $tries = 3;
 
     public function __construct(
@@ -46,11 +45,12 @@ class ExecuteAiModelJob extends BaseJob
                     'reason' => 'idempotent_skip',
                     'execution_id' => $this->executionId,
                 ]);
+
                 return;
             }
 
             $apiKey = $this->getApiKeyForProvider($this->provider);
-            if (!$apiKey) {
+            if (! $apiKey) {
                 throw new Exception("No active API key for provider: {$this->provider}");
             }
 
@@ -66,7 +66,7 @@ class ExecuteAiModelJob extends BaseJob
             $result = $provider->execute($request);
             $durationMs = round((microtime(true) - $startTime) * 1000, 2);
 
-            if (!($result['success'] ?? false)) {
+            if (! ($result['success'] ?? false)) {
                 throw new Exception($result['error'] ?? 'AI execution failed');
             }
 

@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Monitoring;
 
 use App\Http\Controllers\Controller;
+use App\Services\SettingCacheService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-
 
 class HealthController extends Controller
 {
@@ -25,7 +25,7 @@ class HealthController extends Controller
         $allChecks = [$redis['ok'], $database['ok'], $reverb['ok'], $queue['ok'], $pinecone['ok'], $neo4j['ok'], $waha['ok']];
 
         $criticalChecks = [$redis['ok'], $database['ok']];
-        if (!collect($criticalChecks)->every(fn ($ok) => $ok)) {
+        if (! collect($criticalChecks)->every(fn ($ok) => $ok)) {
             $status = 'critical';
         } elseif (collect($allChecks)->every(fn ($ok) => $ok)) {
             $status = 'healthy';
@@ -67,6 +67,7 @@ class HealthController extends Controller
             return ['ok' => true, 'driver' => 'redis', 'note' => 'Redis disabled in configuration'];
         } catch (\Throwable $exception) {
             Log::warning('Redis health check failed', ['exception' => $exception->getMessage()]);
+
             return ['ok' => false, 'error' => $exception->getMessage()];
         }
     }
@@ -75,9 +76,11 @@ class HealthController extends Controller
     {
         try {
             DB::connection()->getPdo();
+
             return ['ok' => true, 'driver' => DB::getDefaultConnection()];
         } catch (\Throwable $exception) {
             Log::warning('Database health check failed', ['exception' => $exception->getMessage()]);
+
             return ['ok' => false, 'error' => $exception->getMessage()];
         }
     }
@@ -94,6 +97,7 @@ class HealthController extends Controller
 
             if ($sock) {
                 fclose($sock);
+
                 return [
                     'ok' => true,
                     'host' => $host,
@@ -123,6 +127,7 @@ class HealthController extends Controller
         try {
             // Since we're using QUEUE_CONNECTION=sync, Redis queues are not critical
             $failedJobs = DB::table('failed_jobs')->count();
+
             return [
                 'ok' => true,
                 'driver' => config('queue.default', 'sync'),
@@ -130,6 +135,7 @@ class HealthController extends Controller
             ];
         } catch (\Throwable $exception) {
             Log::warning('Queue health check failed', ['exception' => $exception->getMessage()]);
+
             return ['ok' => false, 'error' => $exception->getMessage()];
         }
     }
@@ -138,7 +144,7 @@ class HealthController extends Controller
     {
         try {
             $apiKey = config('services.pinecone.api_key', env('PINECONE_API_KEY'));
-            if (!$apiKey) {
+            if (! $apiKey) {
                 return ['ok' => false, 'error' => 'Pinecone API key not configured'];
             }
 
@@ -153,6 +159,7 @@ class HealthController extends Controller
             ];
         } catch (\Throwable $exception) {
             Log::warning('Pinecone health check failed', ['exception' => $exception->getMessage()]);
+
             return ['ok' => false, 'error' => $exception->getMessage()];
         }
     }
@@ -165,7 +172,7 @@ class HealthController extends Controller
             $username = config('database.connections.neo4j.user', env('NEO4J_USER', 'neo4j'));
             $password = config('database.connections.neo4j.password', env('NEO4J_PASSWORD'));
 
-            if (!$password) {
+            if (! $password) {
                 return ['ok' => false, 'error' => 'Neo4j credentials not configured'];
             }
 
@@ -181,6 +188,7 @@ class HealthController extends Controller
             ];
         } catch (\Throwable $exception) {
             Log::warning('Neo4j health check failed', ['exception' => $exception->getMessage()]);
+
             return ['ok' => false, 'host' => $host ?? 'unknown', 'error' => $exception->getMessage()];
         }
     }
@@ -188,10 +196,10 @@ class HealthController extends Controller
     protected function checkWaha(): array
     {
         try {
-            $apiUrl = app(\App\Services\SettingCacheService::class)->get('waha_url', config('services.waha.api_url', config('services.waha.url', 'http://localhost:3000')));
-            $apiToken = app(\App\Services\SettingCacheService::class)->get('waha_api_key', config('services.waha.api_token', config('services.waha.api_key')));
+            $apiUrl = app(SettingCacheService::class)->get('waha_url', config('services.waha.api_url', config('services.waha.url', 'http://localhost:3000')));
+            $apiToken = app(SettingCacheService::class)->get('waha_api_key', config('services.waha.api_token', config('services.waha.api_key')));
 
-            if (!$apiToken) {
+            if (! $apiToken) {
                 return ['ok' => false, 'error' => 'WAHA API token not configured'];
             }
 
@@ -206,6 +214,7 @@ class HealthController extends Controller
             ];
         } catch (\Throwable $exception) {
             Log::warning('WAHA health check failed', ['exception' => $exception->getMessage()]);
+
             return ['ok' => false, 'error' => $exception->getMessage()];
         }
     }

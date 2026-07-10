@@ -2,28 +2,38 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Agent extends BaseModel
 {
     // Agent Types
     public const TYPE_REFLECTION = 'reflection';
+
     public const TYPE_TEAM = 'team';
+
     public const TYPE_AUTONOMOUS = 'autonomous';
+
     public const TYPE_SPECIALIZED = 'specialized';
+
     public const TYPE_SUPERVISOR = 'supervisor';
 
     // Agent Statuses
-    public const STATUS_ACTIVE      = 'active';
-    public const STATUS_INACTIVE    = 'inactive';
-    public const STATUS_QUARANTINED = 'quarantined';
-    public const STATUS_IDLE        = 'idle';
-    public const STATUS_RUNNING     = 'running';
-    public const STATUS_PAUSED      = 'paused';
-    public const STATUS_ERROR       = 'error';
-    public const STATUS_COMPLETED   = 'completed';
+    public const STATUS_ACTIVE = 'active';
 
+    public const STATUS_INACTIVE = 'inactive';
+
+    public const STATUS_QUARANTINED = 'quarantined';
+
+    public const STATUS_IDLE = 'idle';
+
+    public const STATUS_RUNNING = 'running';
+
+    public const STATUS_PAUSED = 'paused';
+
+    public const STATUS_ERROR = 'error';
+
+    public const STATUS_COMPLETED = 'completed';
 
     protected $fillable = [
         'name',
@@ -142,6 +152,7 @@ class Agent extends BaseModel
         if ($this->execution_count === 0) {
             return 0.0;
         }
+
         return round(($this->success_count / $this->execution_count) * 100, 2);
     }
 
@@ -200,7 +211,7 @@ class Agent extends BaseModel
 
     public function getTypeLabelAttribute(): string
     {
-        return match($this->type) {
+        return match ($this->type) {
             self::TYPE_REFLECTION => 'Reflection Agent',
             self::TYPE_TEAM => 'Team Agent',
             self::TYPE_AUTONOMOUS => 'Autonomous Agent',
@@ -212,16 +223,16 @@ class Agent extends BaseModel
 
     public function getStatusLabelAttribute(): string
     {
-        return match($this->status) {
-            self::STATUS_IDLE        => 'Idle',
-            self::STATUS_RUNNING     => 'Running',
-            self::STATUS_PAUSED      => 'Paused',
-            self::STATUS_ERROR       => 'Error',
-            self::STATUS_COMPLETED   => 'Completed',
-            self::STATUS_ACTIVE      => 'Active',
-            self::STATUS_INACTIVE    => 'Inactive',
+        return match ($this->status) {
+            self::STATUS_IDLE => 'Idle',
+            self::STATUS_RUNNING => 'Running',
+            self::STATUS_PAUSED => 'Paused',
+            self::STATUS_ERROR => 'Error',
+            self::STATUS_COMPLETED => 'Completed',
+            self::STATUS_ACTIVE => 'Active',
+            self::STATUS_INACTIVE => 'Inactive',
             self::STATUS_QUARANTINED => 'Quarantined',
-            default                  => 'Unknown',
+            default => 'Unknown',
         };
     }
 
@@ -231,8 +242,7 @@ class Agent extends BaseModel
             'success' => true,
             'agent_id' => $this->id,
             'agent_type' => $this->type,
-            'result' => 'Executed agent ' . $this->name,
+            'result' => 'Executed agent '.$this->name,
         ];
     }
 }
-

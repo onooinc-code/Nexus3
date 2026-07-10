@@ -13,6 +13,7 @@ class MessageReceived implements ShouldBroadcastNow
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public array $payload;
+
     public int $userId;
 
     public function __construct(array $payload, int $userId)
@@ -23,7 +24,7 @@ class MessageReceived implements ShouldBroadcastNow
 
     public function broadcastOn()
     {
-        return new PrivateChannel('hedrasoul.hub.' . $this->userId);
+        return new PrivateChannel('hedrasoul.hub.'.$this->userId);
     }
 
     public function broadcastAs()

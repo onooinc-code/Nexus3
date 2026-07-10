@@ -3,9 +3,8 @@
 namespace App\Services;
 
 use App\Models\Agent;
-use App\Services\AgentExecutionService;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * AgentSimulationService
@@ -22,9 +21,8 @@ class AgentSimulationService
     /**
      * Run the agent in sandbox mode with optional mock tool responses.
      *
-     * @param Agent  $agent
-     * @param array  $input      The mock input to provide to the agent
-     * @param array  $mockTools  Keyed by tool name => mock response
+     * @param  array  $input  The mock input to provide to the agent
+     * @param  array  $mockTools  Keyed by tool name => mock response
      */
     public function simulate(Agent $agent, array $input, array $mockTools = []): array
     {
@@ -40,11 +38,11 @@ class AgentSimulationService
             $context = $this->executionService->buildExecutionContext($agent, $input);
 
             // Inject mock tool responses into context
-            if (!empty($mockTools)) {
+            if (! empty($mockTools)) {
                 $context['mock_tools'] = $mockTools;
                 $context['system_prompt'] .= "\n\n[SIMULATION MODE] The following tool responses are mocked:\n";
                 foreach ($mockTools as $toolName => $mockResponse) {
-                    $context['system_prompt'] .= "- {$toolName}: " . json_encode($mockResponse) . "\n";
+                    $context['system_prompt'] .= "- {$toolName}: ".json_encode($mockResponse)."\n";
                 }
             }
 
@@ -64,18 +62,18 @@ class AgentSimulationService
             );
 
             return [
-                'success'         => true,
-                'mode'            => 'simulation',
-                'trace_id'        => $traceId,
-                'duration_ms'     => $durationMs,
-                'agent'           => [
-                    'id'   => $agent->id,
+                'success' => true,
+                'mode' => 'simulation',
+                'trace_id' => $traceId,
+                'duration_ms' => $durationMs,
+                'agent' => [
+                    'id' => $agent->id,
                     'name' => $agent->name,
                     'type' => $agent->type,
                 ],
-                'context'         => [
+                'context' => [
                     'system_prompt' => $context['system_prompt'],
-                    'tools_count'   => count($context['tools']),
+                    'tools_count' => count($context['tools']),
                 ],
                 'thought_process' => $thoughtProcess,
                 'mock_tools_used' => array_keys($mockTools),
@@ -86,11 +84,11 @@ class AgentSimulationService
             Log::error("AgentSimulationService: Simulation failed - {$e->getMessage()}");
 
             return [
-                'success'     => false,
-                'mode'        => 'simulation',
-                'trace_id'    => $traceId,
+                'success' => false,
+                'mode' => 'simulation',
+                'trace_id' => $traceId,
                 'duration_ms' => $durationMs,
-                'error'       => $e->getMessage(),
+                'error' => $e->getMessage(),
             ];
         }
     }
@@ -103,29 +101,29 @@ class AgentSimulationService
         $steps = [];
 
         $steps[] = [
-            'step'        => 'persona_loaded',
+            'step' => 'persona_loaded',
             'description' => 'Agent persona system prompt compiled.',
-            'detail'      => substr($context['system_prompt'], 0, 200) . '...',
+            'detail' => substr($context['system_prompt'], 0, 200).'...',
         ];
 
         $steps[] = [
-            'step'        => 'tools_attached',
-            'description' => count($context['tools']) . ' tool(s) attached.',
-            'tools'       => array_column($context['tools'], 'name'),
+            'step' => 'tools_attached',
+            'description' => count($context['tools']).' tool(s) attached.',
+            'tools' => array_column($context['tools'], 'name'),
         ];
 
         foreach ($mockTools as $tool => $response) {
             $steps[] = [
-                'step'        => "tool_invoked:{$tool}",
+                'step' => "tool_invoked:{$tool}",
                 'description' => "Tool [{$tool}] would return mocked response.",
-                'mock_response'=> $response,
+                'mock_response' => $response,
             ];
         }
 
         $steps[] = [
-            'step'        => 'llm_call_simulated',
+            'step' => 'llm_call_simulated',
             'description' => 'LLM call would be dispatched to AIModelsHub.',
-            'input_preview'=> is_string($context['input'])
+            'input_preview' => is_string($context['input'])
                 ? substr($context['input'], 0, 100)
                 : json_encode($context['input']),
         ];

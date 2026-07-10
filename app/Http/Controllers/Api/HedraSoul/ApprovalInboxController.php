@@ -18,6 +18,7 @@ class ApprovalInboxController extends Controller
     {
         $notes = $request->input('notes');
         $service->approve($approval, 1, $notes);
+
         return response()->json(['data' => $approval->fresh()]);
     }
 
@@ -25,6 +26,7 @@ class ApprovalInboxController extends Controller
     {
         $notes = $request->input('notes');
         $service->reject($approval, 1, $notes);
+
         return response()->json(['data' => $approval->fresh()]);
     }
 
@@ -32,6 +34,7 @@ class ApprovalInboxController extends Controller
     {
         $duration = $request->input('duration', '1h');
         $service->defer($approval, $duration);
+
         return response()->json(['data' => $approval->fresh()]);
     }
 }

@@ -2,11 +2,10 @@
 
 namespace Tests\Unit\HedraSoul;
 
-use Tests\TestCase;
 use App\Models\SoulyRuntimeProfile;
-use App\Models\SoulyActionPolicy;
 use App\Services\HedraSoul\SoulyActionPolicyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 /**
  * SoulyActionPolicyServiceTest: Tests autonomy mode and policy enforcement.
@@ -212,7 +211,7 @@ class SoulyActionPolicyServiceTest extends TestCase
         ]);
 
         $result = $this->service->canExecute('create_task', 'write_low');
-        
+
         $this->assertFalse($result->allowed);
         $this->assertIsString($result->explanation);
         $this->assertNotEmpty($result->explanation);
@@ -259,7 +258,7 @@ class SoulyActionPolicyServiceTest extends TestCase
             ]);
 
             // Pick a random intent that matches the risk
-            $matchingIntents = array_filter($intents, fn($r) => $r === $risk);
+            $matchingIntents = array_filter($intents, fn ($r) => $r === $risk);
             if (empty($matchingIntents)) {
                 continue;
             }
@@ -272,7 +271,7 @@ class SoulyActionPolicyServiceTest extends TestCase
             $this->assertEquals(
                 $expectedAllowed,
                 $result->allowed,
-                "Mode: $mode, Intent: $intent, Risk: $risk should be " . ($expectedAllowed ? 'allowed' : 'blocked')
+                "Mode: $mode, Intent: $intent, Risk: $risk should be ".($expectedAllowed ? 'allowed' : 'blocked')
             );
         }
     }

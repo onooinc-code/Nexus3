@@ -29,8 +29,8 @@ class ContactImportPreviewService
                 'format' => $format,
                 'total_messages' => count($parsedMessages),
                 'message_sample' => array_slice($parsedMessages, 0, 3),
-                'inbound_count' => count(array_filter($parsedMessages, fn($m) => $m['direction'] === 'inbound')),
-                'outbound_count' => count(array_filter($parsedMessages, fn($m) => $m['direction'] === 'outbound')),
+                'inbound_count' => count(array_filter($parsedMessages, fn ($m) => $m['direction'] === 'inbound')),
+                'outbound_count' => count(array_filter($parsedMessages, fn ($m) => $m['direction'] === 'outbound')),
                 'date_range' => $this->pipeline->getDateRange($parsedMessages),
                 'unique_senders' => count(array_unique(array_column($parsedMessages, 'sender_identifier'))),
             ];

@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class HedrasoulMessage extends Model
 {
-    use \Illuminate\Database\Eloquent\Factories\HasFactory;
-protected $fillable = [
+    use HasFactory;
+
+    protected $fillable = [
         'session_id',
         'sender_type',
         'sender_id',

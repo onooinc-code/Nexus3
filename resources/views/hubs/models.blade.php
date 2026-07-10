@@ -224,13 +224,31 @@
     $(document).ready(function() {
         // Fetch global telemetry for top ribbon
         function fetchRibbonTelemetry() {
-            // Mock data for now, replace with actual API call
-            $('#active-requests-counter').text(Math.floor(Math.random() * 50));
-            $('#tpm-counter').text(Math.floor(Math.random() * 10000 + 2000).toLocaleString());
-            $('#est-cost-today').text((Math.random() * 15 + 5).toFixed(2));
+            $.ajax({
+                url: '{{ route("hub.models.telemetry") }}',
+                method: 'GET',
+                success: function(res) {
+                    if (res.success) {
+                        $('#active-requests-counter').text(res.data.active_requests);
+                        $('#tpm-counter').text(Number(res.data.tpm).toLocaleString());
+                        $('#est-cost-today').text(Number(res.data.cost_today).toFixed(2));
+                        
+                        if (res.data.active_requests > 30) {
+                            $('#global-health-dot').removeClass('bg-success bg-danger').addClass('bg-warning');
+                            $('#global-health-text').text('High Load');
+                        } else {
+                            $('#global-health-dot').removeClass('bg-warning bg-danger').addClass('bg-success');
+                            $('#global-health-text').text('System Healthy');
+                        }
+                    }
+                },
+                error: function(err) {
+                    console.error('Failed to load ribbon telemetry:', err);
+                }
+            });
         }
         
-        setInterval(fetchRibbonTelemetry, 3000);
+        setInterval(fetchRibbonTelemetry, 10000);
         fetchRibbonTelemetry();
     });
 </script>

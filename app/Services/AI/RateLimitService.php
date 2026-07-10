@@ -3,13 +3,15 @@
 namespace App\Services\AI;
 
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 
 class RateLimitService
 {
     protected string $cachePrefix = 'ai_rate_limit_';
+
     protected int $defaultLimit = 60;
+
     protected int $defaultWindowSeconds = 60;
+
     protected array $providerLimits = [
         'openai' => ['limit' => 60, 'window' => 60],
         'google_gemini' => ['limit' => 60, 'window' => 60],
@@ -17,7 +19,7 @@ class RateLimitService
         'groq' => ['limit' => 60, 'window' => 60],
     ];
 
-    public function check(string $provider, string $key = null): array
+    public function check(string $provider, ?string $key = null): array
     {
         $limits = $this->providerLimits[$provider] ?? [
             'limit' => $this->defaultLimit,
@@ -28,7 +30,7 @@ class RateLimitService
         $current = Cache::get($cacheKey, 0);
 
         if ($current >= $limits['limit']) {
-            $ttl = Cache::get($cacheKey . '_ttl', 0);
+            $ttl = Cache::get($cacheKey.'_ttl', 0);
             $resetAt = now()->addSeconds($ttl);
 
             return [
@@ -44,7 +46,7 @@ class RateLimitService
         $ttl = $limits['window'];
 
         Cache::put($cacheKey, $current + 1, $ttl);
-        Cache::put($cacheKey . '_ttl', $ttl, $ttl);
+        Cache::put($cacheKey.'_ttl', $ttl, $ttl);
 
         return [
             'allowed' => true,
@@ -55,28 +57,28 @@ class RateLimitService
         ];
     }
 
-    public function recordSuccess(string $provider, string $key = null): void
+    public function recordSuccess(string $provider, ?string $key = null): void
     {
         $cacheKey = $this->getCacheKey($provider, $key);
         $current = Cache::get($cacheKey, 0);
         Cache::put($cacheKey, max(0, $current - 1), $this->defaultWindowSeconds);
     }
 
-    public function recordFailure(string $provider, string $key = null): void
+    public function recordFailure(string $provider, ?string $key = null): void
     {
         $cacheKey = $this->getCacheKey($provider, $key);
         $current = Cache::get($cacheKey, 0);
         Cache::put($cacheKey, $current + 1, $this->defaultWindowSeconds);
     }
 
-    public function reset(string $provider, string $key = null): void
+    public function reset(string $provider, ?string $key = null): void
     {
         $cacheKey = $this->getCacheKey($provider, $key);
         Cache::forget($cacheKey);
-        Cache::forget($cacheKey . '_ttl');
+        Cache::forget($cacheKey.'_ttl');
     }
 
-    public function getStatus(string $provider, string $key = null): array
+    public function getStatus(string $provider, ?string $key = null): array
     {
         $limits = $this->providerLimits[$provider] ?? [
             'limit' => $this->defaultLimit,
@@ -85,7 +87,7 @@ class RateLimitService
 
         $cacheKey = $this->getCacheKey($provider, $key);
         $current = Cache::get($cacheKey, 0);
-        $ttl = Cache::get($cacheKey . '_ttl', $limits['window']);
+        $ttl = Cache::get($cacheKey.'_ttl', $limits['window']);
 
         return [
             'provider' => $provider,
@@ -103,6 +105,7 @@ class RateLimitService
         foreach (array_keys($this->providerLimits) as $provider) {
             $statuses[$provider] = $this->getStatus($provider);
         }
+
         return $statuses;
     }
 
@@ -117,13 +120,14 @@ class RateLimitService
     protected function getCacheKey(string $provider, ?string $key): string
     {
         $keyPart = $key ? substr($key, -8) : 'default';
-        return $this->cachePrefix . $provider . '_' . $keyPart;
+
+        return $this->cachePrefix.$provider.'_'.$keyPart;
     }
 
-    public function waitIfNeeded(string $provider, string $key = null): void
+    public function waitIfNeeded(string $provider, ?string $key = null): void
     {
         $status = $this->check($provider, $key);
-        if (!$status['allowed']) {
+        if (! $status['allowed']) {
             sleep($status['retry_after_seconds']);
         }
     }

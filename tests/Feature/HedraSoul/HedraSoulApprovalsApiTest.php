@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\HedraSoul;
 
-use Tests\TestCase;
+use App\Jobs\HedraSoul\DispatchApprovalReminderJob;
+use App\Jobs\HedraSoul\ExecuteSoulyCommandJob;
 use App\Models\HedrasoulApprovalRequest;
 use App\Models\User;
-use App\Jobs\HedraSoul\ExecuteSoulyCommandJob;
-use App\Jobs\HedraSoul\DispatchApprovalReminderJob;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
+use Tests\TestCase;
 
 class HedraSoulApprovalsApiTest extends TestCase
 {

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Events\NotificationCreated;
+use App\Models\Contact;
 use App\Models\NotificationLog;
 use App\Models\NotificationTemplate;
-use App\Models\Contact;
 use App\Services\LogService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -60,6 +60,7 @@ class NotificationController extends Controller
     public function showTemplate($id)
     {
         $template = NotificationTemplate::findOrFail($id);
+
         return response()->json(['data' => $template]);
     }
 
@@ -184,7 +185,7 @@ class NotificationController extends Controller
         ]);
 
         // Dispatch real-time event
-        event(new \App\Events\NotificationCreated($log));
+        event(new NotificationCreated($log));
 
         // TODO: Dispatch notification job for actual sending
         // SendNotificationJob::dispatch($log);
@@ -199,7 +200,7 @@ class NotificationController extends Controller
     {
         $log = NotificationLog::findOrFail($id);
 
-        if (!$log->canRetry()) {
+        if (! $log->canRetry()) {
             return response()->json(['message' => 'Notification cannot be retried'], 422);
         }
 

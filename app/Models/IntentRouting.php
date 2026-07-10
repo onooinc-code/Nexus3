@@ -19,6 +19,11 @@ class IntentRouting extends BaseModel
         'default_model_id',
         'fallback_provider_id',
         'fallback_model_id',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     public function defaultProvider(): BelongsTo

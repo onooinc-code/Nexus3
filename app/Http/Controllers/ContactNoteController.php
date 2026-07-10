@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Contact;
-use App\Models\ContactNote;
 use App\Services\LogService;
 use Illuminate\Http\Request;
 
@@ -20,6 +18,7 @@ class ContactNoteController extends Controller
     public function index(Contact $contact)
     {
         $notes = $contact->notes()->orderBy('created_at', 'desc')->get();
+
         return response()->json(['data' => $notes]);
     }
 
@@ -56,6 +55,7 @@ class ContactNoteController extends Controller
     public function show(Contact $contact, $noteId)
     {
         $note = $contact->notes()->findOrFail($noteId);
+
         return response()->json(['data' => $note]);
     }
 

@@ -2,8 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class AutoLoginDevMiddleware
@@ -11,21 +13,21 @@ class AutoLoginDevMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next, ...$guards): Response
     {
         if (app()->environment('local')) {
             // Try to get admin user, or create it if doesn't exist
-            $user = \App\Models\User::where('email', 'admin@nexus.local')->first();
-            
-            if (!$user) {
-                $user = \App\Models\User::first();
+            $user = User::where('email', 'admin@nexus.local')->first();
+
+            if (! $user) {
+                $user = User::first();
             }
 
-            if (!$user) {
+            if (! $user) {
                 // Create default admin user
-                $user = \App\Models\User::create([
+                $user = User::create([
                     'name' => 'Admin',
                     'email' => 'admin@nexus.local',
                     'password' => bcrypt('admin'),
@@ -35,13 +37,14 @@ class AutoLoginDevMiddleware
 
             if ($user) {
                 // Use stateless Auth to prevent session locks
-                \Illuminate\Support\Facades\Auth::guard('sanctum')->setUser($user);
-                \Illuminate\Support\Facades\Auth::shouldUse('sanctum');
+                Auth::guard('sanctum')->setUser($user);
+                Auth::shouldUse('sanctum');
                 $request->setUserResolver(function () use ($user) {
                     return $user;
                 });
             }
         }
+
         return $next($request);
     }
 }

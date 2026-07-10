@@ -1,41 +1,69 @@
 <?php
 
+use App\Jobs\PeopleConnect\CloseInactivePeopleConnectSessionsJob;
+use App\Jobs\PeopleConnect\ReconcileWahaDeliveryStatusJob;
+use App\Jobs\PeopleConnect\SyncWahaContactsJob;
+use App\Jobs\PeopleConnect\SyncWahaConversationsJob;
+use App\Jobs\PeopleConnect\SyncWahaMessagesJob;
+use App\Services\TaskSchedulingService;
+use App\Services\Workflows\WorkflowScheduleService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-\Illuminate\Support\Facades\Schedule::command('ai:poll-health')->everyFiveMinutes();
-\Illuminate\Support\Facades\Schedule::command('ai:rotate-keys')->daily();
+Schedule::command('ai:poll-health')->everyFiveMinutes();
+Schedule::command('ai:rotate-keys')->daily();
 
-\Illuminate\Support\Facades\Schedule::call(function () {
-    app(\App\Services\TaskSchedulingService::class)->processDueTasks();
+Schedule::call(function () {
+    app(TaskSchedulingService::class)->processDueTasks();
 })->everyMinute();
 
-\Illuminate\Support\Facades\Schedule::call(function () {
-    app(\App\Services\Workflows\WorkflowScheduleService::class)->processScheduledWorkflows();
+Schedule::call(function () {
+    app(WorkflowScheduleService::class)->processScheduledWorkflows();
 })->everyMinute();
 
-\Illuminate\Support\Facades\Schedule::command('monitor:reverb-health')
+Schedule::command('monitor:reverb-health')
     ->everyFiveMinutes()
     ->withoutOverlapping()
     ->description('Run periodic Reverb WebSocket health checks.');
 
-\Illuminate\Support\Facades\Schedule::command('proactive:run-scheduler')
+Schedule::command('proactive:run-scheduler')
     ->everyMinute()
     ->withoutOverlapping()
     ->description('Run proactive AI autonomous trigger scheduler.');
 
-\Illuminate\Support\Facades\Schedule::command('monitor:settings-health')
+Schedule::command('monitor:settings-health')
     ->everyFifteenMinutes()
     ->withoutOverlapping()
     ->description('Run periodic health checks for settings and integration credentials.');
 
 // PeopleConnect Scheduled Jobs
-\Illuminate\Support\Facades\Schedule::job(new \App\Jobs\PeopleConnect\SyncWahaContactsJob(), null, 'peopleconnect')->hourly();
-\Illuminate\Support\Facades\Schedule::job(new \App\Jobs\PeopleConnect\SyncWahaConversationsJob(), null, 'peopleconnect')->hourly();
-\Illuminate\Support\Facades\Schedule::job(new \App\Jobs\PeopleConnect\SyncWahaMessagesJob(), null, 'peopleconnect')->hourly();
-\Illuminate\Support\Facades\Schedule::job(new \App\Jobs\PeopleConnect\ReconcileWahaDeliveryStatusJob(), null, 'peopleconnect')->hourly();
-\Illuminate\Support\Facades\Schedule::job(new \App\Jobs\PeopleConnect\CloseInactivePeopleConnectSessionsJob(), null, 'peopleconnect')->everyFifteenMinutes();
+Schedule::job(new SyncWahaContactsJob, null, 'peopleconnect')->hourly();
+Schedule::job(new SyncWahaConversationsJob, null, 'peopleconnect')->hourly();
+Schedule::job(new SyncWahaMessagesJob, null, 'peopleconnect')->hourly();
+Schedule::job(new ReconcileWahaDeliveryStatusJob, null, 'peopleconnect')->hourly();
+Schedule::job(new CloseInactivePeopleConnectSessionsJob, null, 'peopleconnect')->everyFifteenMinutes();
+
+// Auto-sync providers based on their auto_sync_interval setting
+Schedule::call(function () {
+    \App\Models\AIProvider::where('is_active', true)
+        ->whereNotNull('auto_sync_interval')
+        ->where('auto_sync_interval', '!=', 'never')
+        ->get()
+        ->each(function ($provider) {
+            $shouldSync = match($provider->auto_sync_interval) {
+                '6h'     => $provider->last_synced_at === null || $provider->last_synced_at->lt(now()->subHours(6)),
+                '12h'    => $provider->last_synced_at === null || $provider->last_synced_at->lt(now()->subHours(12)),
+                '24h'    => $provider->last_synced_at === null || $provider->last_synced_at->lt(now()->subDay()),
+                'weekly' => $provider->last_synced_at === null || $provider->last_synced_at->lt(now()->subWeek()),
+                default  => false,
+            };
+            if ($shouldSync) {
+                dispatch(new \App\Jobs\SyncProviderModelsJob($provider->id))->onQueue('ai-sync');
+            }
+        });
+})->hourly()->name('ai-providers:auto-sync');

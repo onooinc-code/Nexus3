@@ -2,19 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Events\ContactImportStarted;
+use App\Jobs\ImportContactMessagesJob;
 use App\Models\Contact;
 use App\Models\ContactImportBatch;
 use App\Services\Contact\ContactImportPipeline;
-use App\Events\ContactImportCompleted;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class ContactImportController extends Controller
 {
-    public function __construct(protected ContactImportPipeline $importPipeline)
-    {
-    }
+    public function __construct(protected ContactImportPipeline $importPipeline) {}
 
     public function preview(Request $request)
     {
@@ -61,11 +59,11 @@ class ContactImportController extends Controller
         ]);
 
         $contact = Contact::findOrFail($data['contact_id']);
-        
+
         $content = json_encode([
             'session' => $data['session'],
             'chatId' => $data['chat_id'],
-            'limit' => $data['limit'] ?? 100
+            'limit' => $data['limit'] ?? 100,
         ]);
 
         $batch = ContactImportBatch::create([
@@ -77,14 +75,14 @@ class ContactImportController extends Controller
             'failed_records' => 0,
         ]);
 
-        \App\Jobs\ImportContactMessagesJob::dispatch(
+        ImportContactMessagesJob::dispatch(
             $batch,
             $content,
             'api',
             'UTC'
         );
 
-        event(new \App\Events\ContactImportStarted($contact, $batch));
+        event(new ContactImportStarted($contact, $batch));
 
         return response()->json(['data' => ['batch_id' => $batch->id, 'status' => 'queued']], 202);
     }
@@ -111,14 +109,14 @@ class ContactImportController extends Controller
             'failed_records' => 0,
         ]);
 
-        \App\Jobs\ImportContactMessagesJob::dispatch(
+        ImportContactMessagesJob::dispatch(
             $batch,
             $content,
             $data['format'],
             $data['timezone'] ?? 'UTC'
         );
 
-        event(new \App\Events\ContactImportStarted($contact, $batch));
+        event(new ContactImportStarted($contact, $batch));
 
         return response()->json(['data' => ['batch_id' => $batch->id, 'status' => 'queued']], 202);
     }
@@ -171,7 +169,7 @@ class ContactImportController extends Controller
             return file_get_contents($request->file('file')->getRealPath());
         }
 
-        if (!empty($content)) {
+        if (! empty($content)) {
             return $content;
         }
 

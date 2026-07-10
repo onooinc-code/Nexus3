@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Jobs\ExecuteWorkflowStep;
 use App\Models\Workflow;
 use App\Models\WorkflowExecution;
-use App\Jobs\ExecuteWorkflowStep;
 use Illuminate\Support\Facades\Log;
 
 class WorkflowExecutionService
@@ -18,8 +18,8 @@ class WorkflowExecutionService
         $nodes = is_string($workflow->nodes) ? json_decode($workflow->nodes, true) : $workflow->nodes;
         $edges = is_string($workflow->edges) ? json_decode($workflow->edges, true) : $workflow->edges;
 
-        if (!$nodes) {
-            throw new \Exception("Workflow has no nodes.");
+        if (! $nodes) {
+            throw new \Exception('Workflow has no nodes.');
         }
 
         $startNode = collect($nodes)->firstWhere('type', 'triggerNode') ?? $nodes[0];
@@ -48,8 +48,9 @@ class WorkflowExecutionService
 
         $node = collect($nodes)->firstWhere('id', $nodeId);
 
-        if (!$node) {
+        if (! $node) {
             $execution->update(['status' => 'failed', 'error' => "Node $nodeId not found."]);
+
             return;
         }
 
@@ -67,6 +68,7 @@ class WorkflowExecutionService
             if ($nextEdges->isEmpty()) {
                 // Workflow completed
                 $execution->update(['status' => 'completed', 'completed_at' => now()]);
+
                 return;
             }
 
@@ -76,7 +78,7 @@ class WorkflowExecutionService
             }
 
         } catch (\Exception $e) {
-            Log::error("Workflow execution failed at node {$nodeId}: " . $e->getMessage());
+            Log::error("Workflow execution failed at node {$nodeId}: ".$e->getMessage());
             $execution->update(['status' => 'failed', 'error' => $e->getMessage()]);
         }
     }

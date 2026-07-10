@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * GeminiApiKeySeeder
@@ -25,13 +25,13 @@ class GeminiApiKeySeeder extends Seeder
     // ────────────────────────────────────────────────────────────────────
     private const KEYS = [
         [
-            'value'     => 'AIzaSyCtm0pi342VTr95ypicdJ5y7Sl1fqTG4mA',
-            'name'      => 'Gemini API Key — Primary',
+            'value' => 'AIzaSyCtm0pi342VTr95ypicdJ5y7Sl1fqTG4mA',
+            'name' => 'Gemini API Key — Primary',
             'is_active' => true,
         ],
         [
-            'value'     => 'AIzaSyCxD8TZHpYfconRw4pxLAjQwbbbuwsH7FU',
-            'name'      => 'Gemini API Key — Fallback',
+            'value' => 'AIzaSyCxD8TZHpYfconRw4pxLAjQwbbbuwsH7FU',
+            'name' => 'Gemini API Key — Fallback',
             'is_active' => false,
         ],
     ];
@@ -47,6 +47,7 @@ class GeminiApiKeySeeder extends Seeder
             $this->command->error(
                 'Google Gemini provider not found. Run AiProvidersSeeder first.'
             );
+
             return;
         }
 
@@ -61,17 +62,18 @@ class GeminiApiKeySeeder extends Seeder
 
             if ($exists) {
                 $this->command->warn("Skipping (already exists): {$keyData['name']}");
+
                 continue;
             }
 
             DB::table('ai_api_keys')->insert([
-                'id'          => Str::uuid()->toString(),
+                'id' => Str::uuid()->toString(),
                 'provider_id' => $provider->id,
-                'key_hash'    => Crypt::encryptString($keyData['value']),
-                'name'        => $keyData['name'],
-                'is_active'   => $keyData['is_active'],
-                'created_at'  => $now,
-                'updated_at'  => $now,
+                'key_hash' => Crypt::encryptString($keyData['value']),
+                'name' => $keyData['name'],
+                'is_active' => $keyData['is_active'],
+                'created_at' => $now,
+                'updated_at' => $now,
             ]);
 
             $active = $keyData['is_active'] ? '✅ active' : '💤 fallback';

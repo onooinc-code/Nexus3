@@ -3,10 +3,11 @@
 namespace App\Services\Workflows;
 
 use App\Models\WorkflowEventTrigger;
-use App\Services\WorkflowExecutor;
 use App\Services\LogService;
-use Illuminate\Support\Facades\Event;
+use App\Services\WorkflowExecutor;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Schema;
 
 class WorkflowEventTriggerService
 {
@@ -17,7 +18,7 @@ class WorkflowEventTriggerService
 
     public function handleEvent(string $eventName, array $payload): void
     {
-        if (!\Illuminate\Support\Facades\Schema::hasTable('workflow_event_triggers')) {
+        if (! Schema::hasTable('workflow_event_triggers')) {
             return;
         }
 
@@ -28,7 +29,7 @@ class WorkflowEventTriggerService
 
         foreach ($triggers as $trigger) {
             try {
-                if (!$trigger->workflow || !$trigger->workflow->is_active) {
+                if (! $trigger->workflow || ! $trigger->workflow->is_active) {
                     continue;
                 }
 
@@ -40,7 +41,7 @@ class WorkflowEventTriggerService
                         'related_type' => 'App\Models\Workflow',
                         'context' => [
                             'trigger_id' => $trigger->id,
-                            'event' => $eventName
+                            'event' => $eventName,
                         ],
                     ]);
 
@@ -54,8 +55,8 @@ class WorkflowEventTriggerService
                     'related_type' => 'App\Models\Workflow',
                     'context' => [
                         'trigger_id' => $trigger->id,
-                        'error' => $e->getMessage()
-                    ]
+                        'error' => $e->getMessage(),
+                    ],
                 ]);
             }
         }

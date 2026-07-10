@@ -3,16 +3,17 @@
 namespace App\Services;
 
 use App\Models\AgentTask;
-use App\Models\Workflow;
-use App\Services\LogService;
-use Illuminate\Support\Str;
 
 class TaskQueueService
 {
     protected array $queue = [];
+
     protected array $processing = [];
+
     protected array $completed = [];
+
     protected array $failed = [];
+
     protected LogService $logService;
 
     public function __construct(LogService $logService)
@@ -83,7 +84,7 @@ class TaskQueueService
             ]),
         ]);
 
-        $this->processing = array_filter($this->processing, fn($id) => $id !== $task->id);
+        $this->processing = array_filter($this->processing, fn ($id) => $id !== $task->id);
         $this->completed[] = $task->id;
 
         $this->logService->info('Task completed', [
@@ -97,7 +98,7 @@ class TaskQueueService
         return $task;
     }
 
-    public function fail(AgentTask $task, string $error = null): AgentTask
+    public function fail(AgentTask $task, ?string $error = null): AgentTask
     {
         $task->update([
             'status' => 'failed',
@@ -107,7 +108,7 @@ class TaskQueueService
             ]),
         ]);
 
-        $this->processing = array_filter($this->processing, fn($id) => $id !== $task->id);
+        $this->processing = array_filter($this->processing, fn ($id) => $id !== $task->id);
         $this->failed[] = $task->id;
 
         $this->logService->error('Task failed', [
@@ -126,8 +127,8 @@ class TaskQueueService
         $id = $task->id;
         $task->update(['status' => 'cancelled']);
 
-        $this->queue = array_filter($this->queue, fn($qid) => $qid !== $id);
-        $this->processing = array_filter($this->processing, fn($pid) => $pid !== $id);
+        $this->queue = array_filter($this->queue, fn ($qid) => $qid !== $id);
+        $this->processing = array_filter($this->processing, fn ($pid) => $pid !== $id);
 
         $fresh = AgentTask::find($id);
 
@@ -139,6 +140,7 @@ class TaskQueueService
                 'related_type' => 'App\Models\AgentTask',
                 'context' => ['title' => $fresh->title],
             ]);
+
             return $fresh;
         }
 

@@ -2,31 +2,34 @@
 
 namespace App\Services\AI;
 
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
-use App\Models\AIProvider;
 use App\Models\AIModel;
+use App\Models\AIProvider;
+use App\Services\AiModelsHub\AiProviderInterface;
 use App\Services\AiModelsHub\EncryptedApiKeyStorage;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
-class GoogleGeminiProvider implements \App\Services\AiModelsHub\AiProviderInterface
+class GoogleGeminiProvider implements AiProviderInterface
 {
     protected $provider;
+
     protected $apiKey;
+
     protected $baseUrl;
+
     protected $models = [];
 
     public function __construct(string $providerId, EncryptedApiKeyStorage $encryptedKeyStorage)
     {
         $this->provider = AIProvider::find($providerId);
-        
-        if (!$this->provider) {
+
+        if (! $this->provider) {
             throw new \Exception("Provider not found: {$providerId}");
         }
-        
+
         $this->apiKey = $encryptedKeyStorage->getDecryptedKey($providerId);
         $this->baseUrl = rtrim($this->provider->base_url, '/');
-        
+
         // Load models from database
         $this->loadModelsFromDatabase();
     }
@@ -35,7 +38,7 @@ class GoogleGeminiProvider implements \App\Services\AiModelsHub\AiProviderInterf
     {
         $this->models = [];
         $dbModels = AIModel::where('provider_id', $this->provider->id)->get();
-        
+
         foreach ($dbModels as $model) {
             $this->models[$model->id] = [
                 'name' => $model->name,
@@ -44,7 +47,7 @@ class GoogleGeminiProvider implements \App\Services\AiModelsHub\AiProviderInterf
                 'cost_per_1k_output' => $model->output_cost_per_m / 1000,
             ];
         }
-        
+
         // If no models in database, fallback to some defaults
         if (empty($this->models)) {
             $this->models = [
@@ -84,6 +87,7 @@ class GoogleGeminiProvider implements \App\Services\AiModelsHub\AiProviderInterf
     {
         // Return first available model or fallback
         $models = $this->getAvailableModels();
+
         return $models[0] ?? 'gemini-1.5-pro';
     }
 
@@ -96,7 +100,7 @@ class GoogleGeminiProvider implements \App\Services\AiModelsHub\AiProviderInterf
             'max_tokens' => $options['max_tokens'] ?? null,
         ]);
 
-        if (!$validation['valid']) {
+        if (! $validation['valid']) {
             return [
                 'success' => false,
                 'error' => implode(', ', $validation['errors']),
@@ -114,8 +118,8 @@ class GoogleGeminiProvider implements \App\Services\AiModelsHub\AiProviderInterf
                 'contents' => [
                     [
                         'role' => 'user',
-                        'parts' => [['text' => $prompt]]
-                    ]
+                        'parts' => [['text' => $prompt]],
+                    ],
                 ],
             ];
 
@@ -137,7 +141,7 @@ class GoogleGeminiProvider implements \App\Services\AiModelsHub\AiProviderInterf
                 ->timeout(30)
                 ->post("{$this->baseUrl}/models/{$model}:generateContent?key={$this->apiKey}", $payload);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 throw new \Exception("Gemini API error: HTTP {$response->status()} - {$response->body()}");
             }
 
@@ -162,7 +166,7 @@ class GoogleGeminiProvider implements \App\Services\AiModelsHub\AiProviderInterf
                 'usage' => $usage,
             ];
         } catch (\Throwable $e) {
-            Log::error("Gemini API error: " . $e->getMessage());
+            Log::error('Gemini API error: '.$e->getMessage());
 
             return [
                 'success' => false,
@@ -192,7 +196,7 @@ class GoogleGeminiProvider implements \App\Services\AiModelsHub\AiProviderInterf
             $errors[] = 'Prompt is required';
         }
 
-        if (isset($request['model']) && !isset($this->models[$request['model']])) {
+        if (isset($request['model']) && ! isset($this->models[$request['model']])) {
             $errors[] = "Unknown model: {$request['model']}";
         }
 
@@ -213,7 +217,9 @@ class GoogleGeminiProvider implements \App\Services\AiModelsHub\AiProviderInterf
     public function estimateCost(string $model, int $inputTokens, int $outputTokens = 0): float
     {
         $modelConfig = $this->models[$model] ?? null;
-        if (!$modelConfig) return 0.0;
+        if (! $modelConfig) {
+            return 0.0;
+        }
 
         $inputCost = ($inputTokens / 1000) * $modelConfig['cost_per_1k_input'];
         $outputCost = ($outputTokens / 1000) * $modelConfig['cost_per_1k_output'];
@@ -263,7 +269,7 @@ class GoogleGeminiProvider implements \App\Services\AiModelsHub\AiProviderInterf
     public function execute(array $request): array
     {
         $validation = $this->validateRequest($request);
-        if (!$validation['valid']) {
+        if (! $validation['valid']) {
             return [
                 'success' => false,
                 'error' => implode(', ', $validation['errors']),
@@ -294,7 +300,7 @@ class GoogleGeminiProvider implements \App\Services\AiModelsHub\AiProviderInterf
             ];
         } catch (\Throwable $e) {
             $durationMs = round((microtime(true) - $startTime) * 1000, 2);
-            Log::error("Gemini API error: " . $e->getMessage());
+            Log::error('Gemini API error: '.$e->getMessage());
 
             return [
                 'success' => false,

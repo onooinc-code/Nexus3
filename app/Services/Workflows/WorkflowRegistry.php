@@ -128,8 +128,8 @@ class WorkflowRegistry
         };
 
         return array_merge($step, [
-            'id' => (string) ($step['id'] ?? $step['key'] ?? 'step_' . ($index + 1)),
-            'name' => (string) ($step['name'] ?? $step['title'] ?? 'Step ' . ($index + 1)),
+            'id' => (string) ($step['id'] ?? $step['key'] ?? 'step_'.($index + 1)),
+            'name' => (string) ($step['name'] ?? $step['title'] ?? 'Step '.($index + 1)),
             'type' => $type,
             'step_order' => (int) ($step['step_order'] ?? $step['order'] ?? $index + 1),
         ]);

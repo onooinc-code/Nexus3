@@ -2,15 +2,18 @@
 
 namespace App\Jobs;
 
+use App\Events\TaskMovedToDLQEvent;
+use App\Jobs\Middleware\TaskRateLimiting;
 use App\Models\AgentTask;
+use App\Services\AgentExecutionService;
 use App\Services\LogService;
 use App\Services\TaskLogService;
+use App\Services\WorkflowExecutor;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 
 /**
  * Job to execute an agent task asynchronously
@@ -20,7 +23,9 @@ class ExecuteAgentTaskJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 300; // 5 minutes
+
     public int $backoff = 60; // Start with 1 minute backoff
 
     /**
@@ -28,11 +33,13 @@ class ExecuteAgentTaskJob implements ShouldQueue
      */
     public function middleware(): array
     {
-        return [new \App\Jobs\Middleware\TaskRateLimiting];
+        return [new TaskRateLimiting];
     }
 
     protected AgentTask $task;
+
     protected LogService $logService;
+
     protected TaskLogService $taskLogService;
 
     /**
@@ -54,7 +61,7 @@ class ExecuteAgentTaskJob implements ShouldQueue
         $this->task->refresh();
 
         // Validate that the task is still executable
-        if (!$this->isExecutable()) {
+        if (! $this->isExecutable()) {
             $this->logService->warning('Task is no longer executable, skipping job', [
                 'channel' => 'task',
                 'type' => 'job_skip',
@@ -68,7 +75,7 @@ class ExecuteAgentTaskJob implements ShouldQueue
 
         // Mark task as running
         $this->task->update([
-            'status' => \App\Models\AgentTask::STATUS_IN_PROGRESS,
+            'status' => AgentTask::STATUS_IN_PROGRESS,
             'progress' => 10, // Show some progress
         ]);
 
@@ -88,7 +95,7 @@ class ExecuteAgentTaskJob implements ShouldQueue
 
             // Mark task as completed
             $this->task->update([
-                'status' => \App\Models\AgentTask::STATUS_COMPLETED,
+                'status' => AgentTask::STATUS_COMPLETED,
                 'progress' => 100,
                 'result_data' => $result,
             ]);
@@ -116,16 +123,18 @@ class ExecuteAgentTaskJob implements ShouldQueue
     protected function executeTask(): array
     {
         if ($this->task->type === 'agent') {
-            if (!$this->task->agent) {
-                throw new \Exception("Agent ID required for agent task execution");
+            if (! $this->task->agent) {
+                throw new \Exception('Agent ID required for agent task execution');
             }
-            $agentService = app(\App\Services\AgentExecutionService::class);
+            $agentService = app(AgentExecutionService::class);
+
             return $agentService->runSync($this->task->agent, $this->task->payload_data ?? []);
         } elseif ($this->task->type === 'workflow') {
-            if (!$this->task->workflow) {
-                throw new \Exception("Workflow ID required for workflow task execution");
+            if (! $this->task->workflow) {
+                throw new \Exception('Workflow ID required for workflow task execution');
             }
-            $workflowExecutor = app(\App\Services\WorkflowExecutor::class);
+            $workflowExecutor = app(WorkflowExecutor::class);
+
             return $workflowExecutor->execute($this->task->workflow, $this->task->payload_data ?? []);
         }
 
@@ -156,7 +165,7 @@ class ExecuteAgentTaskJob implements ShouldQueue
 
         // Update task with failure status
         $this->task->update([
-            'status' => \App\Models\AgentTask::STATUS_FAILED,
+            'status' => AgentTask::STATUS_FAILED,
             'progress' => 0,
             'result_data' => [
                 'error' => $errorMessage,
@@ -175,8 +184,8 @@ class ExecuteAgentTaskJob implements ShouldQueue
     protected function isExecutable(): bool
     {
         return in_array($this->task->status, [
-            \App\Models\AgentTask::STATUS_TODO,
-            \App\Models\AgentTask::STATUS_IN_PROGRESS, // Allow retry of in-progress tasks
+            AgentTask::STATUS_TODO,
+            AgentTask::STATUS_IN_PROGRESS, // Allow retry of in-progress tasks
         ], true);
     }
 
@@ -216,10 +225,10 @@ class ExecuteAgentTaskJob implements ShouldQueue
 
         // Ensure task is marked as failed
         $this->task->update([
-            'status' => \App\Models\AgentTask::STATUS_FAILED,
+            'status' => AgentTask::STATUS_FAILED,
         ]);
 
         // Push to Dead Letter Queue
-        event(new \App\Events\TaskMovedToDLQEvent($this->task, $e));
+        event(new TaskMovedToDLQEvent($this->task, $e));
     }
 }

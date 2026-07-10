@@ -2,13 +2,13 @@
 
 namespace Tests\Unit\HedraSoul;
 
-use Tests\TestCase;
-use App\Models\HedrasoulMessage;
-use App\Models\HedrasoulSession;
 use App\Models\HedraMemorySuggestion;
 use App\Models\HedraProfileFact;
+use App\Models\HedrasoulMessage;
+use App\Models\HedrasoulSession;
 use App\Services\HedraSoul\HedraMemoryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 /**
  * HedraMemoryServiceTest: Tests memory management and suggestions.
@@ -283,7 +283,7 @@ class HedraMemoryServiceTest extends TestCase
         $pending = $this->service->getPendingSuggestions();
 
         $this->assertGreaterThanOrEqual(1, count($pending->items()));
-        $pendingIds = array_map(fn($s) => $s['id'], $pending->items());
+        $pendingIds = array_map(fn ($s) => $s['id'], $pending->items());
         $this->assertContains($suggestion1->id, $pendingIds);
     }
 

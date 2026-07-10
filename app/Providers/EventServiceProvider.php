@@ -2,13 +2,35 @@
 
 namespace App\Providers;
 
+use App\Events\ContactAnalysisCompleted;
+use App\Events\ContactIdentityConflictDetected;
+use App\Events\ContactImportCompleted;
+use App\Events\ContactReplyModeChanged;
+use App\Events\HedraSoul\HedraSoulApprovalApproved;
+use App\Events\HedraSoul\HedraSoulApprovalRejected;
+use App\Events\HedraSoul\HedraSoulApprovalRequested;
+use App\Events\HedraSoul\HedraSoulAutonomyChanged;
+use App\Events\HedraSoul\HedraSoulCommandDetected;
+use App\Events\HedraSoul\HedraSoulCommandExecuted;
+use App\Events\HedraSoul\HedraSoulInstructionChanged;
+use App\Events\HedraSoul\HedraSoulMemoryApproved;
+use App\Events\HedraSoul\HedraSoulMemorySuggested;
+use App\Events\HedraSoul\HedraSoulMessageCreated;
+use App\Events\HedraSoul\HedraSoulMessageProcessed;
+use App\Events\HedraSoul\HedraSoulModelChanged;
+use App\Events\HedraSoul\HedraSoulNotificationCreated;
 use App\Events\TaskCompletedEvent;
 use App\Events\TaskFailedEvent;
-use App\Events\TaskStatusChangedEvent;
 use App\Events\TaskMovedToDLQEvent;
+use App\Events\TaskStatusChangedEvent;
+use App\Listeners\HandleContactAnalysisCompleted;
+use App\Listeners\HandleContactIdentityConflict;
+use App\Listeners\HandleContactImportCompleted;
+use App\Listeners\HandleContactReplyModeChanged;
 use App\Listeners\HandleTaskCompleted;
 use App\Listeners\HandleTaskFailed;
 use App\Listeners\LogDeadLetterTask;
+use App\Models\AgentTask;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
 
@@ -30,32 +52,32 @@ class EventServiceProvider extends ServiceProvider
             LogDeadLetterTask::class,
         ],
         // TaskStatusChangedEvent can be handled by adding listeners as needed
-        \App\Events\ContactImportCompleted::class => [
-            \App\Listeners\HandleContactImportCompleted::class,
+        ContactImportCompleted::class => [
+            HandleContactImportCompleted::class,
         ],
-        \App\Events\ContactAnalysisCompleted::class => [
-            \App\Listeners\HandleContactAnalysisCompleted::class,
+        ContactAnalysisCompleted::class => [
+            HandleContactAnalysisCompleted::class,
         ],
-        \App\Events\ContactIdentityConflictDetected::class => [
-            \App\Listeners\HandleContactIdentityConflict::class,
+        ContactIdentityConflictDetected::class => [
+            HandleContactIdentityConflict::class,
         ],
-        \App\Events\ContactReplyModeChanged::class => [
-            \App\Listeners\HandleContactReplyModeChanged::class,
+        ContactReplyModeChanged::class => [
+            HandleContactReplyModeChanged::class,
         ],
         // HedraSoul Hub Events (13 broadcasting events)
-        \App\Events\HedraSoul\HedraSoulMessageCreated::class => [],
-        \App\Events\HedraSoul\HedraSoulMessageProcessed::class => [],
-        \App\Events\HedraSoul\HedraSoulCommandDetected::class => [],
-        \App\Events\HedraSoul\HedraSoulCommandExecuted::class => [],
-        \App\Events\HedraSoul\HedraSoulApprovalRequested::class => [],
-        \App\Events\HedraSoul\HedraSoulApprovalApproved::class => [],
-        \App\Events\HedraSoul\HedraSoulApprovalRejected::class => [],
-        \App\Events\HedraSoul\HedraSoulInstructionChanged::class => [],
-        \App\Events\HedraSoul\HedraSoulModelChanged::class => [],
-        \App\Events\HedraSoul\HedraSoulMemorySuggested::class => [],
-        \App\Events\HedraSoul\HedraSoulMemoryApproved::class => [],
-        \App\Events\HedraSoul\HedraSoulAutonomyChanged::class => [],
-        \App\Events\HedraSoul\HedraSoulNotificationCreated::class => [],
+        HedraSoulMessageCreated::class => [],
+        HedraSoulMessageProcessed::class => [],
+        HedraSoulCommandDetected::class => [],
+        HedraSoulCommandExecuted::class => [],
+        HedraSoulApprovalRequested::class => [],
+        HedraSoulApprovalApproved::class => [],
+        HedraSoulApprovalRejected::class => [],
+        HedraSoulInstructionChanged::class => [],
+        HedraSoulModelChanged::class => [],
+        HedraSoulMemorySuggested::class => [],
+        HedraSoulMemoryApproved::class => [],
+        HedraSoulAutonomyChanged::class => [],
+        HedraSoulNotificationCreated::class => [],
     ];
 
     /**
@@ -66,10 +88,10 @@ class EventServiceProvider extends ServiceProvider
         parent::boot();
 
         // Handle task status changes from the Task model
-        \App\Models\AgentTask::updated(function ($task) {
+        AgentTask::updated(function ($task) {
             // Check if status changed
             if ($task->wasChanged('status')) {
-                event(new \App\Events\TaskStatusChangedEvent(
+                event(new TaskStatusChangedEvent(
                     $task,
                     $task->getOriginal('status'),
                     $task->status

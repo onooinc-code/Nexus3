@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Log;
 use App\Models\Setting;
 use App\Services\CredentialValidationService;
 use App\Services\LogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 /**
  * SettingsHubAdminController
@@ -20,13 +20,10 @@ class SettingsHubAdminController extends Controller
     public function __construct(
         protected CredentialValidationService $validationService,
         protected LogService $logService,
-    ) {
-    }
+    ) {}
 
     /**
      * Get comprehensive admin dashboard overview.
-     *
-     * @return JsonResponse
      */
     public function dashboardOverview(): JsonResponse
     {
@@ -65,9 +62,6 @@ class SettingsHubAdminController extends Controller
 
     /**
      * Get audit trail for settings changes.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function auditTrail(Request $request): JsonResponse
     {
@@ -76,7 +70,7 @@ class SettingsHubAdminController extends Controller
         $limit = (int) $request->input('limit', 100);
         $type = $request->input('type'); // 'setting', 'security', 'database', etc.
 
-        $query = \App\Models\Log::query();
+        $query = Log::query();
 
         if ($type) {
             $query->where('type', $type);
@@ -85,7 +79,7 @@ class SettingsHubAdminController extends Controller
         $logs = $query
             ->where(function ($q) {
                 $q->where('channel', 'system')
-                  ->orWhere('channel', 'monitoring');
+                    ->orWhere('channel', 'monitoring');
             })
             ->latest()
             ->limit($limit)
@@ -108,8 +102,6 @@ class SettingsHubAdminController extends Controller
 
     /**
      * Get settings compliance and security status.
-     *
-     * @return JsonResponse
      */
     public function complianceStatus(): JsonResponse
     {
@@ -126,7 +118,7 @@ class SettingsHubAdminController extends Controller
         ];
 
         foreach ($requiredCritical as $key) {
-            if (!Setting::where('key', $key)->exists()) {
+            if (! Setting::where('key', $key)->exists()) {
                 $missingCritical[] = $key;
             }
         }
@@ -163,8 +155,6 @@ class SettingsHubAdminController extends Controller
 
     /**
      * Get multi-tenancy scope distribution.
-     *
-     * @return JsonResponse
      */
     public function multiTenancyStatus(): JsonResponse
     {
@@ -202,8 +192,6 @@ class SettingsHubAdminController extends Controller
 
     /**
      * Get system performance metrics related to settings access.
-     *
-     * @return JsonResponse
      */
     public function performanceMetrics(): JsonResponse
     {
@@ -232,9 +220,6 @@ class SettingsHubAdminController extends Controller
 
     /**
      * Bulk export settings for backup or audit purposes.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function exportSettings(Request $request): JsonResponse
     {
@@ -255,11 +240,12 @@ class SettingsHubAdminController extends Controller
         $settings = $query->get();
 
         // Mask or exclude encrypted values if not explicitly included
-        if (!$request->input('include_encrypted', false)) {
+        if (! $request->input('include_encrypted', false)) {
             $settings = $settings->map(function ($setting) {
                 if ($setting->is_encrypted) {
                     $setting->value = '[ENCRYPTED]';
                 }
+
                 return $setting;
             });
         }
@@ -271,7 +257,7 @@ class SettingsHubAdminController extends Controller
             $csv = "key,type,group,scope,is_public,is_encrypted,value\n";
             foreach ($settings as $setting) {
                 $csv .= sprintf(
-                    '"%s","%s","%s","%s",%d,%d,"%s"' . "\n",
+                    '"%s","%s","%s","%s",%d,%d,"%s"'."\n",
                     addcslashes($setting->key, '"'),
                     $setting->type,
                     $setting->group,
@@ -308,6 +294,103 @@ class SettingsHubAdminController extends Controller
             'format' => 'json',
             'data' => $settings,
             'count' => $settings->count(),
+        ]);
+    }
+
+    /**
+     * Import settings from a JSON or CSV file.
+     */
+    public function importSettings(Request $request): JsonResponse
+    {
+        $this->authorize('create', Setting::class);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:json,csv,txt', 'max:2048'],
+        ]);
+
+        $file = $request->file('file');
+        $content = file_get_contents($file->getRealPath());
+        $extension = $file->getClientOriginalExtension();
+
+        $importedCount = 0;
+
+        if ($extension === 'json') {
+            $data = json_decode($content, true);
+            if (! is_array($data)) {
+                return response()->json(['success' => false, 'message' => 'Invalid JSON format'], 400);
+            }
+
+            foreach ($data as $item) {
+                if (! isset($item['key'])) {
+                    continue;
+                }
+
+                $setting = Setting::firstOrNew(['key' => $item['key']]);
+
+                // Do not override encrypted values if they are masked in the export
+                if ($item['value'] === '[ENCRYPTED]') {
+                    continue;
+                }
+
+                $setting->fill([
+                    'type' => $item['type'] ?? $setting->type ?? 'string',
+                    'group' => $item['group'] ?? $setting->group ?? 'general',
+                    'scope' => $item['scope'] ?? $setting->scope ?? 'global',
+                    'is_public' => $item['is_public'] ?? $setting->is_public ?? false,
+                    'value' => $item['value'] ?? '',
+                ]);
+
+                // If it was exported as encrypted, it needs re-encryption upon import if the system supports it,
+                // but since we exported plain values or masked, we save the plain value. The observer/service will handle encryption if needed.
+                $setting->save();
+                $importedCount++;
+            }
+        } elseif ($extension === 'csv') {
+            // Very simple CSV parsing
+            $lines = explode("\n", $content);
+            $headers = str_getcsv(array_shift($lines));
+
+            foreach ($lines as $line) {
+                if (empty(trim($line))) {
+                    continue;
+                }
+
+                $row = str_getcsv($line);
+                if (count($row) !== count($headers)) {
+                    continue;
+                }
+
+                $item = array_combine($headers, $row);
+                if (! isset($item['key']) || $item['value'] === '[ENCRYPTED]') {
+                    continue;
+                }
+
+                $setting = Setting::firstOrNew(['key' => $item['key']]);
+                $setting->fill([
+                    'type' => $item['type'] ?? $setting->type ?? 'string',
+                    'group' => $item['group'] ?? $setting->group ?? 'general',
+                    'scope' => $item['scope'] ?? $setting->scope ?? 'global',
+                    'is_public' => (bool) ($item['is_public'] ?? $setting->is_public ?? false),
+                    'value' => $item['value'] ?? '',
+                ]);
+                $setting->save();
+                $importedCount++;
+            }
+        } else {
+            return response()->json(['success' => false, 'message' => 'Unsupported file format'], 400);
+        }
+
+        $this->logService->info('Settings imported', [
+            'channel' => 'system',
+            'type' => 'audit',
+            'user_id' => $request->user()?->id,
+            'context' => ['count' => $importedCount, 'format' => $extension],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Successfully imported $importedCount settings.",
+            'count' => $importedCount,
         ]);
     }
 }

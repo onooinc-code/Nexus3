@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Contact;
-use App\Models\ContactPreference;
 use App\Services\LogService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class ContactPreferenceController extends Controller
 {
@@ -21,6 +18,7 @@ class ContactPreferenceController extends Controller
     public function index(Contact $contact)
     {
         $preferences = $contact->preferences()->orderBy('key')->get();
+
         return response()->json(['data' => $preferences]);
     }
 
@@ -53,6 +51,7 @@ class ContactPreferenceController extends Controller
     public function show(Contact $contact, $preferenceId)
     {
         $preference = $contact->preferences()->findOrFail($preferenceId);
+
         return response()->json(['data' => $preference]);
     }
 

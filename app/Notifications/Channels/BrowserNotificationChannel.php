@@ -3,6 +3,7 @@
 namespace App\Notifications\Channels;
 
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Cache;
 
 class BrowserNotificationChannel
 {
@@ -52,7 +53,7 @@ class BrowserNotificationChannel
                 // Emit a real-time event if Laravel Echo is configured
                 if (function_exists('broadcast')) {
                     try {
-                        \Illuminate\Support\Facades\Cache::remember(
+                        Cache::remember(
                             "browser_notification_{$userId}_".time(),
                             now()->addMinutes(5),
                             fn () => $message

@@ -6,9 +6,9 @@ use App\Models\Contact;
 use App\Models\ContactAnalysisRun;
 use App\Models\ContactMessage;
 use App\Models\User;
+use App\Services\AiModelsHub\UniversalAiGatewayService;
 use App\Services\Contact\ContactIntelligenceExtractionPipeline;
 use App\Services\LogService;
-use App\Services\AiModelsHub\UniversalAiGatewayService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
@@ -18,13 +18,15 @@ class ContactIntelligenceTest extends TestCase
     use RefreshDatabase;
 
     private ContactIntelligenceExtractionPipeline $pipeline;
+
     private UniversalAiGatewayService $mockAiGateway;
+
     private LogService $logService;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->logService = app(LogService::class);
         $this->mockAiGateway = Mockery::mock(UniversalAiGatewayService::class);
         $this->pipeline = new ContactIntelligenceExtractionPipeline(
@@ -37,7 +39,7 @@ class ContactIntelligenceTest extends TestCase
      * Property 3: Evidence mapping
      * WHEN ContactIntelligenceExtractionPipeline successfully analyzes messages
      * THEN every ContactAnalysisFinding SHALL have evidence_references and source_message_ids populated
-     * 
+     *
      * Validates: Requirements 5.1, 5.2
      */
     public function test_successful_analysis_populates_evidence_references_and_source_message_ids()
@@ -90,7 +92,7 @@ class ContactIntelligenceTest extends TestCase
 
         // Assert each finding has evidence
         foreach ($findings as $finding) {
-            $this->assertNotNull($finding->source_message_ids, 
+            $this->assertNotNull($finding->source_message_ids,
                 "Finding {$finding->finding_type} must have source_message_ids populated");
             $this->assertIsArray($finding->source_message_ids);
             $this->assertNotEmpty($finding->source_message_ids,
@@ -115,7 +117,7 @@ class ContactIntelligenceTest extends TestCase
      * WHEN ContactIntelligenceExtractionPipeline encounters an AI gateway failure
      * THEN the run SHALL be marked as failed with error_message
      * AND no mock/fabricated findings SHALL be written
-     * 
+     *
      * Validates: Requirements 5.1, 5.2
      */
     public function test_ai_failure_marks_run_failed_without_writing_findings()
@@ -171,7 +173,7 @@ class ContactIntelligenceTest extends TestCase
      * THEN it SHALL return structured objects (persona, talkSpecs, emotionalBaseline)
      * AND NOT raw metadata JSON
      * AND each object SHALL include confidence, evidence_references, last_validated_at
-     * 
+     *
      * Validates: Requirements 5.1, 5.2, 14.6
      */
     public function test_evidence_references_include_message_details()
@@ -218,9 +220,9 @@ class ContactIntelligenceTest extends TestCase
         $this->assertIn($message2->id, $finding->source_message_ids);
 
         // Assert evidence references have message excerpts
-        $evidenceExcerpts = array_map(fn($ref) => $ref['excerpt'], $finding->evidence_references);
+        $evidenceExcerpts = array_map(fn ($ref) => $ref['excerpt'], $finding->evidence_references);
         $this->assertTrue(
-            collect($evidenceExcerpts)->contains(fn($excerpt) => str_contains($excerpt, 'interested')),
+            collect($evidenceExcerpts)->contains(fn ($excerpt) => str_contains($excerpt, 'interested')),
             'Evidence should contain excerpt from one of the messages'
         );
     }

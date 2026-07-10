@@ -7,8 +7,11 @@ use Illuminate\Support\Facades\Log;
 class FallbackChainService
 {
     protected array $chain = [];
+
     protected int $maxRetries = 3;
+
     protected float $backoffMultiplier = 2.0;
+
     protected int $initialDelayMs = 1000;
 
     public function __construct(array $chain = [])
@@ -28,7 +31,7 @@ class FallbackChainService
             'priority' => $priority,
         ];
 
-        usort($this->chain, fn($a, $b) => $a['priority'] <=> $b['priority']);
+        usort($this->chain, fn ($a, $b) => $a['priority'] <=> $b['priority']);
     }
 
     public function executeWithFallback(array $request): array
@@ -48,7 +51,8 @@ class FallbackChainService
                     if ($result['success']) {
                         $result['fallback_used'] = $index > 0;
                         $result['fallback_index'] = $index;
-                        $result['fallback_chain'] = array_map(fn($item) => $item['provider']->getProviderName(), $this->chain);
+                        $result['fallback_chain'] = array_map(fn ($item) => $item['provider']->getProviderName(), $this->chain);
+
                         return $result;
                     }
 
@@ -63,6 +67,7 @@ class FallbackChainService
                         $retries++;
                         usleep($delay * 1000);
                         $delay *= $this->backoffMultiplier;
+
                         continue;
                     }
 
@@ -79,6 +84,7 @@ class FallbackChainService
                         $retries++;
                         usleep($delay * 1000);
                         $delay *= $this->backoffMultiplier;
+
                         continue;
                     }
 
@@ -94,13 +100,15 @@ class FallbackChainService
             'error' => 'All providers in fallback chain failed',
             'last_error' => $lastError,
             'errors' => $errors,
-            'fallback_chain' => array_map(fn($item) => $item['provider']->getProviderName(), $this->chain),
+            'fallback_chain' => array_map(fn ($item) => $item['provider']->getProviderName(), $this->chain),
         ];
     }
 
     protected function shouldRetry(string $error, int $attempt): bool
     {
-        if ($attempt >= $this->maxRetries - 1) return false;
+        if ($attempt >= $this->maxRetries - 1) {
+            return false;
+        }
 
         $retryablePatterns = [
             'rate limit',

@@ -17,23 +17,23 @@ class IsAdmin
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
         // Check if user is authenticated
-        if (!$request->user()) {
+        if (! $request->user()) {
             return response()->json([
                 'message' => 'Unauthenticated',
-                'error' => 'Authentication required'
+                'error' => 'Authentication required',
             ], 401);
         }
 
         // Check if user is admin
-        if (!$request->user()->is_admin) {
+        if (! $request->user()->is_admin) {
             return response()->json([
                 'message' => 'Forbidden',
-                'error' => 'Admin access required'
+                'error' => 'Admin access required',
             ], 403);
         }
 

@@ -2,9 +2,10 @@
 
 namespace App\Services\AiModelsHub;
 
+use App\Models\AIApiKey;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
-use App\Models\AIApiKey;
+use Illuminate\Support\Str;
 
 class EncryptedApiKeyStorage
 {
@@ -13,27 +14,21 @@ class EncryptedApiKeyStorage
      */
     public function storeKey($providerId, $key, $name = null)
     {
-        // Encrypt the API key using Laravel's encrypter (AES-256-CBC)
         $encryptedKey = Crypt::encryptString($key);
 
-        // Use firstOrNew to avoid overwriting the PK on update
-        $apiKey = AIApiKey::where('provider_id', $providerId)->first();
+        $hasDefault = AIApiKey::where('provider_id', $providerId)
+            ->where('is_active', true)
+            ->where('is_default', true)
+            ->exists();
 
-        if ($apiKey) {
-            $apiKey->update([
-                'key_hash'  => $encryptedKey,
-                'name'      => $name ?? $apiKey->name,
-                'is_active' => true,
-            ]);
-        } else {
-            $apiKey = AIApiKey::create([
-                'id'          => \Illuminate\Support\Str::uuid(),
-                'provider_id' => $providerId,
-                'key_hash'    => $encryptedKey,
-                'name'        => $name ?? "API Key for Provider {$providerId}",
-                'is_active'   => true,
-            ]);
-        }
+        $apiKey = AIApiKey::create([
+            'id' => Str::uuid(),
+            'provider_id' => $providerId,
+            'key_hash' => $encryptedKey,
+            'name' => $name ?? "API Key for Provider {$providerId}",
+            'is_active' => true,
+            'is_default' => ! $hasDefault,
+        ]);
 
         return $apiKey;
     }
@@ -45,17 +40,18 @@ class EncryptedApiKeyStorage
     {
         $apiKey = AIApiKey::where('provider_id', $providerId)
             ->where('is_active', true)
+            ->orderByDesc('is_default')
             ->first();
 
-        if (!$apiKey) {
+        if (! $apiKey) {
             return null;
         }
 
         try {
-            // Decrypt the key
             return Crypt::decryptString($apiKey->key_hash);
         } catch (\Exception $e) {
             Log::error("Failed to decrypt API key for provider {$providerId}: {$e->getMessage()}");
+
             return null;
         }
     }
@@ -79,6 +75,7 @@ class EncryptedApiKeyStorage
 
         $apiKey = AIApiKey::where('provider_id', $providerId)
             ->where('is_active', true)
+            ->orderByDesc('is_default')
             ->first();
 
         if ($apiKey) {
@@ -101,10 +98,12 @@ class EncryptedApiKeyStorage
     {
         $apiKey = AIApiKey::where('provider_id', $providerId)
             ->where('is_active', true)
+            ->orderByDesc('is_default')
             ->first();
 
         if ($apiKey) {
             $apiKey->update(['is_active' => false]);
+
             return true;
         }
 

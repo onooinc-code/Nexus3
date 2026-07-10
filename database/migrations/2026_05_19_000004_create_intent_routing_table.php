@@ -19,13 +19,13 @@ return new class extends Migration
             $table->uuid('fallback_provider_id')->nullable();
             $table->uuid('fallback_model_id')->nullable();
             $table->timestamps();
-            
+
             // Foreign key constraints
             $table->foreign('default_provider_id')->references('id')->on('ai_providers')->onDelete('set null');
             $table->foreign('default_model_id')->references('id')->on('ai_models')->onDelete('set null');
             $table->foreign('fallback_provider_id')->references('id')->on('ai_providers')->onDelete('set null');
             $table->foreign('fallback_model_id')->references('id')->on('ai_models')->onDelete('set null');
-            
+
             // Indexes
             $table->index(['intent_name']);
             $table->index(['default_provider_id']);

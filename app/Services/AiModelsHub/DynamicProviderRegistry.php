@@ -2,19 +2,19 @@
 
 namespace App\Services\AiModelsHub;
 
+use App\Models\AIModel;
+use App\Models\AIProvider;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use App\Models\AIProvider;
-use App\Models\AIModel;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
-use App\Services\AiModelsHub\CacheManager;
 
 class DynamicProviderRegistry
 {
     protected $cacheManager;
+
     protected $keyStorage;
+
     protected $cacheTTL = 3600; // 1 hour
 
     public function __construct(CacheManager $cacheManager, EncryptedApiKeyStorage $keyStorage)
@@ -33,17 +33,17 @@ class DynamicProviderRegistry
             function () use ($providerId) {
                 $provider = AIProvider::withCount('models')
                     ->find($providerId);
-                
-                if (!$provider || !$provider->is_active) {
+
+                if (! $provider || ! $provider->is_active) {
                     return null;
                 }
-                
+
                 // Attach the decrypted API key as a transient property (not an Eloquent attribute)
                 // so it doesn't get included in future UPDATE queries.
                 $apiKey = $this->keyStorage->getDecryptedKey($providerId);
                 $provider->setRelation('_resolved_api_key', null); // unused but marks intent
                 $provider->resolved_api_key = $apiKey; // public PHP property, not Eloquent attribute
-                
+
                 return $provider;
             },
             $this->cacheTTL
@@ -61,15 +61,15 @@ class DynamicProviderRegistry
                 $provider = AIProvider::where('name', $name)
                     ->withCount('models')
                     ->first();
-                
-                if (!$provider || !$provider->is_active) {
+
+                if (! $provider || ! $provider->is_active) {
                     return null;
                 }
-                
+
                 // Attach the decrypted API key as a public PHP property (not an Eloquent attribute)
                 $apiKey = $this->keyStorage->getDecryptedKey($provider->id);
                 $provider->resolved_api_key = $apiKey;
-                
+
                 return $provider;
             },
             $this->cacheTTL
@@ -82,15 +82,15 @@ class DynamicProviderRegistry
     public function registerProvider(array $data, ?string $apiKey = null)
     {
         $provider = AIProvider::create([
-            'id'                    => (string) ($data['id'] ?? Str::uuid()),
-            'name'                  => $data['name'],
-            'base_url'              => $data['base_url'],
+            'id' => (string) ($data['id'] ?? Str::uuid()),
+            'name' => $data['name'],
+            'base_url' => $data['base_url'],
             'models_fetch_endpoint' => $data['models_fetch_endpoint'] ?? null,
-            'generate_endpoint'     => $data['generate_endpoint'] ?? null,
-            'test_endpoint'         => $data['test_endpoint'] ?? null,
-            'auth_header_format'    => $data['auth_header_format'] ?? 'Bearer {key}',
-            'payload_format'        => $data['payload_format'] ?? 'openai',
-            'is_active'             => $data['is_active'] ?? true,
+            'generate_endpoint' => $data['generate_endpoint'] ?? null,
+            'test_endpoint' => $data['test_endpoint'] ?? null,
+            'auth_header_format' => $data['auth_header_format'] ?? 'Bearer {key}',
+            'payload_format' => $data['payload_format'] ?? 'openai',
+            'is_active' => $data['is_active'] ?? true,
         ]);
 
         if ($apiKey) {
@@ -139,12 +139,12 @@ class DynamicProviderRegistry
         // Fetch directly from DB to avoid cache and the resolved_api_key transient property issue
         $provider = AIProvider::find($providerId);
 
-        if (!$provider) {
-            throw new \Exception("Provider not found");
+        if (! $provider) {
+            throw new \Exception('Provider not found');
         }
 
-        if (!$provider->models_fetch_endpoint) {
-            throw new \Exception("Provider does not support model synchronization");
+        if (! $provider->models_fetch_endpoint) {
+            throw new \Exception('Provider does not support model synchronization');
         }
 
         try {
@@ -155,7 +155,7 @@ class DynamicProviderRegistry
             if (empty($models)) {
                 return [
                     'success' => false,
-                    'synced_count' => 0
+                    'synced_count' => 0,
                 ];
             }
 
@@ -169,7 +169,7 @@ class DynamicProviderRegistry
                     $existing->update(['last_synced_at' => now()]);
                 } else {
                     AIModel::create([
-                        'id' => (string) \Illuminate\Support\Str::uuid(),
+                        'id' => (string) Str::uuid(),
                         'name' => $modelName,
                         'provider_id' => $providerId,
                         'last_synced_at' => now(),
@@ -186,7 +186,7 @@ class DynamicProviderRegistry
 
             return [
                 'success' => true,
-                'synced_count' => count($models)
+                'synced_count' => count($models),
             ];
         } catch (\Exception $e) {
             Log::error("Error syncing models for provider {$provider->name}: {$e->getMessage()}");
@@ -209,7 +209,7 @@ class DynamicProviderRegistry
             AIModel::updateOrCreate(
                 [
                     'provider_id' => $providerId,
-                    'external_id' => $modelData['external_id'] ?? $modelData['id'] ?? null
+                    'external_id' => $modelData['external_id'] ?? $modelData['id'] ?? null,
                 ],
                 [
                     'id' => Str::uuid(),
@@ -251,16 +251,16 @@ class DynamicProviderRegistry
 
     protected function mapOpenAIFormat($models)
     {
-        return array_map(function($model) {
+        return array_map(function ($model) {
             return [
                 'external_id' => $model['id'] ?? null,
                 'name' => $model['id'] ?? $model['name'] ?? 'Unknown Model',
                 'context_window' => $model['context_length'] ?? $model['max_tokens'] ?? 4096,
-                'input_cost_per_m' => isset($model['pricing']) && isset($model['pricing']['input']) 
-                    ? $model['pricing']['input'] * 1000000 
+                'input_cost_per_m' => isset($model['pricing']) && isset($model['pricing']['input'])
+                    ? $model['pricing']['input'] * 1000000
                     : 0.0,
-                'output_cost_per_m' => isset($model['pricing']) && isset($model['pricing']['output']) 
-                    ? $model['pricing']['output'] * 1000000 
+                'output_cost_per_m' => isset($model['pricing']) && isset($model['pricing']['output'])
+                    ? $model['pricing']['output'] * 1000000
                     : 0.0,
                 'description' => $model['description'] ?? null,
                 'capabilities' => isset($model['capabilities']) ? $model['capabilities'] : [],
@@ -271,16 +271,16 @@ class DynamicProviderRegistry
 
     protected function mapAnthropicFormat($models)
     {
-        return array_map(function($model) {
+        return array_map(function ($model) {
             return [
                 'external_id' => $model['id'] ?? null,
                 'name' => $model['display_name'] ?? $model['id'] ?? 'Unknown Model',
                 'context_window' => $model['context_window'] ?? 4096,
-                'input_cost_per_m' => isset($model['pricing']) && isset($model['pricing']['input']) 
-                    ? $model['pricing']['input'] * 1000000 
+                'input_cost_per_m' => isset($model['pricing']) && isset($model['pricing']['input'])
+                    ? $model['pricing']['input'] * 1000000
                     : 0.0,
-                'output_cost_per_m' => isset($model['pricing']) && isset($model['pricing']['output']) 
-                    ? $model['pricing']['output'] * 1000000 
+                'output_cost_per_m' => isset($model['pricing']) && isset($model['pricing']['output'])
+                    ? $model['pricing']['output'] * 1000000
                     : 0.0,
                 'description' => $model['description'] ?? null,
                 'capabilities' => isset($model['capabilities']) ? $model['capabilities'] : [],

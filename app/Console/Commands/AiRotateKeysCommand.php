@@ -2,13 +2,14 @@
 
 namespace App\Console\Commands;
 
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class AiRotateKeysCommand extends Command
 {
     protected $signature = 'ai:rotate-keys {--dry-run : Show what would be rotated without making changes}';
+
     protected $description = 'Mark expiring or expired AI API keys and notify administrators';
 
     public function handle(): void
@@ -32,7 +33,7 @@ class AiRotateKeysCommand extends Command
         $this->info("Found {$expired->count()} expired keys.");
         $this->info("Found {$expiring->count()} keys expiring within 7 days.");
 
-        if (!$isDryRun) {
+        if (! $isDryRun) {
             // Mark expired
             if ($expired->count() > 0) {
                 DB::table('ai_api_keys')

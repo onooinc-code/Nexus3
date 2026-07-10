@@ -24,11 +24,11 @@ class WorkflowCompensationEngine
         foreach ($completedSteps as $stepLog) {
             $this->compensateStep($execution, $stepLog);
         }
-        
+
         $execution->update([
             'status' => 'compensated',
         ]);
-        
+
         $this->logService->info('Workflow compensation completed', [
             'execution_id' => $execution->id,
             'workflow_id' => $execution->workflow_id,
@@ -38,16 +38,16 @@ class WorkflowCompensationEngine
     protected function compensateStep(WorkflowExecution $execution, WorkflowStepLog $stepLog): void
     {
         $version = $execution->version;
-        if (!$version) {
+        if (! $version) {
             return;
         }
 
         $workflowDef = is_array($version->definition) ? $version->definition : json_decode(json_encode($version->definition), true) ?? [];
         $steps = $workflowDef['steps'] ?? [];
-        
+
         $stepDef = collect($steps)->firstWhere('id', $stepLog->step_id);
 
-        if (!$stepDef || empty($stepDef['compensation'])) {
+        if (! $stepDef || empty($stepDef['compensation'])) {
             // No compensation defined for this step
             return;
         }
@@ -56,19 +56,19 @@ class WorkflowCompensationEngine
             $this->logService->info('Compensating workflow step', [
                 'execution_id' => $execution->id,
                 'step_id' => $stepLog->step_id,
-                'compensation' => $stepDef['compensation']
+                'compensation' => $stepDef['compensation'],
             ]);
 
             $compDef = $stepDef['compensation'];
             // If action is set inside compensation
-            if (!isset($compDef['type'])) {
+            if (! isset($compDef['type'])) {
                 $compDef['type'] = 'action';
             }
-            if (!isset($compDef['id'])) {
-                $compDef['id'] = $stepLog->step_id . '_compensation';
+            if (! isset($compDef['id'])) {
+                $compDef['id'] = $stepLog->step_id.'_compensation';
             }
-            if (!isset($compDef['name'])) {
-                $compDef['name'] = 'Compensate ' . $stepLog->step_name;
+            if (! isset($compDef['name'])) {
+                $compDef['name'] = 'Compensate '.$stepLog->step_name;
             }
 
             // Re-use the dispatcher which runs step definitions
@@ -78,7 +78,7 @@ class WorkflowCompensationEngine
             $this->logService->error('Failed to compensate workflow step', [
                 'execution_id' => $execution->id,
                 'step_id' => $stepLog->step_id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }

@@ -3,12 +3,12 @@
 namespace App\Listeners;
 
 use App\Events\ContactCreated;
-use App\Services\LogService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 class ProcessContactCreated extends Listener implements ShouldQueue
 {
     public bool $shouldQueue = true;
+
     public string $queue = 'contacts';
 
     public function handle(ContactCreated $event): void
@@ -25,7 +25,7 @@ class ProcessContactCreated extends Listener implements ShouldQueue
                 'context' => ['name' => $event->contact->name, 'metadata' => $event->metadata],
             ]);
         } catch (\Exception $e) {
-            $this->log("Error processing contact creation: " . $e->getMessage(), 'error');
+            $this->log('Error processing contact creation: '.$e->getMessage(), 'error');
 
             $this->logService->error('Contact creation processing failed', [
                 'channel' => 'contact',

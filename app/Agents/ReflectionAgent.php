@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\Log;
 class ReflectionAgent
 {
     protected Agent $agent;
+
     protected AgentLifecycleService $lifecycle;
+
     protected array $reflectionHistory = [];
 
     public function __construct(Agent $agent)
@@ -39,6 +41,7 @@ class ReflectionAgent
             ];
         } catch (\Throwable $e) {
             $this->lifecycle->fail($this->agent, $e->getMessage());
+
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
@@ -90,15 +93,15 @@ class ReflectionAgent
         $improvements = [];
 
         if (isset($reflection['success_rate']) && $reflection['success_rate'] < 70) {
-            $improvements[] = "Success rate is below 70%. Review error patterns and adjust execution strategy.";
+            $improvements[] = 'Success rate is below 70%. Review error patterns and adjust execution strategy.';
         }
 
-        if (!empty($reflection['common_failures'])) {
-            $improvements[] = "Address recurring failure patterns: " . implode(', ', array_keys($reflection['common_failures']));
+        if (! empty($reflection['common_failures'])) {
+            $improvements[] = 'Address recurring failure patterns: '.implode(', ', array_keys($reflection['common_failures']));
         }
 
         if ($reflection['total_actions'] > 0 && $reflection['success_rate'] >= 90) {
-            $improvements[] = "Excellent performance. Consider increasing task complexity or delegation scope.";
+            $improvements[] = 'Excellent performance. Consider increasing task complexity or delegation scope.';
         }
 
         return $improvements;

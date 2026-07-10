@@ -3,9 +3,8 @@
 namespace Tests\Feature;
 
 use App\Jobs\ExtractMemoryJob;
-use App\Jobs\ProcessAiInferenceJob;
+use App\Jobs\ProcessWahaWebhookJob;
 use App\Models\Conversation;
-use App\Models\Contact;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
@@ -35,9 +34,9 @@ class AsyncEngineFlowTest extends TestCase
         ]);
 
         $response->assertStatus(202)
-            ->assertJson([ 'message' => 'Webhook payload queued for processing' ]);
+            ->assertJson(['message' => 'Webhook payload queued for processing']);
 
-        Bus::assertDispatched(\App\Jobs\ProcessWahaWebhookJob::class);
+        Bus::assertDispatched(ProcessWahaWebhookJob::class);
     }
 
     public function test_memory_index_endpoint_dispatches_extract_memory_job(): void
@@ -56,12 +55,13 @@ class AsyncEngineFlowTest extends TestCase
         ]);
 
         $response->assertStatus(202)
-            ->assertJson([ 'message' => 'Memory extraction dispatched' ]);
+            ->assertJson(['message' => 'Memory extraction dispatched']);
 
         Bus::assertDispatched(ExtractMemoryJob::class, function ($job) use ($conversation) {
             $reflection = new \ReflectionObject($job);
             $property = $reflection->getProperty('conversationId');
             $property->setAccessible(true);
+
             return $property->getValue($job) == $conversation->id;
         });
     }

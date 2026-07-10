@@ -2,20 +2,15 @@
 
 namespace App\Services\Memory;
 
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class StructuredMemoryService
 {
     /**
      * Store a structured fact or relationship
      *
-     * @param int $contactId
-     * @param string $factType
-     * @param mixed $data
-     * @param array $metadata
-     * @return bool
+     * @param  mixed  $data
      */
     public function store(int $contactId, string $factType, $data, array $metadata = []): bool
     {
@@ -44,22 +39,17 @@ class StructuredMemoryService
             Log::error('StructuredMemoryService::store failed', [
                 'contactId' => $contactId,
                 'factType' => $factType,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
      * Retrieve structured memories for a contact
-     *
-     * @param int $contactId
-     * @param string|null $factType
-     * @param int $limit
-     * @param int $offset
-     * @return array
      */
-    public function retrieve(int $contactId, string $factType = null, int $limit = 50, int $offset = 0): array
+    public function retrieve(int $contactId, ?string $factType = null, int $limit = 50, int $offset = 0): array
     {
         try {
             $query = DB::table('structured_memories')
@@ -92,8 +82,9 @@ class StructuredMemoryService
             Log::error('StructuredMemoryService::retrieve failed', [
                 'contactId' => $contactId,
                 'factType' => $factType,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return [];
         }
     }
@@ -101,13 +92,9 @@ class StructuredMemoryService
     /**
      * Update a structured memory
      *
-     * @param int $id
-     * @param string|null $factType
-     * @param mixed $data
-     * @param array $metadata
-     * @return bool
+     * @param  mixed  $data
      */
-    public function update(int $id, string $factType = null, $data = null, array $metadata = []): bool
+    public function update(int $id, ?string $factType = null, $data = null, array $metadata = []): bool
     {
         try {
             $updateData = [
@@ -122,7 +109,7 @@ class StructuredMemoryService
                 $updateData['data'] = is_array($data) ? json_encode($data) : $data;
             }
 
-            if (!empty($metadata)) {
+            if (! empty($metadata)) {
                 $updateData['metadata'] = json_encode($metadata);
             }
 
@@ -134,17 +121,15 @@ class StructuredMemoryService
         } catch (\Exception $e) {
             Log::error('StructuredMemoryService::update failed', [
                 'id' => $id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
      * Delete a structured memory
-     *
-     * @param int $id
-     * @return bool
      */
     public function delete(int $id): bool
     {
@@ -157,19 +142,15 @@ class StructuredMemoryService
         } catch (\Exception $e) {
             Log::error('StructuredMemoryService::delete failed', [
                 'id' => $id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
      * Search structured memories by content
-     *
-     * @param int $contactId
-     * @param string $searchTerm
-     * @param int $limit
-     * @return array
      */
     public function search(int $contactId, string $searchTerm, int $limit = 50): array
     {
@@ -200,8 +181,9 @@ class StructuredMemoryService
             Log::error('StructuredMemoryService::search failed', [
                 'contactId' => $contactId,
                 'searchTerm' => $searchTerm,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return [];
         }
     }
@@ -209,7 +191,7 @@ class StructuredMemoryService
     /**
      * Paginate structured memories
      */
-    public function paginate(int $contactId = null, int $perPage = 25, string $sort = 'confidence', bool $includeExpired = false): array
+    public function paginate(?int $contactId = null, int $perPage = 25, string $sort = 'confidence', bool $includeExpired = false): array
     {
         try {
             $query = DB::table('structured_memories')->whereNull('deleted_at');
@@ -218,30 +200,30 @@ class StructuredMemoryService
                 $query->where('contact_id', $contactId);
             }
 
-            if (!$includeExpired) {
+            if (! $includeExpired) {
                 $query->where('status', '!=', 'expired');
             }
 
             $total = $query->count();
-            
+
             $results = $query->orderBy($sort, 'desc')
                 ->limit($perPage)
                 ->get(); // Using simple get for now since paginate() is complex manually or requires DB::table(...)->paginate() which works in Laravel.
-                
+
             // Let's actually use paginate if possible. Since we're using query builder:
-            // $paginator = $query->paginate($perPage); 
+            // $paginator = $query->paginate($perPage);
             // We'll simulate paginator for brevity if paginate() isn't working on this older syntax, but query builder does support paginate() in Laravel.
             // Let's use it:
             $paginator = DB::table('structured_memories')
                 ->whereNull('deleted_at');
-                
+
             if ($contactId !== null) {
                 $paginator->where('contact_id', $contactId);
             }
-            if (!$includeExpired) {
+            if (! $includeExpired) {
                 $paginator->where('status', '!=', 'expired');
             }
-            
+
             $paginated = $paginator->orderBy($sort, 'desc')->paginate($perPage);
 
             $data = [];
@@ -267,6 +249,7 @@ class StructuredMemoryService
             ];
         } catch (\Exception $e) {
             Log::error('StructuredMemoryService::paginate failed', ['error' => $e->getMessage()]);
+
             return [
                 'data' => [],
                 'current_page' => 1,
@@ -284,14 +267,16 @@ class StructuredMemoryService
     {
         DB::transaction(function () use ($id) {
             $record = DB::table('structured_memories')->where('id', $id)->lockForUpdate()->first();
-            if (!$record) return;
+            if (! $record) {
+                return;
+            }
 
             $newConfidence = min(1.00, round($record->confidence + 0.05, 2));
             DB::table('structured_memories')->where('id', $id)->update([
-                'confidence'         => $newConfidence,
+                'confidence' => $newConfidence,
                 'last_reinforced_at' => now(),
-                'status'             => $newConfidence >= 0.20 ? 'active' : $record->status,
-                'updated_at'         => now(),
+                'status' => $newConfidence >= 0.20 ? 'active' : $record->status,
+                'updated_at' => now(),
             ]);
 
             $this->recordVersion($id, $record->confidence, $newConfidence, 'reinforcement');
@@ -309,19 +294,19 @@ class StructuredMemoryService
         DB::table('structured_memories')
             ->where('status', 'active')
             ->whereNull('deleted_at')
-            ->where(fn($q) => $q->whereNull('last_reinforced_at')->orWhere('last_reinforced_at', '<', $cutoff))
+            ->where(fn ($q) => $q->whereNull('last_reinforced_at')->orWhere('last_reinforced_at', '<', $cutoff))
             ->orderBy('id')
             ->chunk(200, function ($records) use ($decayAmount, &$affected) {
                 foreach ($records as $record) {
                     $newConf = max(0.00, round($record->confidence - $decayAmount, 2));
-                    $status = match(true) {
+                    $status = match (true) {
                         $newConf < 0.05 => 'expired',
                         $newConf < 0.20 => 'low_confidence',
-                        default         => 'active',
+                        default => 'active',
                     };
                     DB::table('structured_memories')->where('id', $record->id)->update([
                         'confidence' => $newConf,
-                        'status'     => $status,
+                        'status' => $status,
                         'updated_at' => now(),
                     ]);
                     $this->recordVersion($record->id, $record->confidence, $newConf, 'decay');
@@ -338,7 +323,9 @@ class StructuredMemoryService
     public function recordVersion(int $memoryId, ?float $oldConf, ?float $newConf, string $source, ?array $previousContent = null, ?array $newContent = null): void
     {
         $record = DB::table('structured_memories')->where('id', $memoryId)->first();
-        if (!$record) return;
+        if (! $record) {
+            return;
+        }
 
         $lastVersion = DB::table('contact_memory_versions')
             ->where('memory_id', $memoryId)

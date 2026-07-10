@@ -3,7 +3,6 @@
 namespace App\Agents;
 
 use App\Models\Agent;
-use App\Models\AgentTask;
 use App\Services\AgentLifecycleService;
 use App\Services\AgentRegistry;
 use Illuminate\Support\Facades\Log;
@@ -11,9 +10,13 @@ use Illuminate\Support\Facades\Log;
 class SupervisorAgent
 {
     protected Agent $agent;
+
     protected AgentLifecycleService $lifecycle;
+
     protected AgentRegistry $registry;
+
     protected array $supervisedAgents = [];
+
     protected array $conflictResolutions = [];
 
     public function __construct(Agent $agent)
@@ -48,6 +51,7 @@ class SupervisorAgent
             ];
         } catch (\Throwable $e) {
             $this->lifecycle->fail($this->agent, $e->getMessage());
+
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
@@ -58,6 +62,7 @@ class SupervisorAgent
     protected function loadSupervisedAgents(array $agentIds): array
     {
         $agents = Agent::whereIn('id', $agentIds)->where('is_active', true)->get();
+
         return $agents->toArray();
     }
 
@@ -68,7 +73,9 @@ class SupervisorAgent
 
         foreach ($this->supervisedAgents as $agentData) {
             $agent = Agent::find($agentData['id']);
-            if (!$agent) continue;
+            if (! $agent) {
+                continue;
+            }
 
             try {
                 $instance = $this->registry->resolve($agent);
@@ -91,7 +98,7 @@ class SupervisorAgent
         }
 
         $conflicts = $this->detectConflicts($agentOutputs);
-        if (!empty($conflicts)) {
+        if (! empty($conflicts)) {
             $resolutions = $this->resolveConflicts($conflicts, $task);
             $this->conflictResolutions = $resolutions;
         }
@@ -113,7 +120,9 @@ class SupervisorAgent
 
         foreach ($values as $index => $output) {
             foreach ($values as $otherIndex => $otherOutput) {
-                if ($index >= $otherIndex) continue;
+                if ($index >= $otherIndex) {
+                    continue;
+                }
 
                 $diff = $this->compareOutputs($output, $otherOutput);
                 if ($diff) {
@@ -128,7 +137,7 @@ class SupervisorAgent
             $conflicts[$key] = [
                 'key' => $key,
                 'values' => collect($values)
-                    ->map(fn($o) => $o[$key] ?? null)
+                    ->map(fn ($o) => $o[$key] ?? null)
                     ->filter()
                     ->unique()
                     ->values()
@@ -169,7 +178,7 @@ class SupervisorAgent
             ];
 
             $resolutions[] = $resolution;
-            Log::info("Conflict resolved for key {$key}: " . $resolution['resolution']);
+            Log::info("Conflict resolved for key {$key}: ".$resolution['resolution']);
         }
 
         return $resolutions;
@@ -187,7 +196,7 @@ class SupervisorAgent
             return "Consensus: {$values[0]} vs {$values[1]} - using first value";
         }
 
-        return "Multiple values detected: " . implode(', ', $values) . " - manual review required";
+        return 'Multiple values detected: '.implode(', ', $values).' - manual review required';
     }
 
     public function getSupervisedAgents(): array

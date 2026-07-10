@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\HedraSoul;
 
 use App\Http\Controllers\Controller;
-use App\Models\HedrasoulSession;
-use App\Models\HedrasoulMessage;
-use App\Models\Contact;
 use App\Models\AgentTask;
+use App\Models\Contact;
+use App\Models\HedrasoulApprovalRequest;
+use App\Models\HedrasoulMessage;
+use App\Models\HedrasoulSession;
 use App\Models\Workflow;
-use App\Services\HedraSoul\SoulyContextAssembler;
 use App\Services\HedraSoul\HedraMemoryService;
+use App\Services\HedraSoul\SoulyContextAssembler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -34,11 +35,11 @@ class HedraSoulMiscController extends Controller
         $results = [];
 
         // Search contacts
-        if (!$request->has('type') || $request->type === 'contact') {
+        if (! $request->has('type') || $request->type === 'contact') {
             $contacts = Contact::where('name', 'like', "%{$validated['q']}%")
                 ->limit(5)
                 ->get()
-                ->map(fn($c) => [
+                ->map(fn ($c) => [
                     'id' => $c->id,
                     'type' => 'contact',
                     'display_name' => $c->name,
@@ -48,11 +49,11 @@ class HedraSoulMiscController extends Controller
         }
 
         // Search tasks
-        if (!$request->has('type') || $request->type === 'task') {
+        if (! $request->has('type') || $request->type === 'task') {
             $tasks = AgentTask::where('title', 'like', "%{$validated['q']}%")
                 ->limit(5)
                 ->get()
-                ->map(fn($t) => [
+                ->map(fn ($t) => [
                     'id' => $t->id,
                     'type' => 'task',
                     'display_name' => $t->title,
@@ -62,11 +63,11 @@ class HedraSoulMiscController extends Controller
         }
 
         // Search workflows
-        if (!$request->has('type') || $request->type === 'workflow') {
+        if (! $request->has('type') || $request->type === 'workflow') {
             $workflows = Workflow::where('name', 'like', "%{$validated['q']}%")
                 ->limit(5)
                 ->get()
-                ->map(fn($w) => [
+                ->map(fn ($w) => [
                     'id' => $w->id,
                     'type' => 'workflow',
                     'display_name' => $w->name,
@@ -126,8 +127,8 @@ class HedraSoulMiscController extends Controller
         $sessions = HedrasoulSession::where('user_id', $user->id)
             ->where(function ($q) use ($query) {
                 $q->where('title', 'like', "%{$query}%")
-                  ->orWhere('topic', 'like', "%{$query}%")
-                  ->orWhere('summary', 'like', "%{$query}%");
+                    ->orWhere('topic', 'like', "%{$query}%")
+                    ->orWhere('summary', 'like', "%{$query}%");
             })
             ->limit(10)
             ->get();
@@ -166,11 +167,11 @@ class HedraSoulMiscController extends Controller
             ->where('intent', 'create_task')
             ->count();
 
-        $approvalRequests = \App\Models\HedrasoulApprovalRequest::whereIn('context_snapshot_id', function ($q) use ($user) {
+        $approvalRequests = HedrasoulApprovalRequest::whereIn('context_snapshot_id', function ($q) use ($user) {
             $q->select('id')->from('hedrasoul_context_snapshots')
-              ->whereIn('session_id', function ($sq) use ($user) {
-                  $sq->select('id')->from('hedrasoul_sessions')->where('user_id', $user->id);
-              });
+                ->whereIn('session_id', function ($sq) use ($user) {
+                    $sq->select('id')->from('hedrasoul_sessions')->where('user_id', $user->id);
+                });
         })->selectRaw('status, COUNT(*) as count')->groupBy('status')->get();
 
         return response()->json([
@@ -184,7 +185,7 @@ class HedraSoulMiscController extends Controller
             'commands' => [
                 'task_creation' => $taskCommands,
             ],
-            'approvals' => $approvalRequests->mapWithKeys(fn($r) => [$r->status => $r->count]),
+            'approvals' => $approvalRequests->mapWithKeys(fn ($r) => [$r->status => $r->count]),
         ]);
     }
 
@@ -207,8 +208,8 @@ class HedraSoulMiscController extends Controller
             'total_tokens' => $totalTokens,
             'total_cost_usd' => $totalCost,
             'message_count' => $messages->count(),
-            'average_cost_per_message' => $messages->count() > 0 
-                ? $totalCost / $messages->count() 
+            'average_cost_per_message' => $messages->count() > 0
+                ? $totalCost / $messages->count()
                 : 0,
         ]);
     }

@@ -2,10 +2,14 @@
 
 namespace App\Services\Contact;
 
-use App\Models\ContactMemoryMaintenanceRun;
-use App\Models\ContactMemory;
+use App\Events\ContactMemoryMaintenanceCompleted;
+use App\Events\ContactMemoryMaintenanceStarted;
+use App\Jobs\SaveToPineconeJob;
+use App\Jobs\VectorizeMemoryJob;
 use App\Models\Contact;
+use App\Models\ContactMemoryMaintenanceRun;
 use App\Services\LogService;
+use App\Services\Memory\SemanticMemoryService;
 use Exception;
 
 class ContactMemoryMaintenancePipeline
@@ -18,17 +22,17 @@ class ContactMemoryMaintenancePipeline
     {
         try {
             $run->update(['status' => 'running', 'started_at' => now()]);
-            
+
             $contactId = $run->scope['contact_id'] ?? null;
             $contact = $contactId ? Contact::find($contactId) : null;
-            
-            event(new \App\Events\ContactMemoryMaintenanceStarted($run, $contact));
+
+            event(new ContactMemoryMaintenanceStarted($run, $contact));
 
             $operation = $run->operation;
             $scope = $run->scope ?? [];
             $contactId = $scope['contact_id'] ?? null;
             $isDryRun = $run->results['dry_run'] ?? false;
-            
+
             $results = [
                 'dry_run' => $isDryRun,
                 'items_processed' => 0,
@@ -39,8 +43,8 @@ class ContactMemoryMaintenancePipeline
 
             if ($contactId) {
                 $contact = Contact::find($contactId);
-                if (!$contact) {
-                    throw new Exception("Contact not found for maintenance run.");
+                if (! $contact) {
+                    throw new Exception('Contact not found for maintenance run.');
                 }
 
                 switch ($operation) {
@@ -48,13 +52,13 @@ class ContactMemoryMaintenancePipeline
                         // Delete memories older than 1 year or not validated recently
                         $query = $contact->memories()->where('created_at', '<', now()->subYear());
                         $results['items_processed'] = $query->count();
-                        if (!$isDryRun) {
+                        if (! $isDryRun) {
                             $staleMemories = $query->get();
                             foreach ($staleMemories as $stale) {
                                 try {
-                                    /** @var \App\Services\Memory\SemanticMemoryService|null $semanticMemory */
-                                    $semanticMemory = app()->bound(\App\Services\Memory\SemanticMemoryService::class)
-                                        ? app(\App\Services\Memory\SemanticMemoryService::class)
+                                    /** @var SemanticMemoryService|null $semanticMemory */
+                                    $semanticMemory = app()->bound(SemanticMemoryService::class)
+                                        ? app(SemanticMemoryService::class)
                                         : null;
 
                                     if ($semanticMemory) {
@@ -63,7 +67,7 @@ class ContactMemoryMaintenancePipeline
                                 } catch (\Throwable $e) {
                                     $this->logService->warning('SemanticMemoryService delete failed during prune; continuing DB delete.', [
                                         'memory_id' => $stale->id,
-                                        'error'     => $e->getMessage(),
+                                        'error' => $e->getMessage(),
                                     ]);
                                 }
 
@@ -74,30 +78,30 @@ class ContactMemoryMaintenancePipeline
                             $results['items_deleted'] = $results['items_processed']; // simulate
                         }
                         break;
-                        
+
                     case 'resolve_duplicates':
                         // Duplicate check and Pinecone indexing rebuild
                         $memories = $contact->memories;
                         $results['items_processed'] = $memories->count();
                         foreach ($memories as $memory) {
                             if (empty($memory->vector)) {
-                                \App\Jobs\VectorizeMemoryJob::dispatch($memory->id, $memory->content);
+                                VectorizeMemoryJob::dispatch($memory->id, $memory->content);
                                 $results['items_modified']++;
                             } else {
-                                \App\Jobs\SaveToPineconeJob::dispatch($memory->id, $memory->vector);
+                                SaveToPineconeJob::dispatch($memory->id, $memory->vector);
                                 $results['items_modified']++;
                             }
                         }
                         break;
-                        
+
                     case 'erase_data':
                         $results['items_processed'] = 1;
-                        if (!$isDryRun) {
+                        if (! $isDryRun) {
                             // Attempt to clear Pinecone vectors; degrade gracefully if unavailable
                             try {
-                                /** @var \App\Services\Memory\SemanticMemoryService|null $semanticMemory */
-                                $semanticMemory = app()->bound(\App\Services\Memory\SemanticMemoryService::class)
-                                    ? app(\App\Services\Memory\SemanticMemoryService::class)
+                                /** @var SemanticMemoryService|null $semanticMemory */
+                                $semanticMemory = app()->bound(SemanticMemoryService::class)
+                                    ? app(SemanticMemoryService::class)
                                     : null;
 
                                 if ($semanticMemory) {
@@ -106,7 +110,7 @@ class ContactMemoryMaintenancePipeline
                             } catch (\Throwable $e) {
                                 $this->logService->warning('SemanticMemoryService delete failed during erase; continuing DB erase.', [
                                     'contact_id' => $contact->id,
-                                    'error'      => $e->getMessage(),
+                                    'error' => $e->getMessage(),
                                 ]);
                             }
 
@@ -123,32 +127,32 @@ class ContactMemoryMaintenancePipeline
                         throw new Exception("Unknown maintenance operation: {$operation}");
                 }
             } else {
-                throw new Exception("Global maintenance runs are currently disabled.");
+                throw new Exception('Global maintenance runs are currently disabled.');
             }
 
             $run->update([
                 'status' => 'completed',
                 'completed_at' => now(),
-                'results' => array_merge($run->results ?? [], $results)
+                'results' => array_merge($run->results ?? [], $results),
             ]);
 
-            $this->logService->info("Memory Maintenance completed", [
+            $this->logService->info('Memory Maintenance completed', [
                 'run_id' => $run->id,
-                'operation' => $operation
+                'operation' => $operation,
             ]);
 
-            event(new \App\Events\ContactMemoryMaintenanceCompleted($run, $contact ?? null));
+            event(new ContactMemoryMaintenanceCompleted($run, $contact ?? null));
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $run->update([
                 'status' => 'failed',
                 'completed_at' => now(),
-                'results' => array_merge($run->results ?? [], ['error' => $e->getMessage()])
+                'results' => array_merge($run->results ?? [], ['error' => $e->getMessage()]),
             ]);
-            
-            $this->logService->error("Memory Maintenance failed", [
+
+            $this->logService->error('Memory Maintenance failed', [
                 'run_id' => $run->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }

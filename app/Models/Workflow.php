@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 class Workflow extends BaseModel
@@ -11,16 +10,25 @@ class Workflow extends BaseModel
     protected $appends = ['progress', 'total_steps', 'completed_steps'];
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_RUNNING = 'running';
+
     public const STATUS_PAUSED = 'paused';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     public const TRIGGER_MANUAL = 'manual';
+
     public const TRIGGER_SCHEDULED = 'scheduled';
+
     public const TRIGGER_EVENT = 'event';
+
     public const TRIGGER_WEBHOOK = 'webhook';
 
     protected $fillable = [
@@ -131,6 +139,7 @@ class Workflow extends BaseModel
         if ($this->execution_count === 0) {
             return 0.0;
         }
+
         return round(($this->success_count / $this->execution_count) * 100, 2);
     }
 
@@ -184,7 +193,7 @@ class Workflow extends BaseModel
 
     public function getStatusLabelAttribute(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             self::STATUS_DRAFT => 'Draft',
             self::STATUS_ACTIVE => 'Active',
             self::STATUS_RUNNING => 'Running',
@@ -198,7 +207,7 @@ class Workflow extends BaseModel
 
     public function getTriggerTypeLabelAttribute(): string
     {
-        return match($this->trigger_type) {
+        return match ($this->trigger_type) {
             self::TRIGGER_MANUAL => 'Manual',
             self::TRIGGER_SCHEDULED => 'Scheduled',
             self::TRIGGER_EVENT => 'Event',
@@ -210,7 +219,9 @@ class Workflow extends BaseModel
     public function getProgressAttribute(): int
     {
         $totalSteps = count($this->steps ?? []);
-        if ($totalSteps === 0) return 0;
+        if ($totalSteps === 0) {
+            return 0;
+        }
 
         $completedSteps = collect($this->steps ?? [])
             ->where('status', 'completed')
@@ -237,8 +248,7 @@ class Workflow extends BaseModel
             'success' => true,
             'steps_executed' => count($this->steps ?? []),
             'workflow_id' => $this->id,
-            'result' => 'Executed workflow ' . $this->name,
+            'result' => 'Executed workflow '.$this->name,
         ];
     }
 }
-

@@ -2,7 +2,6 @@
 
 namespace App\Services\HedraSoul;
 
-use App\Models\SoulyRuntimeProfile;
 use App\Models\SoulyActionPolicy;
 
 /**
@@ -11,6 +10,7 @@ use App\Models\SoulyActionPolicy;
 class PolicyResult
 {
     public bool $allowed;
+
     public string $explanation;
 
     public function __construct(bool $allowed, string $explanation = '')
@@ -45,15 +45,15 @@ class SoulyActionPolicyService
         // Risk-level matrix: each mode declares what risk levels it permits.
         // This is the single source of truth — any risk outside the allowed set is blocked.
         $allowedRisks = match ($profile->autonomy_mode) {
-            'chat_only'         => ['read', 'draft'],
-            'copilot'           => ['read', 'draft', 'write_low'],
-            'operator'          => ['read', 'draft', 'write_low'],
+            'chat_only' => ['read', 'draft'],
+            'copilot' => ['read', 'draft', 'write_low'],
+            'operator' => ['read', 'draft', 'write_low'],
             'autopilot_limited' => ['read', 'draft', 'write_low'],
-            'emergency_paused'  => [],
-            default             => [],
+            'emergency_paused' => [],
+            default => [],
         };
 
-        if (!in_array($riskLevel, $allowedRisks)) {
+        if (! in_array($riskLevel, $allowedRisks)) {
             return new PolicyResult(
                 false,
                 "Action blocked: {$profile->autonomy_mode} mode does not permit risk level '{$riskLevel}'"

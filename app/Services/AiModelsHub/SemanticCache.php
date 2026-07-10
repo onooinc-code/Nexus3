@@ -24,17 +24,19 @@ class SemanticCache
 
         if ($cached !== null) {
             Log::info("SemanticCache: HIT for intent '{$intent}'");
+
             return $cached;
         }
 
         Log::debug("SemanticCache: MISS for intent '{$intent}'");
+
         return null;
     }
 
     /**
      * Store a response result in the semantic cache.
      */
-    public function put(string $intent, string $prompt, array $parameters, array $result, int $ttl = null): void
+    public function put(string $intent, string $prompt, array $parameters, array $result, ?int $ttl = null): void
     {
         $key = $this->buildCacheKey($intent, $prompt, $parameters);
         $ttl = $ttl ?? self::CACHE_TTL;
@@ -59,8 +61,8 @@ class SemanticCache
     protected function buildCacheKey(string $intent, string $prompt, array $parameters): string
     {
         $normalized = [
-            'intent'     => $intent,
-            'prompt'     => trim($prompt),
+            'intent' => $intent,
+            'prompt' => trim($prompt),
             'parameters' => $parameters,
         ];
 

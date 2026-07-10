@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Services\AiModelsHub\ProviderHealthMonitor;
+use Illuminate\Console\Command;
 
 class PollProviderHealth extends Command
 {
@@ -27,9 +27,9 @@ class PollProviderHealth extends Command
     public function handle(ProviderHealthMonitor $monitor)
     {
         $this->info('Starting AI provider health polling...');
-        
+
         $monitor->pollAllProviders();
-        
+
         $this->info('Health polling completed.');
     }
 }

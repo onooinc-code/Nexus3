@@ -29,7 +29,7 @@ class SyncWahaMessagesJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $jobId = 'sync_messages_' . time();
+        $jobId = 'sync_messages_'.time();
         $totalItems = 1000; // Mock total for now
         $processed = 0;
 
@@ -39,10 +39,10 @@ class SyncWahaMessagesJob implements ShouldQueue
         for ($i = 1; $i <= 10; $i++) {
             // Mock API delay
             sleep(1);
-            
+
             $processed += 100;
             $progress = round(($processed / $totalItems) * 100);
-            
+
             broadcast(new JobProgressUpdated($jobId, 'sync_messages', $progress, $processed, $totalItems, 'running', "Fetched batch $i/10..."));
             Log::info("Waha Sync Message batch $i processed.");
         }

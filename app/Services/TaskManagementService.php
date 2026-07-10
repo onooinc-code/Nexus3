@@ -3,10 +3,7 @@
 namespace App\Services;
 
 use App\Models\AgentTask;
-use App\Models\Contact;
-use App\Models\Conversation;
-use App\Models\Workflow;
-use App\Services\LogService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -80,14 +77,14 @@ class TaskManagementService
     public function create(array $data, $userId = null): AgentTask
     {
         $validatedData = $this->validateCreate($data);
-        
+
         // Set default values
         $validatedData['status'] = $this->getInitialStatus($validatedData['type']);
         $validatedData['progress'] = 0;
-        
+
         // Create the task
         $task = AgentTask::create($validatedData);
-        
+
         // Log the creation
         $this->logService->info('Task created via TaskManagementService', [
             'channel' => 'task',
@@ -107,15 +104,15 @@ class TaskManagementService
     public function update(AgentTask $task, array $data, $userId = null): AgentTask
     {
         $validatedData = $this->validateUpdate($data);
-        
+
         // Check if status transition is valid
         if (isset($validatedData['status'])) {
             $this->validateStatusTransition($task->status, $validatedData['status']);
         }
-        
+
         // Update the task
         $task->update($validatedData);
-        
+
         // Log the update
         $this->logService->info('Task updated via TaskManagementService', [
             'channel' => 'task',
@@ -195,8 +192,8 @@ class TaskManagementService
             ],
         ];
 
-        if (!isset($allowedTransitions[$fromStatus]) || 
-            !in_array($toStatus, $allowedTransitions[$fromStatus], true)) {
+        if (! isset($allowedTransitions[$fromStatus]) ||
+            ! in_array($toStatus, $allowedTransitions[$fromStatus], true)) {
             throw new \InvalidArgumentException(
                 "Invalid status transition from {$fromStatus} to {$toStatus}"
             );
@@ -206,7 +203,7 @@ class TaskManagementService
     /**
      * Get tasks by type
      */
-    public function getByType(string $type): \Illuminate\Database\Eloquent\Collection
+    public function getByType(string $type): Collection
     {
         return AgentTask::where('type', $type)->get();
     }

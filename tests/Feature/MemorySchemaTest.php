@@ -2,29 +2,28 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 /**
  * Schema Verification Tests for MemoryHub Phase 1 Database Migrations
- * 
+ *
  * This test file validates that all database migrations for the MemoryHub feature
  * have been applied correctly, specifically:
  * - Task 1.1: Add extraction fields to memories table
  * - Task 1.2: Add confidence scoring to structured_memories table
  * - Task 1.3: Create contact_memory_versions table
- * 
+ *
  * Requirements: 7.1 (confidence scoring), 10.1 (version history), 6.7 (extraction pipeline)
  */
 class MemorySchemaTest extends TestCase
 {
-    use \Illuminate\Foundation\Testing\RefreshDatabase;
+    use RefreshDatabase;
 
     /**
      * Test that structured_memories table has confidence column with correct default of 0.80
-     * 
+     *
      * Validates Requirement 7.1: Confidence scoring
      * - Every newly created structured memory SHALL have a confidence value between 0.00 and 1.00
      * - Default confidence SHALL be 0.80 when not explicitly provided
@@ -66,10 +65,9 @@ class MemorySchemaTest extends TestCase
         $this->assertContains('deleted_at', $columns, 'deleted_at column missing');
     }
 
-
     /**
      * Test that contact_memory_versions table exists with all required columns
-     * 
+     *
      * Validates Requirement 10.1: Memory Version History
      * - Every change to a structured memory SHALL be versioned
      * - Version entries capture: previous_content, new_content, diff, confidence changes, source, actor, timestamp
@@ -178,10 +176,9 @@ class MemorySchemaTest extends TestCase
         );
     }
 
-
     /**
      * Test that memories table has extraction fields for deduplication
-     * 
+     *
      * Validates Requirement 6.7: Memory Extraction Pipeline
      * - Episodic memories created by extraction SHALL have source_type set to 'extraction'
      * - is_extracted flag enables idempotency: prevents re-extraction of same conversation
@@ -211,7 +208,7 @@ class MemorySchemaTest extends TestCase
 
     /**
      * Test that structured_memories has required indexes for performance
-     * 
+     *
      * Validates Requirement 7.1: Confidence Scoring
      * - Index on (contact_id, confidence) enables efficient sorting by confidence descending
      * - Index on (contact_id, fact_type, status) enables filtering by status (active|low_confidence|expired)
@@ -239,7 +236,7 @@ class MemorySchemaTest extends TestCase
 
     /**
      * Test that contact_memory_versions has required indexes
-     * 
+     *
      * Validates Requirement 10.1: Memory Version History
      * - Index on (memory_id, memory_type) enables efficient retrieval of version history for a memory
      * - Index on (contact_id, created_at) enables audit trail queries and cleanup operations
@@ -265,7 +262,7 @@ class MemorySchemaTest extends TestCase
 
     /**
      * Test memories table has extraction-related indexes
-     * 
+     *
      * Validates Requirement 6.7: Extraction Pipeline
      * - Composite index on (contact_id, is_extracted) optimizes deduplication gate queries
      */
@@ -285,7 +282,7 @@ class MemorySchemaTest extends TestCase
 
     /**
      * Comprehensive test: verify all three migration sets are compatible
-     * 
+     *
      * This test ensures that the three Phase 1 migrations work together correctly
      */
     public function test_all_memory_migrations_applied_successfully()
@@ -312,4 +309,3 @@ class MemorySchemaTest extends TestCase
         }
     }
 }
-

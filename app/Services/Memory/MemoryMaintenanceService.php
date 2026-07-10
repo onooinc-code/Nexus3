@@ -2,11 +2,11 @@
 
 namespace App\Services\Memory;
 
+use App\Jobs\VectorizeMemoryJob;
+use App\Models\Agent;
 use App\Services\AiModelsHub\UniversalAiGatewayService;
 use App\Services\LogService;
-use App\Jobs\VectorizeMemoryJob;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 /**
  * MemoryMaintenanceService
@@ -28,7 +28,6 @@ class MemoryMaintenanceService
      * Identifies duplicates and contradictions, then merges or supersedes as appropriate.
      * Only processes records updated more than 24 hours ago (Req 8.7).
      *
-     * @param int $contactId
      * @return array Results including 'merged' and 'superseded' counts
      */
     public function runConsolidation(int $contactId): array
@@ -91,19 +90,19 @@ class MemoryMaintenanceService
      * Call AiModelsHub to identify memory conflicts.
      * Returns an array of conflict pairs with relationship type and which to keep/remove.
      *
-     * @param array $memories Array of memory records from structured_memories table
+     * @param  array  $memories  Array of memory records from structured_memories table
      * @return array Array of conflict pairs with format:
      *               [
-     *                   'keep_id' => int,
-     *                   'remove_id' => int,
-     *                   'relationship' => 'duplicate|contradictory',
-     *                   'contact_id' => int
+     *               'keep_id' => int,
+     *               'remove_id' => int,
+     *               'relationship' => 'duplicate|contradictory',
+     *               'contact_id' => int
      *               ]
      */
     protected function identifyMemoryConflicts(array $memories): array
     {
         // Format memories for the AI gateway
-        $formattedMemories = array_map(fn($mem) => [
+        $formattedMemories = array_map(fn ($mem) => [
             'id' => $mem->id,
             'fact_type' => $mem->fact_type,
             'data' => is_string($mem->data) ? json_decode($mem->data, true) : $mem->data,
@@ -116,25 +115,27 @@ class MemoryMaintenanceService
             // Call the AI gateway to analyze for conflicts
             // This would use a specialized prompt to identify semantic duplicates/contradictions
             $result = $this->aiGateway->executeWithAgent(
-                app(\App\Models\Agent::class),
+                app(Agent::class),
                 [
                     'input' => json_encode($formattedMemories),
                     'system_prompt' => $this->getConflictAnalysisPrompt(),
                 ]
             );
 
-            if (!$result['success'] || !isset($result['output'])) {
+            if (! $result['success'] || ! isset($result['output'])) {
                 $this->logService->warning('AiModelsHub conflict identification failed', [
                     'error' => $result['error'] ?? 'Unknown error',
                 ]);
+
                 return [];
             }
 
             // Parse the JSON response from the AI
             $pairs = json_decode($result['output'], true);
-            
-            if (!is_array($pairs)) {
+
+            if (! is_array($pairs)) {
                 $this->logService->warning('Invalid conflict identification response format');
+
                 return [];
             }
 
@@ -144,14 +145,13 @@ class MemoryMaintenanceService
                 'error' => $e->getMessage(),
                 'memory_count' => count($formattedMemories),
             ]);
+
             return [];
         }
     }
 
     /**
      * Get the system prompt for conflict analysis.
-     *
-     * @return string
      */
     protected function getConflictAnalysisPrompt(): string
     {
@@ -179,16 +179,15 @@ PROMPT;
      * Combines data, retains higher confidence, soft-deletes the redundant record,
      * and dispatches VectorizeMemoryJob for the kept record.
      *
-     * @param int $keepId ID of record to keep
-     * @param int $removeId ID of record to remove
-     * @return void
+     * @param  int  $keepId  ID of record to keep
+     * @param  int  $removeId  ID of record to remove
      */
     private function mergeRecords(int $keepId, int $removeId): void
     {
         $keep = DB::table('structured_memories')->find($keepId);
         $remove = DB::table('structured_memories')->find($removeId);
 
-        if (!$keep || !$remove) {
+        if (! $keep || ! $remove) {
             return;
         }
 
@@ -240,16 +239,15 @@ PROMPT;
      * Supersede an older record with a newer one.
      * Marks the older record as 'superseded' in metadata and soft-deletes it.
      *
-     * @param int $keepId ID of newer/correct record to keep
-     * @param int $removeId ID of older/incorrect record to supersede
-     * @return void
+     * @param  int  $keepId  ID of newer/correct record to keep
+     * @param  int  $removeId  ID of older/incorrect record to supersede
      */
     private function supersede(int $keepId, int $removeId): void
     {
         $keep = DB::table('structured_memories')->find($keepId);
         $remove = DB::table('structured_memories')->find($removeId);
 
-        if (!$keep || !$remove) {
+        if (! $keep || ! $remove) {
             return;
         }
 

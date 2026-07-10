@@ -2,24 +2,26 @@
 
 namespace App\Jobs;
 
+use App\Services\LogService;
+use App\Services\Memory\EpisodicMemoryService;
+use App\Services\Memory\GraphMemoryService;
+use App\Services\Memory\SemanticMemoryService;
+use App\Services\Memory\StructuredMemoryService;
+use App\Services\Memory\WorkingMemoryService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Services\LogService;
-use App\Services\Memory\WorkingMemoryService;
-use App\Services\Memory\EpisodicMemoryService;
-use App\Services\Memory\SemanticMemoryService;
-use App\Services\Memory\StructuredMemoryService;
-use App\Services\Memory\GraphMemoryService;
 
 class SyncMemoryJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $contactId;
+
     protected $memoryType;
+
     protected LogService $logService;
 
     /**
@@ -54,8 +56,8 @@ class SyncMemoryJob implements ShouldQueue
                 'context' => ['memoryType' => $this->memoryType],
             ]);
 
-            $typesToSync = $this->memoryType === 'all' 
-                ? ['working', 'episodic', 'semantic', 'structured', 'graph'] 
+            $typesToSync = $this->memoryType === 'all'
+                ? ['working', 'episodic', 'semantic', 'structured', 'graph']
                 : [$this->memoryType];
 
             foreach ($typesToSync as $type) {

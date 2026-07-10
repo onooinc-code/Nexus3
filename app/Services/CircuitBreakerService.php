@@ -2,14 +2,17 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Cache;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 
 class CircuitBreakerService
 {
     protected string $prefix = 'circuit_breaker:';
+
     protected int $failureThreshold;
+
     protected int $decaySeconds;
+
     protected int $halfOpenSeconds;
 
     public function __construct(int $failureThreshold = 5, int $decaySeconds = 300, int $halfOpenSeconds = 60)
@@ -41,6 +44,7 @@ class CircuitBreakerService
         try {
             $result = $callback();
             $this->resetState($key);
+
             return $result;
         } catch (Exception $exception) {
             $this->recordFailure($key, $state);
@@ -88,6 +92,6 @@ class CircuitBreakerService
 
     protected function getStateKey(string $serviceName): string
     {
-        return $this->prefix . $serviceName;
+        return $this->prefix.$serviceName;
     }
 }

@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\PeopleConnect;
 
+use App\Jobs\ProcessWahaWebhookJob;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
-use App\Jobs\ProcessWahaWebhookJob;
 
 class WahaWebhookTest extends TestCase
 {
@@ -26,7 +26,7 @@ class WahaWebhookTest extends TestCase
             'session' => 'default',
             'payload' => [
                 'id' => 'true_1234567890@c.us_3A...',
-            ]
+            ],
         ];
 
         $response = $this->postJson('/api/v1/webhooks/waha', $payload);
@@ -41,11 +41,11 @@ class WahaWebhookTest extends TestCase
             'session' => 'default',
             'payload' => [
                 'id' => 'true_1234567890@c.us_3A...',
-            ]
+            ],
         ];
 
         $response = $this->postJson('/api/v1/webhooks/waha', $payload, [
-            'x-waha-webhook-secret' => 'wrong-secret'
+            'x-waha-webhook-secret' => 'wrong-secret',
         ]);
 
         $response->assertStatus(401);
@@ -59,11 +59,11 @@ class WahaWebhookTest extends TestCase
         ];
 
         $response = $this->postJson('/api/v1/webhooks/waha', $payload, [
-            'x-waha-webhook-secret' => 'test-secret-123'
+            'x-waha-webhook-secret' => 'test-secret-123',
         ]);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['session', 'payload']);
+            ->assertJsonValidationErrors(['session', 'payload']);
     }
 
     public function test_accepts_valid_webhook_and_dispatches_job()
@@ -79,22 +79,22 @@ class WahaWebhookTest extends TestCase
                 'from' => '1234567890@c.us',
                 'to' => '0987654321@c.us',
                 'body' => 'Hello there',
-            ]
+            ],
         ];
 
         $response = $this->postJson('/api/v1/webhooks/waha', $payload, [
-            'x-waha-webhook-secret' => 'test-secret-123'
+            'x-waha-webhook-secret' => 'test-secret-123',
         ]);
 
         $response->assertStatus(202)
-                 ->assertJson(['message' => 'Webhook payload queued for processing']);
+            ->assertJson(['message' => 'Webhook payload queued for processing']);
 
-        Queue::assertPushed(ProcessWahaWebhookJob::class, function ($job) use ($payload) {
+        Queue::assertPushed(ProcessWahaWebhookJob::class, function ($job) {
             $reflection = new \ReflectionClass($job);
             $property = $reflection->getProperty('payload');
             $property->setAccessible(true);
             $jobPayload = $property->getValue($job);
-            
+
             return $jobPayload['event'] === 'message' &&
                    $jobPayload['session'] === 'default' &&
                    $jobPayload['payload']['id'] === 'true_1234567890@c.us_3A...';
@@ -114,14 +114,14 @@ class WahaWebhookTest extends TestCase
                 'from' => '1234567890@c.us',
                 'to' => '0987654321@c.us',
                 'body' => 'Hello there',
-            ]
+            ],
         ];
 
         $rawBody = json_encode($payload);
         $signature = hash_hmac('sha512', $rawBody, 'test-secret-123');
 
         $response = $this->postJson('/api/v1/webhooks/waha', $payload, [
-            'x-webhook-hmac' => $signature
+            'x-webhook-hmac' => $signature,
         ]);
 
         $response->assertStatus(202);
@@ -140,14 +140,14 @@ class WahaWebhookTest extends TestCase
                 'from' => '1234567890@c.us',
                 'to' => '0987654321@c.us',
                 'body' => 'Hello there',
-            ]
+            ],
         ];
 
         $rawBody = json_encode($payload);
         $signature = hash_hmac('sha256', $rawBody, 'test-secret-123');
 
         $response = $this->postJson('/api/v1/webhooks/waha', $payload, [
-            'x-waha-signature' => $signature
+            'x-waha-signature' => $signature,
         ]);
 
         $response->assertStatus(202);
@@ -160,11 +160,11 @@ class WahaWebhookTest extends TestCase
             'session' => 'default',
             'payload' => [
                 'id' => 'true_1234567890@c.us_3A...',
-            ]
+            ],
         ];
 
         $response = $this->postJson('/api/v1/webhooks/waha', $payload, [
-            'x-webhook-hmac' => 'invalid-hmac-signature-value'
+            'x-webhook-hmac' => 'invalid-hmac-signature-value',
         ]);
 
         $response->assertStatus(401);

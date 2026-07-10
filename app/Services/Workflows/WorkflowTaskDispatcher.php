@@ -3,10 +3,13 @@
 namespace App\Services\Workflows;
 
 use App\Models\Agent;
-use App\Models\AgentTask;
+use App\Models\Contact;
 use App\Models\WorkflowExecution;
 use App\Services\AgentExecutionService;
+use App\Services\AiModelsHub\UniversalAiGatewayService;
+use App\Services\ContactHubService;
 use App\Services\LogService;
+use App\Services\TaskManagementService;
 
 class WorkflowTaskDispatcher
 {
@@ -57,7 +60,7 @@ class WorkflowTaskDispatcher
     protected function createTaskStep(WorkflowExecution $execution, array $step, array $variables): array
     {
         $type = $step['assignee_type'] ?? $step['type'] ?? 'agent';
-        if (!in_array($type, ['manual', 'agent', 'system'])) {
+        if (! in_array($type, ['manual', 'agent', 'system'])) {
             $type = 'agent';
         }
 
@@ -66,7 +69,7 @@ class WorkflowTaskDispatcher
             'agent_id' => $step['agent_id'] ?? null,
             'title' => $step['task_title'] ?? $step['name'],
             'description' => $step['description'] ?? null,
-            'priority' => (int)($step['priority'] ?? 3),
+            'priority' => (int) ($step['priority'] ?? 3),
             'type' => $type,
             'contact_id' => $step['contact_id'] ?? null,
             'conversation_id' => $step['conversation_id'] ?? null,
@@ -77,7 +80,7 @@ class WorkflowTaskDispatcher
             ]),
         ];
 
-        $taskManagementService = app(\App\Services\TaskManagementService::class);
+        $taskManagementService = app(TaskManagementService::class);
         $task = $taskManagementService->create($taskData, $execution->user_id ?? null);
 
         return [
@@ -108,8 +111,8 @@ class WorkflowTaskDispatcher
 
         // 1. AI Actions
         if ($action === 'summarize' || $action === 'generate') {
-            $gateway = app(\App\Services\AiModelsHub\UniversalAiGatewayService::class);
-            $agent = \App\Models\Agent::where('is_active', true)->first() ?? new \App\Models\Agent();
+            $gateway = app(UniversalAiGatewayService::class);
+            $agent = Agent::where('is_active', true)->first() ?? new Agent;
 
             $systemPrompt = $action === 'summarize'
                 ? 'You are an AI assistant tasked with summarizing content clearly and concisely.'
@@ -121,7 +124,7 @@ class WorkflowTaskDispatcher
             }
 
             if ($action === 'summarize') {
-                $prompt = "Summarize the following: " . $promptInput;
+                $prompt = 'Summarize the following: '.$promptInput;
             } else {
                 $prompt = $promptInput;
             }
@@ -133,6 +136,7 @@ class WorkflowTaskDispatcher
 
             try {
                 $result = $gateway->executeWithAgent($agent, $context);
+
                 return [
                     'success' => true,
                     'output' => [
@@ -145,7 +149,7 @@ class WorkflowTaskDispatcher
             } catch (\Throwable $e) {
                 return [
                     'success' => false,
-                    'error' => 'AI execution failed: ' . $e->getMessage(),
+                    'error' => 'AI execution failed: '.$e->getMessage(),
                     'output' => ['action' => $action, 'variables_snapshot' => $variables],
                 ];
             }
@@ -153,10 +157,10 @@ class WorkflowTaskDispatcher
 
         // 2. ContactHub Actions
         if (in_array($action, ['create_contact', 'update_contact', 'enrich_contact'])) {
-            $contactHub = app(\App\Services\ContactHubService::class);
+            $contactHub = app(ContactHubService::class);
             try {
                 if ($action === 'create_contact') {
-                    $contact = \App\Models\Contact::create([
+                    $contact = Contact::create([
                         'name' => $input['name'] ?? 'New Workflow Contact',
                         'email' => $input['email'] ?? null,
                         'phone' => $input['phone'] ?? null,
@@ -165,6 +169,7 @@ class WorkflowTaskDispatcher
                         'attributes' => $input['attributes'] ?? [],
                     ]);
                     $contactHub->syncContactDetails($contact);
+
                     return [
                         'success' => true,
                         'output' => [
@@ -177,10 +182,10 @@ class WorkflowTaskDispatcher
 
                 if ($action === 'update_contact') {
                     $contactId = $input['contact_id'] ?? $variables['contact_id'] ?? null;
-                    if (!$contactId) {
+                    if (! $contactId) {
                         throw new \InvalidArgumentException('Missing contact_id for update_contact action.');
                     }
-                    $contact = \App\Models\Contact::findOrFail($contactId);
+                    $contact = Contact::findOrFail($contactId);
                     $contact->update(array_filter([
                         'name' => $input['name'] ?? null,
                         'email' => $input['email'] ?? null,
@@ -192,6 +197,7 @@ class WorkflowTaskDispatcher
                         $contact->save();
                     }
                     $contactHub->syncContactDetails($contact);
+
                     return [
                         'success' => true,
                         'output' => [
@@ -203,11 +209,12 @@ class WorkflowTaskDispatcher
 
                 if ($action === 'enrich_contact') {
                     $contactId = $input['contact_id'] ?? $variables['contact_id'] ?? null;
-                    if (!$contactId) {
+                    if (! $contactId) {
                         throw new \InvalidArgumentException('Missing contact_id for enrich_contact action.');
                     }
-                    $contact = \App\Models\Contact::findOrFail($contactId);
+                    $contact = Contact::findOrFail($contactId);
                     $enriched = $contactHub->enrichContact($contact, $input, 'workflow');
+
                     return [
                         'success' => true,
                         'output' => [
@@ -219,7 +226,7 @@ class WorkflowTaskDispatcher
             } catch (\Throwable $e) {
                 return [
                     'success' => false,
-                    'error' => 'Contact operation failed: ' . $e->getMessage(),
+                    'error' => 'Contact operation failed: '.$e->getMessage(),
                     'output' => ['action' => $action, 'variables_snapshot' => $variables],
                 ];
             }

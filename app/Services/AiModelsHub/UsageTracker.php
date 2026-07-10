@@ -2,10 +2,11 @@
 
 namespace App\Services\AiModelsHub;
 
-use Illuminate\Support\Facades\Log;
-use App\Models\AIProvider;
 use App\Models\AIModel;
+use App\Models\AIProvider;
 use App\Models\UsageLog;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class UsageTracker
 {
@@ -19,15 +20,16 @@ class UsageTracker
             $provider = AIProvider::find($providerId);
             $model = AIModel::find($modelId);
 
-            if (!$provider || !$model) {
-                Log::warning("Provider or model not found for usage tracking");
+            if (! $provider || ! $model) {
+                Log::warning('Provider or model not found for usage tracking');
+
                 return;
             }
 
             // Calculate costs (defaulting to 0 if cost fields are null)
             $inputCostRate = $model->input_cost_per_m ?? 0;
             $outputCostRate = $model->output_cost_per_m ?? 0;
-            
+
             $inputCost = ($inputTokens / 1000000) * $inputCostRate;
             $outputCost = ($outputTokens / 1000000) * $outputCostRate;
             $totalCost = $inputCost + $outputCost;
@@ -43,22 +45,22 @@ class UsageTracker
                 'total_cost' => $totalCost,
                 'timestamp' => now(),
             ];
-            
+
             // Assuming workspace_id might be added to UsageLog
             // $usageLogData['workspace_id'] = $workspaceId;
-            
+
             UsageLog::create($usageLogData);
 
             // Update budget
             if ($workspaceId && $totalCost > 0) {
-                \Illuminate\Support\Facades\DB::table('cost_budgets')
+                DB::table('cost_budgets')
                     ->where('workspace_id', $workspaceId)
                     ->where('is_active', true)
                     ->increment('current_spend', $totalCost);
             }
-            
+
             // Update global budget
-            \Illuminate\Support\Facades\DB::table('cost_budgets')
+            DB::table('cost_budgets')
                 ->whereNull('workspace_id')
                 ->where('is_active', true)
                 ->increment('current_spend', $totalCost);
@@ -74,7 +76,7 @@ class UsageTracker
      */
     public function checkBudget($workspaceId = null, $estimatedCost = 0)
     {
-        $budget = \Illuminate\Support\Facades\DB::table('cost_budgets')
+        $budget = DB::table('cost_budgets')
             ->where('workspace_id', $workspaceId)
             ->where('is_active', true)
             ->first();
@@ -84,7 +86,7 @@ class UsageTracker
         }
 
         // Also check global budget
-        $globalBudget = \Illuminate\Support\Facades\DB::table('cost_budgets')
+        $globalBudget = DB::table('cost_budgets')
             ->whereNull('workspace_id')
             ->where('is_active', true)
             ->first();

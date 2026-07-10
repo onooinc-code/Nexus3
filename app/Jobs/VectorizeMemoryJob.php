@@ -2,9 +2,9 @@
 
 namespace App\Jobs;
 
+use App\Events\MemoryVectorized;
 use App\Models\Memory;
-use App\Models\ApiKey;
-use Illuminate\Support\Facades\Http;
+use App\Services\AiModelsHub\UniversalAiGatewayService;
 use Exception;
 
 /**
@@ -28,23 +28,19 @@ class VectorizeMemoryJob extends BaseJob
 
     /**
      * Job timeout.
-     *
-     * @var int
      */
     public int $timeout = 120;
 
     /**
      * Number of retry attempts.
-     *
-     * @var int
      */
     public int $tries = 2;
 
     /**
      * Constructor.
      *
-     * @param string $memoryId Memory UUID
-     * @param string $content Content to vectorize
+     * @param  string  $memoryId  Memory UUID
+     * @param  string  $content  Content to vectorize
      */
     public function __construct(
         protected string $memoryId,
@@ -56,7 +52,6 @@ class VectorizeMemoryJob extends BaseJob
     /**
      * Execute the job - Generate vector embedding.
      *
-     * @return void
      * @throws Exception
      */
     public function handle(): void
@@ -73,23 +68,24 @@ class VectorizeMemoryJob extends BaseJob
                     'reason' => 'idempotent_skip',
                     'memory_id' => $this->memoryId,
                 ]);
+
                 return;
             }
 
             // Fetch memory model
             $memory = $this->safelyGetModel(Memory::class, $this->memoryId);
-            if (!$memory) {
+            if (! $memory) {
                 throw new Exception("Memory not found: {$this->memoryId}");
             }
 
             // Call AiModelsHub Gateway for Embeddings
             $startTime = microtime(true);
-            $gateway = app(\App\Services\AiModelsHub\UniversalAiGatewayService::class);
+            $gateway = app(UniversalAiGatewayService::class);
             $vector = $gateway->generateEmbeddings($this->content);
             $durationMs = round((microtime(true) - $startTime) * 1000, 2);
 
             if (empty($vector)) {
-                throw new Exception("Failed to generate embedding: empty vector returned from Gateway");
+                throw new Exception('Failed to generate embedding: empty vector returned from Gateway');
             }
 
             // Update memory with embedding vector
@@ -106,7 +102,7 @@ class VectorizeMemoryJob extends BaseJob
             ]);
 
             // Broadcast event that memory has been vectorized
-            event(new \App\Events\MemoryVectorized(
+            event(new MemoryVectorized(
                 $this->memoryId,
                 count($vector)
             ));
@@ -135,8 +131,6 @@ class VectorizeMemoryJob extends BaseJob
 
     /**
      * Extract idempotency data from job properties.
-     *
-     * @return array
      */
     protected function extractIdempotencyData(): array
     {

@@ -2,12 +2,12 @@
 
 namespace App\Events\PeopleConnect;
 
+use App\Models\PeopleConnect\PeopleConnectMessage;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\PeopleConnect\PeopleConnectMessage;
 
 class MessageFailed implements ShouldBroadcast
 {
@@ -20,10 +20,13 @@ class MessageFailed implements ShouldBroadcast
 
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('peopleconnect.conversation.' . $this->message->conversation_id)];
+        return [new PrivateChannel('peopleconnect.conversation.'.$this->message->conversation_id)];
     }
 
-    public function broadcastAs(): string { return 'message.failed'; }
+    public function broadcastAs(): string
+    {
+        return 'message.failed';
+    }
 
     public function broadcastWith(): array
     {

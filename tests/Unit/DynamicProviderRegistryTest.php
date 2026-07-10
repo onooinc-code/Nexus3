@@ -2,14 +2,12 @@
 
 namespace Tests\Unit;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Tests\TestCase;
-use App\Services\AiModelsHub\DynamicProviderRegistry;
-use App\Services\AiModelsHub\EncryptedApiKeyStorage;
-use App\Models\AIProvider;
-use App\Models\AIModel;
 use App\Models\AIApiKey;
+use App\Models\AIProvider;
+use App\Services\AiModelsHub\DynamicProviderRegistry;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Crypt;
+use Tests\TestCase;
 
 class DynamicProviderRegistryTest extends TestCase
 {
@@ -28,10 +26,9 @@ class DynamicProviderRegistryTest extends TestCase
 
         $apiKey = AIApiKey::factory()->create([
             'provider_id' => $provider->id,
-            'key_hash' => \Illuminate\Support\Facades\Crypt::encryptString('test-key'),
+            'key_hash' => Crypt::encryptString('test-key'),
             'is_active' => true,
         ]);
-
 
         $registry = $this->app->make(DynamicProviderRegistry::class);
 
@@ -113,9 +110,9 @@ class DynamicProviderRegistryTest extends TestCase
                         'id' => 'test-model-2',
                         'name' => 'Test Model 2',
                         'context_length' => 8192,
-                    ]
-                ]
-            ], 200, ['Content-Type' => 'application/json'])
+                    ],
+                ],
+            ], 200, ['Content-Type' => 'application/json']),
         ]);
 
         $registry = $this->app->make(DynamicProviderRegistry::class);

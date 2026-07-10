@@ -2,8 +2,8 @@
 
 namespace App\Services\AiModelsHub;
 
-use Illuminate\Support\Facades\Log;
 use App\Models\AIModel;
+use Illuminate\Support\Facades\Log;
 
 class UsageCalculator
 {
@@ -13,9 +13,10 @@ class UsageCalculator
     public static function calculateCost(string $modelId, int $inputTokens, int $outputTokens = 0): float
     {
         $aiModel = AIModel::find($modelId);
-        
-        if (!$aiModel) {
+
+        if (! $aiModel) {
             Log::warning("Model not found for ID: {$modelId}");
+
             return 0.0;
         }
 
@@ -39,8 +40,8 @@ class UsageCalculator
     public static function getCostPerToken(string $modelId): array
     {
         $aiModel = AIModel::find($modelId);
-        
-        if (!$aiModel) {
+
+        if (! $aiModel) {
             return [
                 'input' => 0.0,
                 'output' => 0.0,
@@ -61,7 +62,7 @@ class UsageCalculator
         $inputTokens = $usage['input_tokens'] ?? $usage['prompt_tokens'] ?? 0;
         $outputTokens = $usage['output_tokens'] ?? $usage['completion_tokens'] ?? 0;
         $totalTokens = $usage['total_tokens'] ?? self::calculateTotalTokens($inputTokens, $outputTokens);
-        
+
         $cost = self::calculateCost($modelId, $inputTokens, $outputTokens);
         $costPerToken = self::getCostPerToken($modelId);
 

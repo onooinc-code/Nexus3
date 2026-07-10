@@ -7,7 +7,7 @@ use App\Models\AgentSkill;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AgentSkill>
+ * @extends Factory<AgentSkill>
  */
 class AgentSkillFactory extends Factory
 {

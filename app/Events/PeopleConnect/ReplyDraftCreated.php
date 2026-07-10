@@ -2,12 +2,12 @@
 
 namespace App\Events\PeopleConnect;
 
+use App\Models\PeopleConnect\PeopleConnectReplyDraft;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\PeopleConnect\PeopleConnectReplyDraft;
 
 class ReplyDraftCreated implements ShouldBroadcast
 {
@@ -17,10 +17,13 @@ class ReplyDraftCreated implements ShouldBroadcast
 
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('peopleconnect.conversation.' . $this->draft->conversation_id)];
+        return [new PrivateChannel('peopleconnect.conversation.'.$this->draft->conversation_id)];
     }
 
-    public function broadcastAs(): string { return 'reply.draft.created'; }
+    public function broadcastAs(): string
+    {
+        return 'reply.draft.created';
+    }
 
     public function broadcastWith(): array
     {

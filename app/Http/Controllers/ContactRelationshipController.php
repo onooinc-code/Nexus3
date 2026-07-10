@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use App\Models\ContactRelationship;
 use App\Services\LogService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class ContactRelationshipController extends Controller
 {

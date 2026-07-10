@@ -4,34 +4,27 @@ namespace App\Services\Contact;
 
 use App\Models\Contact;
 use App\Models\ContactImportBatch;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class ContactImportPipeline
 {
     protected WhatsAppImportParser $whatsappParser;
+
     protected FacebookImportParser $facebookParser;
+
     protected ContactMessageNormalizer $normalizer;
+
     protected WahaImportService $wahaService;
 
     public function __construct()
     {
-        $this->whatsappParser = new WhatsAppImportParser();
-        $this->facebookParser = new FacebookImportParser();
-        $this->normalizer = new ContactMessageNormalizer();
-        $this->wahaService = new WahaImportService();
+        $this->whatsappParser = new WhatsAppImportParser;
+        $this->facebookParser = new FacebookImportParser;
+        $this->normalizer = new ContactMessageNormalizer;
+        $this->wahaService = new WahaImportService;
     }
-
-
 
     /**
      * Import and commit messages
-     *
-     * @param ContactImportBatch $batch
-     * @param string $content
-     * @param string $format
-     * @param string|null $timezone
-     * @return array
      */
     public function commit(
         ContactImportBatch $batch,
@@ -84,17 +77,8 @@ class ContactImportPipeline
         }
     }
 
-
-
     /**
      * Parse import content based on source and format
-     *
-     * @param string $source
-     * @param string $content
-     * @param string $format
-     * @param Contact $contact
-     * @param string|null $timezone
-     * @return array
      */
     public function parse(
         string $source,
@@ -103,7 +87,7 @@ class ContactImportPipeline
         Contact $contact,
         ?string $timezone
     ): array {
-        return match($source) {
+        return match ($source) {
             'whatsapp' => $this->parseWhatsApp($content, $format, $contact, $timezone),
             'whatsapp_waha' => $this->parseWaha($content),
             'facebook' => $this->parseFacebook($content, $format, $timezone),
@@ -117,17 +101,12 @@ class ContactImportPipeline
     private function parseWaha(string $content): array
     {
         $data = json_decode($content, true);
+
         return $this->wahaService->fetchAndParseMessages($data['session'], $data['chatId'], $data['limit'] ?? 100);
     }
 
     /**
      * Parse WhatsApp export
-     *
-     * @param string $content
-     * @param string $format
-     * @param Contact $contact
-     * @param string $timezone
-     * @return array
      */
     private function parseWhatsApp(
         string $content,
@@ -137,7 +116,7 @@ class ContactImportPipeline
     ): array {
         $phoneNumber = $contact->whatsapp_number ?? $contact->phone ?? '';
 
-        return match($format) {
+        return match ($format) {
             'txt' => $this->whatsappParser->parseTxt($content, $phoneNumber, $timezone),
             'json' => $this->whatsappParser->parseJson($content, $phoneNumber, $timezone),
             default => throw new \InvalidArgumentException("Unknown WhatsApp format: {$format}"),
@@ -146,18 +125,13 @@ class ContactImportPipeline
 
     /**
      * Parse Facebook export
-     *
-     * @param string $content
-     * @param string $format
-     * @param string $timezone
-     * @return array
      */
     private function parseFacebook(
         string $content,
         string $format,
         string $timezone
     ): array {
-        return match($format) {
+        return match ($format) {
             'txt' => $this->facebookParser->parseTxt($content, $timezone),
             'json' => $this->facebookParser->parseJson($content, $timezone),
             default => throw new \InvalidArgumentException("Unknown Facebook format: {$format}"),
@@ -166,9 +140,6 @@ class ContactImportPipeline
 
     /**
      * Get date range from messages
-     *
-     * @param array $messages
-     * @return array|null
      */
     public function getDateRange(array $messages): ?array
     {
@@ -176,7 +147,7 @@ class ContactImportPipeline
             return null;
         }
 
-        $timestamps = array_map(fn($m) => strtotime($m['timestamp']), $messages);
+        $timestamps = array_map(fn ($m) => strtotime($m['timestamp']), $messages);
 
         return [
             'earliest' => date('Y-m-d', min($timestamps)),

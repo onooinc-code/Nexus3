@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\PeopleConnect;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
+use App\Models\Contact;
 use App\Models\PeopleConnect\PeopleConnectConversation;
 use App\Models\PeopleConnect\PeopleConnectSession;
-use App\Models\Contact;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PeopleConnectController extends Controller
 {
@@ -23,27 +22,28 @@ class PeopleConnectController extends Controller
             'total_contacts' => $totalContacts,
             'active_sessions' => $activeSessions,
             'unread_conversations' => $unreadConversations,
-            'status' => 'healthy'
+            'status' => 'healthy',
         ]);
     }
 
     public function search(Request $request): JsonResponse
     {
         $query = $request->input('q');
-        
+
         if (empty($query)) {
             $recent = PeopleConnectConversation::with('contact')
                 ->orderBy('last_message_at', 'desc')
                 ->take(20)
                 ->get();
+
             return response()->json($recent);
         }
 
         $contacts = Contact::whereHas('peopleConnectConversations')
             ->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
-                  ->orWhere('phone', 'like', "%{$query}%")
-                  ->orWhere('whatsapp_number', 'like', "%{$query}%");
+                    ->orWhere('phone', 'like', "%{$query}%")
+                    ->orWhere('whatsapp_number', 'like', "%{$query}%");
             })
             ->with(['peopleConnectConversations' => function ($q) {
                 $q->select('id', 'contact_id', 'channel', 'status', 'unread_count', 'last_message_preview', 'last_message_at');
@@ -63,7 +63,7 @@ class PeopleConnectController extends Controller
             },
             'messages' => function ($q) {
                 $q->orderBy('created_at', 'desc')->take(50);
-            }
+            },
         ])->findOrFail($id);
 
         return response()->json($conversation);
@@ -72,17 +72,17 @@ class PeopleConnectController extends Controller
     public function updateReplyMode(Request $request, int $id): JsonResponse
     {
         $request->validate([
-            'reply_mode' => 'required|in:manual,auto,hybrid,ai_only'
+            'reply_mode' => 'required|in:manual,auto,hybrid,ai_only',
         ]);
 
         $conversation = PeopleConnectConversation::findOrFail($id);
         $conversation->update([
-            'reply_mode_effective' => $request->input('reply_mode')
+            'reply_mode_effective' => $request->input('reply_mode'),
         ]);
 
         return response()->json([
             'message' => 'Reply mode updated successfully',
-            'conversation' => $conversation
+            'conversation' => $conversation,
         ]);
     }
 }

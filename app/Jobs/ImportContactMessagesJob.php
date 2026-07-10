@@ -2,9 +2,11 @@
 
 namespace App\Jobs;
 
+use App\Events\ContactImportCompleted;
+use App\Models\ContactAuditEvent;
 use App\Models\ContactImportBatch;
 use App\Services\Contact\ContactImportPipeline;
-use App\Models\ContactAuditEvent;
+use Illuminate\Support\Facades\Redis;
 use Throwable;
 
 class ImportContactMessagesJob extends BaseJob
@@ -23,14 +25,14 @@ class ImportContactMessagesJob extends BaseJob
         $result = $pipeline->commit($this->batch, $this->content, $this->format, $this->timezone);
 
         if ($result['success']) {
-            event(new \App\Events\ContactImportCompleted($this->batch->contact, $result['created'], $this->batch->source, 'completed'));
-            
+            event(new ContactImportCompleted($this->batch->contact, $result['created'], $this->batch->source, 'completed'));
+
             try {
-                $redis = \Illuminate\Support\Facades\Redis::connection('cache');
+                $redis = Redis::connection('cache');
                 $prefix = config('cache.prefix');
                 $keys = $redis->keys("*{$prefix}:contact_{$this->batch->contact_id}_messages_*");
                 foreach ($keys as $key) {
-                    $redis->del(str_replace($prefix . ':', '', $key));
+                    $redis->del(str_replace($prefix.':', '', $key));
                 }
             } catch (\Exception $e) {
                 // Ignore
@@ -48,7 +50,7 @@ class ImportContactMessagesJob extends BaseJob
         ContactAuditEvent::create([
             'contact_id' => $this->batch->contact_id,
             'action' => 'import_failed',
-            'description' => "Import batch {$this->batch->id} failed: " . $exception->getMessage()
+            'description' => "Import batch {$this->batch->id} failed: ".$exception->getMessage(),
         ]);
     }
 }

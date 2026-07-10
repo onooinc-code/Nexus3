@@ -3,12 +3,12 @@
 namespace App\Services;
 
 use App\Models\Contact;
-use App\Models\ContactMessage;
 use App\Models\ContactAnalysisRun;
-use App\Models\ContactMemory;
 use App\Models\ContactImportBatch;
-use Illuminate\Support\Facades\Cache;
+use App\Models\ContactMemory;
+use App\Models\ContactMessage;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class ContactAnalyticsService
 {
@@ -20,18 +20,18 @@ class ContactAnalyticsService
         return Cache::remember('contacthub:global_stats', 60, function () {
             $totalContacts = Contact::count();
             $activeContacts = Contact::where('is_active', true)->count();
-            
+
             // Stats from vNext schema
             $newImportedMessages = ContactMessage::count();
             $pendingAnalysisRuns = ContactAnalysisRun::where('status', 'pending')->count();
-            
+
             // Stale memories: last validated more than 30 days ago
             $staleMemories = ContactMemory::where('last_validated_at', '<', now()->subDays(30))
                 ->orWhereNull('last_validated_at')
                 ->count();
-                
+
             $autonomousReplyCount = Contact::where('reply_mode_override', 'autopilot')->count();
-            
+
             $failedImports = ContactImportBatch::where('status', 'failed')->count();
             $failedAnalysis = ContactAnalysisRun::where('status', 'failed')->count();
 

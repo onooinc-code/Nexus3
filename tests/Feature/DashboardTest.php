@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class DashboardTest extends TestCase
@@ -130,8 +131,8 @@ class DashboardTest extends TestCase
                         'status',
                         'latency_ms',
                         'error_rate',
-                    ]
-                ]
+                    ],
+                ],
             ]);
     }
 
@@ -154,7 +155,7 @@ class DashboardTest extends TestCase
                 'message' => 'High latency detected',
                 'channel' => 'System',
                 'created_at' => now(),
-            ]
+            ],
         ]);
 
         $response = $this->actingAs($this->user, 'sanctum')
@@ -169,7 +170,7 @@ class DashboardTest extends TestCase
                         'message',
                         'severity',
                         'created_at',
-                    ]
+                    ],
                 ],
                 'next_cursor',
             ]);
@@ -184,7 +185,7 @@ class DashboardTest extends TestCase
     public function test_job_retry_endpoint_requeues_job(): void
     {
         $jobId = DB::table('failed_jobs')->insertGetId([
-            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'uuid' => (string) Str::uuid(),
             'connection' => 'redis',
             'queue' => 'default',
             'payload' => json_encode(['displayName' => 'TestJob']),
@@ -198,7 +199,7 @@ class DashboardTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'message' => 'Job re-queued successfully.',
-                'status' => 'pending'
+                'status' => 'pending',
             ]);
 
         $this->assertDatabaseMissing('failed_jobs', ['id' => $jobId]);
@@ -211,9 +212,9 @@ class DashboardTest extends TestCase
     {
         // Check which table exists or mock both updates
         $tableName = 'proactive_suggestions';
-        if (!\Schema::hasTable($tableName)) {
+        if (! \Schema::hasTable($tableName)) {
             $tableName = 'proactive_logs';
-            if (!\Schema::hasTable($tableName)) {
+            if (! \Schema::hasTable($tableName)) {
                 $this->markTestSkipped('Proactive suggestions table not found.');
             }
         }
@@ -235,7 +236,7 @@ class DashboardTest extends TestCase
 
         $this->assertDatabaseHas($tableName, [
             'id' => $suggestionId,
-            'status' => 'approved'
+            'status' => 'approved',
         ]);
 
         // Dismiss
@@ -245,7 +246,7 @@ class DashboardTest extends TestCase
 
         $this->assertDatabaseHas($tableName, [
             'id' => $suggestionId,
-            'status' => 'dismissed'
+            'status' => 'dismissed',
         ]);
     }
 }

@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WorkflowWebhook extends Model
 {
-    use \Illuminate\Database\Eloquent\Factories\HasFactory;
-use HasUuids;
+    use HasFactory;
+    use HasUuids;
 
     protected $fillable = [
         'workflow_id',

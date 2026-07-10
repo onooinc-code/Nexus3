@@ -2,8 +2,6 @@
 
 namespace App\Services\Routing;
 
-use Illuminate\Support\Facades\Log;
-
 class ToneRouter
 {
     protected array $tones = [
@@ -49,7 +47,7 @@ class ToneRouter
 
     public function setContactTonePreference(string $contactId, string $tone): void
     {
-        if (!isset($this->tones[$tone])) {
+        if (! isset($this->tones[$tone])) {
             throw new \InvalidArgumentException("Unknown tone: {$tone}");
         }
         $this->contactTonePreferences[$contactId] = $tone;
@@ -72,7 +70,7 @@ class ToneRouter
             $tone = $this->getToneForContact($contactId);
         }
 
-        if (!isset($this->tones[$tone])) {
+        if (! isset($this->tones[$tone])) {
             return [
                 'success' => false,
                 'error' => "Unknown tone: {$tone}",
@@ -131,10 +129,10 @@ class ToneRouter
         $base = $instructions[$tone] ?? $instructions['professional'];
 
         if ($config['emoji'] ?? false) {
-            $base .= " Use emojis where appropriate.";
+            $base .= ' Use emojis where appropriate.';
         }
         if (($config['formality'] ?? 'medium') === 'high') {
-            $base .= " Maintain a high level of formality.";
+            $base .= ' Maintain a high level of formality.';
         }
 
         return $base;
@@ -149,6 +147,7 @@ class ToneRouter
                 'formality' => $config['formality'],
             ];
         }
+
         return $result;
     }
 }

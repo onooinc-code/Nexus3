@@ -3,8 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\Agent;
-use App\Models\Workflow;
+use App\Models\AgentSkill;
+use App\Models\AgentTool;
 use App\Models\Contact;
+use App\Models\User;
+use App\Models\Workflow;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,7 +18,7 @@ class PerformanceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $user = \App\Models\User::factory()->create([
+        $user = User::factory()->create([
             'is_admin' => true,
             'is_super_admin' => true,
         ]);
@@ -67,8 +70,8 @@ class PerformanceTest extends TestCase
         $this->markTestSkipped('Factory creates duplicate unique keys');
         // Create an agent with skills and tasks::factory()->create();
         $agent = Agent::factory()->create();
-        \App\Models\AgentTool::factory()->count(3)->create(['agent_id' => $agent->id]);
-        \App\Models\AgentSkill::factory()->count(3)->create(['agent_id' => $agent->id]);
+        AgentTool::factory()->count(3)->create(['agent_id' => $agent->id]);
+        AgentSkill::factory()->count(3)->create(['agent_id' => $agent->id]);
 
         $response = $this->getJson("/api/v1/agents/{$agent->id}");
 
@@ -105,6 +108,6 @@ class PerformanceTest extends TestCase
         $endMemory = memory_get_usage();
         $memoryIncrease = $endMemory - $startMemory;
 
-        $this->assertLessThan(50 * 1024 * 1024, $memoryIncrease, "Memory usage increased by " . round($memoryIncrease / 1024 / 1024, 2) . "MB");
+        $this->assertLessThan(50 * 1024 * 1024, $memoryIncrease, 'Memory usage increased by '.round($memoryIncrease / 1024 / 1024, 2).'MB');
     }
 }

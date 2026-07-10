@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class ProactiveSchedulerCommand extends Command
 {
@@ -36,7 +36,7 @@ class ProactiveSchedulerCommand extends Command
             ->get();
 
         foreach ($triggers as $trigger) {
-            $this->info('Executing trigger: ' . $trigger->id);
+            $this->info('Executing trigger: '.$trigger->id);
             Log::info('Proactive trigger execution started', ['trigger_id' => $trigger->id]);
 
             try {
@@ -44,7 +44,7 @@ class ProactiveSchedulerCommand extends Command
                 $ecaRule = DB::table('eca_rules')->where('id', $trigger->eca_rule_id)->first();
                 if ($ecaRule && $ecaRule->is_active) {
                     $actions = json_decode($ecaRule->actions, true);
-                    
+
                     if (isset($actions['notify'])) {
                         // Integrate with NotificationHub
                         DB::table('notification_logs')->insert([
@@ -53,17 +53,17 @@ class ProactiveSchedulerCommand extends Command
                             'body' => $actions['notify']['message'] ?? 'Autonomous action triggered.',
                             'status' => 'pending',
                             'created_at' => Carbon::now(),
-                            'updated_at' => Carbon::now()
+                            'updated_at' => Carbon::now(),
                         ]);
                     }
 
                     // Log autonomous action
                     DB::table('autonomous_logs')->insert([
                         'action_taken' => 'Executed scheduled trigger',
-                        'reasoning' => 'Time-based condition met for ECA rule: ' . $ecaRule->name,
+                        'reasoning' => 'Time-based condition met for ECA rule: '.$ecaRule->name,
                         'status' => 'completed',
                         'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now()
+                        'updated_at' => Carbon::now(),
                     ]);
                 }
 
@@ -71,7 +71,7 @@ class ProactiveSchedulerCommand extends Command
                     ->where('id', $trigger->id)
                     ->update([
                         'status' => 'completed',
-                        'updated_at' => Carbon::now()
+                        'updated_at' => Carbon::now(),
                     ]);
 
             } catch (\Exception $e) {
@@ -80,7 +80,7 @@ class ProactiveSchedulerCommand extends Command
                     ->where('id', $trigger->id)
                     ->update([
                         'status' => 'failed',
-                        'updated_at' => Carbon::now()
+                        'updated_at' => Carbon::now(),
                     ]);
             }
         }

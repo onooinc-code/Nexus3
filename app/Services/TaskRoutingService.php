@@ -5,12 +5,12 @@ namespace App\Services;
 use App\Models\Agent;
 use App\Models\AgentTask;
 use App\Models\Workflow;
-use App\Services\AgentRegistry;
 use Illuminate\Support\Facades\Log;
 
 class TaskRoutingService
 {
     protected AgentRegistry $registry;
+
     protected array $routes = [];
 
     public function __construct(AgentRegistry $registry)
@@ -48,7 +48,7 @@ class TaskRoutingService
             }
         }
 
-        Log::warning("No suitable agent found for task", [
+        Log::warning('No suitable agent found for task', [
             'task_id' => $task->id,
             'agent_type' => $agentType,
         ]);

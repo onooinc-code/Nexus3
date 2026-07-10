@@ -84,3 +84,11 @@ Broadcast::channel('peopleconnect.conversation.{conversationId}', function (User
 Broadcast::channel('hedrasoul.hub.{userId}', function (User $user, int $userId) {
     return (int) $user->id === (int) $userId;
 });
+
+/**
+ * Settings Hub Channels
+ */
+Broadcast::channel('settings.activity', function (User $user) {
+    // Only super-admins should be able to subscribe to settings activity for security.
+    return (bool) $user->is_super_admin === true || in_array($user->email, config('broadcasting.admin_emails', []), true);
+});

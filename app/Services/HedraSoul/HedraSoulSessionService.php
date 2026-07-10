@@ -18,7 +18,7 @@ class HedraSoulSessionService
             ->orderBy('opened_at', 'desc')
             ->first();
 
-        if (!$session) {
+        if (! $session) {
             $session = HedrasoulSession::create([
                 'user_id' => Auth::id(),
                 'title' => 'Default Session',
@@ -93,6 +93,7 @@ class HedraSoulSessionService
     public function updateSession(HedrasoulSession $session, array $data): HedrasoulSession
     {
         $session->update($data);
+
         return $session;
     }
 
@@ -100,7 +101,7 @@ class HedraSoulSessionService
     {
         return HedrasoulSession::create([
             'user_id' => Auth::id(),
-            'title' => $data['title'] ?? 'Session ' . now()->toDateTimeString(),
+            'title' => $data['title'] ?? 'Session '.now()->toDateTimeString(),
             'status' => 'active',
             'opened_at' => now(),
             'last_autonomy_mode' => $data['mode'] ?? null,
@@ -115,4 +116,3 @@ class HedraSoulSessionService
             ->first();
     }
 }
-

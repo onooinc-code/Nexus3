@@ -2,11 +2,10 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Log;
-
 class WorkflowValidationService
 {
     protected array $requiredStepFields = ['name', 'action'];
+
     protected array $validActions = [
         'process',
         'delay',
@@ -32,7 +31,7 @@ class WorkflowValidationService
             $errors[] = 'Workflow name is required';
         }
 
-        if (empty($workflowData['steps']) || !is_array($workflowData['steps'])) {
+        if (empty($workflowData['steps']) || ! is_array($workflowData['steps'])) {
             $errors[] = 'Workflow must have at least one step';
         } else {
             $stepErrors = $this->validateSteps($workflowData['steps']);
@@ -54,7 +53,7 @@ class WorkflowValidationService
         }
 
         $action = $step['action'] ?? $step['type'] ?? 'process';
-        if (!in_array($action, $this->validActions)) {
+        if (! in_array($action, $this->validActions)) {
             $errors[] = "Invalid step action: {$action}";
         }
 
@@ -66,7 +65,7 @@ class WorkflowValidationService
             $errors[] = 'Condition step must have a condition definition';
         }
 
-        if ($action === 'delay' && (!isset($step['duration']) || $step['duration'] < 0)) {
+        if ($action === 'delay' && (! isset($step['duration']) || $step['duration'] < 0)) {
             $errors[] = 'Delay step must have a non-negative duration';
         }
 
@@ -84,9 +83,9 @@ class WorkflowValidationService
 
         foreach ($steps as $index => $step) {
             $result = $this->validateStep($step);
-            if (!$result['valid']) {
+            if (! $result['valid']) {
                 foreach ($result['errors'] as $error) {
-                    $errors[] = "Step " . ($index + 1) . ": {$error}";
+                    $errors[] = 'Step '.($index + 1).": {$error}";
                 }
             }
         }
@@ -99,7 +98,7 @@ class WorkflowValidationService
         $errors = [];
 
         foreach ($required as $field) {
-            if (!array_key_exists($field, $context)) {
+            if (! array_key_exists($field, $context)) {
                 $errors[] = "Missing required context field: {$field}";
             }
         }

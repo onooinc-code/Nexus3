@@ -2,8 +2,10 @@
 
 namespace App\Jobs;
 
-use App\Models\ContactImportBatch;
+use App\Events\ContactIdentityConflictDetected;
 use App\Models\ContactAuditEvent;
+use App\Models\ContactIdentifier;
+use App\Models\ContactImportBatch;
 use Throwable;
 
 class ResolveContactImportIdentitiesJob extends BaseJob
@@ -17,20 +19,20 @@ class ResolveContactImportIdentitiesJob extends BaseJob
     public function handle(): void
     {
         $contact = $this->batch->contact;
-        if (!$contact) {
+        if (! $contact) {
             return;
         }
 
         $identifiers = $contact->identifiers()->pluck('value')->toArray();
-        if (!empty($identifiers)) {
-            $conflicts = \App\Models\ContactIdentifier::whereIn('value', $identifiers)
+        if (! empty($identifiers)) {
+            $conflicts = ContactIdentifier::whereIn('value', $identifiers)
                 ->where('contact_id', '!=', $contact->id)
                 ->pluck('contact_id')
                 ->unique()
                 ->toArray();
-                
-            if (!empty($conflicts)) {
-                event(new \App\Events\ContactIdentityConflictDetected($contact, $conflicts));
+
+            if (! empty($conflicts)) {
+                event(new ContactIdentityConflictDetected($contact, $conflicts));
             }
         }
     }
@@ -40,7 +42,7 @@ class ResolveContactImportIdentitiesJob extends BaseJob
         ContactAuditEvent::create([
             'contact_id' => $this->batch->contact_id,
             'action' => 'resolve_identities_failed',
-            'description' => "Resolve identities for batch {$this->batch->id} failed: " . $exception->getMessage()
+            'description' => "Resolve identities for batch {$this->batch->id} failed: ".$exception->getMessage(),
         ]);
     }
 }

@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\Agent;
-use App\Agents\ReflectionAgent;
-use App\Agents\TeamAgent;
 use App\Agents\AutonomousAgent;
+use App\Agents\ReflectionAgent;
 use App\Agents\SpecializedAgent;
 use App\Agents\SupervisorAgent;
+use App\Agents\TeamAgent;
+use App\Models\Agent;
 use Illuminate\Support\Facades\Log;
 
 class AgentRegistry
@@ -32,13 +32,13 @@ class AgentRegistry
     {
         $type = $agent->type;
 
-        if (!isset($this->agentTypes[$type])) {
+        if (! isset($this->agentTypes[$type])) {
             throw new \InvalidArgumentException("Unknown agent type: {$type}");
         }
 
         $class = $this->agentTypes[$type];
 
-        if (!isset($this->instances[$type])) {
+        if (! isset($this->instances[$type])) {
             $this->instances[$type] = new $class($agent);
         }
 

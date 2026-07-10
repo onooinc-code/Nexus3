@@ -3,12 +3,12 @@
 namespace App\Services\Pipelines;
 
 use App\Models\Message;
-use App\Models\Conversation;
 use Illuminate\Support\Facades\Log;
 
 class ResponseDeliveryPipeline
 {
     protected array $formatters = [];
+
     protected array $channels = [];
 
     public function __construct(array $formatters = [], array $channels = [])

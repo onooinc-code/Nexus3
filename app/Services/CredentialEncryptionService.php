@@ -29,6 +29,7 @@ class CredentialEncryptionService
             return Crypt::decryptString($encryptedValue);
         } catch (\Exception $e) {
             \Log::error('Failed to decrypt credential', ['error' => $e->getMessage()]);
+
             return '';
         }
     }
@@ -42,7 +43,8 @@ class CredentialEncryptionService
         if ($length <= 8) {
             return '****';
         }
-        return substr($value, 0, 4) . str_repeat('*', $length - 8) . substr($value, -4);
+
+        return substr($value, 0, 4).str_repeat('*', $length - 8).substr($value, -4);
     }
 
     /**
@@ -51,7 +53,7 @@ class CredentialEncryptionService
     public function encryptIfNeeded(Setting $setting): void
     {
         if ($this->shouldEncrypt($setting->key)) {
-            if (!$setting->is_encrypted && $setting->value) {
+            if (! $setting->is_encrypted && $setting->value) {
                 $setting->update([
                     'value' => $this->encrypt($setting->value),
                     'is_encrypted' => true,

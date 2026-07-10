@@ -9,13 +9,15 @@ class CacheManager
 {
     // Cache TTL constants
     const PROVIDER_TTL = 3600; // 1 hour
+
     const INTENT_TTL = 1800;   // 30 minutes
+
     const MODELS_TTL = 3600;   // 1 hour
 
     /**
      * Cache provider data with automatic invalidation support
      */
-    public function cacheProvider(string $cacheKey, callable $callback, int $ttl = null)
+    public function cacheProvider(string $cacheKey, callable $callback, ?int $ttl = null)
     {
         $ttl = $ttl ?? self::PROVIDER_TTL;
         // Use the caller-supplied key directly (prefixed with 'ai_provider:' for namespace isolation)
@@ -27,7 +29,7 @@ class CacheManager
     /**
      * Cache intent routing data with automatic invalidation support
      */
-    public function cacheIntentRouting(string $intentName, callable $callback, int $ttl = null)
+    public function cacheIntentRouting(string $intentName, callable $callback, ?int $ttl = null)
     {
         $ttl = $ttl ?? self::INTENT_TTL;
         $key = "intent:{$intentName}";
@@ -38,7 +40,7 @@ class CacheManager
     /**
      * Cache provider models data with automatic invalidation support
      */
-    public function cacheProviderModels(string $providerId, callable $callback, int $ttl = null)
+    public function cacheProviderModels(string $providerId, callable $callback, ?int $ttl = null)
     {
         $ttl = $ttl ?? self::MODELS_TTL;
         $key = "provider:{$providerId}:models";
@@ -53,7 +55,7 @@ class CacheManager
     {
         Cache::forget("ai_provider:{$providerId}");
         Cache::forget("ai_provider:{$providerId}:models");
-        Cache::forget("ai_provider:name:*"); // best-effort name-based cache bust
+        Cache::forget('ai_provider:name:*'); // best-effort name-based cache bust
         Log::debug("Invalidated cache for provider {$providerId}");
     }
 
@@ -73,7 +75,7 @@ class CacheManager
     {
         // Note: Without cache tags, we can't easily clear all provider caches
         // In production with Redis, consider using cache tags
-        Log::debug("Invalidated all provider caches (limited without tags)");
+        Log::debug('Invalidated all provider caches (limited without tags)');
     }
 
     /**
@@ -82,7 +84,7 @@ class CacheManager
     public function invalidateAllIntentRouting()
     {
         Cache::forget('intents:all');
-        Log::debug("Invalidated all intent routing caches");
+        Log::debug('Invalidated all intent routing caches');
     }
 
     /**

@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\AIModel;
 use App\Models\Agent;
+use App\Models\AIModel;
+use App\Models\User;
+use App\Services\AiModelsHub\UniversalAiGatewayService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -101,7 +103,7 @@ class AIInteractionTest extends TestCase
 
     public function test_agent_execute_with_ai_model(): void
     {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user, 'sanctum');
 
         $agent = Agent::factory()->create([
@@ -112,7 +114,7 @@ class AIInteractionTest extends TestCase
         ]);
 
         // Mock UniversalAiGatewayService to prevent actual gateway execution throwing RuntimeException
-        $this->mock(\App\Services\AiModelsHub\UniversalAiGatewayService::class, function ($mock) {
+        $this->mock(UniversalAiGatewayService::class, function ($mock) {
             $mock->shouldReceive('executeWithAgent')
                 ->once()
                 ->andReturn([

@@ -2,12 +2,13 @@
 
 namespace Tests\Unit;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use App\Services\AiModelsHub\IntentRoutingEngine;
-use App\Models\AIProvider;
 use App\Models\AIModel;
+use App\Models\AIProvider;
 use App\Models\IntentRouting;
+use App\Services\AiModelsHub\IntentRoutingEngine;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
+use Tests\TestCase;
 
 class IntentRoutingEngineTest extends TestCase
 {
@@ -22,7 +23,7 @@ class IntentRoutingEngineTest extends TestCase
         ]);
 
         $intent = IntentRouting::create([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'id' => (string) Str::uuid(),
             'intent_name' => 'test-intent',
             'default_provider_id' => $provider->id,
             'default_model_id' => $model->id,
@@ -60,7 +61,7 @@ class IntentRoutingEngineTest extends TestCase
         ]);
 
         $intent = IntentRouting::create([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'id' => (string) Str::uuid(),
             'intent_name' => 'test-intent',
             'default_provider_id' => $provider->id,
             'default_model_id' => $model->id,
@@ -91,7 +92,7 @@ class IntentRoutingEngineTest extends TestCase
         $result = $engine->upsertIntentRouting([
             'intent_name' => 'test-intent',
             'default_provider_id' => $provider->id,
-            'default_model_id' => $model->id
+            'default_model_id' => $model->id,
         ]);
 
         $this->assertNotNull($result);
@@ -110,7 +111,7 @@ class IntentRoutingEngineTest extends TestCase
         $result = $engine->upsertIntentRouting([
             'intent_name' => 'test-intent',
             'default_provider_id' => $provider2->id,
-            'default_model_id' => $model2->id
+            'default_model_id' => $model2->id,
         ]);
 
         $this->assertNotNull($result);
@@ -131,7 +132,7 @@ class IntentRoutingEngineTest extends TestCase
         ]);
 
         $intent = IntentRouting::create([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'id' => (string) Str::uuid(),
             'intent_name' => 'test-intent',
             'default_provider_id' => $provider->id,
             'default_model_id' => $model->id,

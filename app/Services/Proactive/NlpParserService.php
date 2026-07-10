@@ -28,12 +28,13 @@ class NlpParserService
             if (Str::contains($text, 'tomorrow') || preg_match('/at (\d+)\s*(am|pm)?/', $text)) {
                 $result['type'] = 'time_based';
                 $result['next_run_at'] = $this->parseTime($text);
-                
+
                 $actionMessage = $this->extractActionMessage($text);
                 $result['actions']['notify'] = [
                     'message' => $actionMessage,
-                    'recipient' => 'Hedra' // Default user
+                    'recipient' => 'Hedra', // Default user
                 ];
+
                 return $result;
             }
         }
@@ -75,7 +76,8 @@ class NlpParserService
         }
 
         // Fallback for generic inputs
-        $result['actions']['notify'] = ['message' => 'Unparsed rule: ' . $naturalLanguageText];
+        $result['actions']['notify'] = ['message' => 'Unparsed rule: '.$naturalLanguageText];
+
         return $result;
     }
 
@@ -92,14 +94,14 @@ class NlpParserService
         if (preg_match('/at (\d+)\s*(am|pm)?/i', $text, $matches)) {
             $hour = (int) $matches[1];
             $ampm = isset($matches[2]) ? strtolower($matches[2]) : 'am';
-            
+
             if ($ampm === 'pm' && $hour < 12) {
                 $hour += 12;
             }
             if ($ampm === 'am' && $hour === 12) {
                 $hour = 0;
             }
-            
+
             $now->setTime($hour, 0);
         }
 
@@ -109,8 +111,9 @@ class NlpParserService
     protected function extractActionMessage(string $text): string
     {
         if (preg_match('/about (.*)$/i', $text, $matches)) {
-            return 'Reminder: ' . trim($matches[1]);
+            return 'Reminder: '.trim($matches[1]);
         }
+
         return 'Scheduled Reminder from AI Assistant';
     }
 }

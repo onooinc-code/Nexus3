@@ -18,10 +18,10 @@ return new class extends Migration
             $table->string('name');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            
+
             // Foreign key constraint
             $table->foreign('provider_id')->references('id')->on('ai_providers')->onDelete('cascade');
-            
+
             // Indexes
             $table->index(['provider_id']);
             $table->index(['is_active']);

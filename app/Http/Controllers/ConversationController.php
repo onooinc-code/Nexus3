@@ -13,7 +13,7 @@ class ConversationController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Conversation::with(['contact', 'messages' => function($q) {
+        $query = Conversation::with(['contact', 'messages' => function ($q) {
             $q->latest()->take(1);
         }]);
 
@@ -22,6 +22,7 @@ class ConversationController extends Controller
         }
 
         $conversations = $query->orderByDesc('last_message_at')->get();
+
         return response()->json(['data' => $conversations]);
     }
 
@@ -33,6 +34,7 @@ class ConversationController extends Controller
     public function show($id)
     {
         $conversation = Conversation::with('contact')->findOrFail($id);
+
         return response()->json(['data' => $conversation]);
     }
 
@@ -50,6 +52,7 @@ class ConversationController extends Controller
     {
         $conversation = Conversation::findOrFail($id);
         $messages = $conversation->messages()->orderBy('created_at', 'asc')->get();
+
         return response()->json([
             'data' => [
                 'conversation_id' => $conversation->id,

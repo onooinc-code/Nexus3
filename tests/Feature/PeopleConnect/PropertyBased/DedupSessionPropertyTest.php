@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\PeopleConnect\PropertyBased;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Contact;
 use App\Services\PeopleConnect\WahaWebhookIngestionService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class DedupSessionPropertyTest extends TestCase
 {
@@ -17,20 +17,20 @@ class DedupSessionPropertyTest extends TestCase
     public function test_idempotency_property_for_deduplication(): void
     {
         $contact = Contact::factory()->create([
-            'whatsapp_number' => '1234567890'
+            'whatsapp_number' => '1234567890',
         ]);
 
         $payload = [
             'event' => 'message',
             'session' => 'default',
             'payload' => [
-                'id' => 'msg_prop_' . uniqid(),
+                'id' => 'msg_prop_'.uniqid(),
                 'timestamp' => time(),
                 'chatId' => '1234567890@c.us',
                 'from' => '1234567890@c.us',
                 'body' => 'Property test message',
-                'type' => 'chat'
-            ]
+                'type' => 'chat',
+            ],
         ];
 
         $service = app(WahaWebhookIngestionService::class);

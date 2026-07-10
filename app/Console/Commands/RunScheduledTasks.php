@@ -2,10 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\ScheduledTask;
 use App\Jobs\ExecuteScheduledTask;
-use Illuminate\Support\Facades\Log;
+use App\Models\ScheduledTask;
+use Illuminate\Console\Command;
 
 class RunScheduledTasks extends Command
 {
@@ -32,20 +31,21 @@ class RunScheduledTasks extends Command
 
         // In a real implementation, you'd parse cron expressions or check next_run_at
         $dueTasks = ScheduledTask::where('is_active', true)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->whereNull('next_run_at')
-                      ->orWhere('next_run_at', '<=', now());
+                    ->orWhere('next_run_at', '<=', now());
             })
             ->get();
 
         if ($dueTasks->isEmpty()) {
             $this->info('No tasks due at this time.');
+
             return;
         }
 
         foreach ($dueTasks as $task) {
             $this->info("Dispatching task: {$task->name}");
-            
+
             // Dispatch to the queue
             ExecuteScheduledTask::dispatch($task);
 

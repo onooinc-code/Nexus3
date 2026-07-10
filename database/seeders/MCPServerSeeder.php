@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class MCPServerSeeder extends Seeder
 {
@@ -100,7 +100,7 @@ class MCPServerSeeder extends Seeder
         ];
 
         foreach ($mcpServers as $server) {
-            if (!DB::table('mcp_servers')->where('name', $server['name'])->exists()) {
+            if (! DB::table('mcp_servers')->where('name', $server['name'])->exists()) {
                 DB::table('mcp_servers')->insert($server);
                 $this->command->line("  ✓ MCP Server: {$server['name']} ({$server['type']})");
             } else {
@@ -109,6 +109,6 @@ class MCPServerSeeder extends Seeder
         }
 
         $this->command->newLine();
-        $this->command->info('✅ MCPServerSeeder complete — ' . count($mcpServers) . ' MCP servers configured.');
+        $this->command->info('✅ MCPServerSeeder complete — '.count($mcpServers).' MCP servers configured.');
     }
 }

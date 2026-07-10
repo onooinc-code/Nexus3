@@ -24,9 +24,6 @@ abstract class BroadcastableEvent extends Event implements ShouldBroadcastNow
 
     /**
      * Recursively sanitize data payloads.
-     *
-     * @param mixed $value
-     * @return mixed
      */
     protected function sanitizeValue(mixed $value): mixed
     {

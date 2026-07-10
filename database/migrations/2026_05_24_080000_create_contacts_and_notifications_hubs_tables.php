@@ -13,10 +13,10 @@ return new class extends Migration
     {
         // 1. Update contacts table with canonical_name and soft deletes
         Schema::table('contacts', function (Blueprint $table) {
-            if (!Schema::hasColumn('contacts', 'canonical_name')) {
+            if (! Schema::hasColumn('contacts', 'canonical_name')) {
                 $table->string('canonical_name')->nullable()->after('name');
             }
-            if (!Schema::hasColumn('contacts', 'deleted_at')) {
+            if (! Schema::hasColumn('contacts', 'deleted_at')) {
                 $table->softDeletes()->after('updated_at');
             }
         });
@@ -40,7 +40,7 @@ return new class extends Migration
             $table->integer('mention_count')->default(1);
             $table->float('confidence')->default(1.0);
             $table->timestamps();
-            
+
             $table->unique(['contact_id', 'related_contact_id', 'relationship_type'], 'contact_relationship_unique');
         });
 
@@ -108,7 +108,7 @@ return new class extends Migration
         Schema::dropIfExists('contact_preferences');
         Schema::dropIfExists('contact_relationships');
         Schema::dropIfExists('contact_identifiers');
-        
+
         Schema::table('contacts', function (Blueprint $table) {
             $table->dropColumn(['deleted_at', 'canonical_name']);
         });

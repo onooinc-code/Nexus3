@@ -176,6 +176,7 @@ class WorkflowController extends Controller
 
         if ($request->validated('decision') === 'deny') {
             $execution = $this->stateManager->cancel($execution);
+
             return new WorkflowExecutionResource($execution->load('stepLogs'));
         }
 
@@ -183,6 +184,7 @@ class WorkflowController extends Controller
 
         if ($execution->run_mode === 'async') {
             ExecuteWorkflowJob::dispatch($execution->id);
+
             return (new WorkflowExecutionResource($execution->load('stepLogs')))->response()->setStatusCode(202);
         }
 

@@ -3,11 +3,10 @@
 namespace App\Listeners;
 
 use App\Events\TaskCompletedEvent;
-use App\Events\TaskFailedEvent;
+use App\Jobs\ExecuteWorkflowJob;
 use App\Models\WorkflowExecution;
 use App\Services\LogService;
 use App\Services\Workflows\WorkflowStateManager;
-use App\Jobs\ExecuteWorkflowJob;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 class ResumeWorkflowOnTaskCompletion implements ShouldQueue
@@ -20,14 +19,14 @@ class ResumeWorkflowOnTaskCompletion implements ShouldQueue
     public function handle($event): void
     {
         $task = $event->task ?? null;
-        if (!$task || empty($task->payload_data['workflow_execution_id'])) {
+        if (! $task || empty($task->payload_data['workflow_execution_id'])) {
             return;
         }
 
         $executionId = $task->payload_data['workflow_execution_id'];
 
         $execution = WorkflowExecution::find($executionId);
-        if (!$execution || $execution->status !== WorkflowExecution::STATUS_PAUSED) {
+        if (! $execution || $execution->status !== WorkflowExecution::STATUS_PAUSED) {
             return;
         }
 
@@ -45,15 +44,15 @@ class ResumeWorkflowOnTaskCompletion implements ShouldQueue
                 'success' => $isSuccess,
                 'output' => $task->result_data ?? [],
                 'error' => $isSuccess ? null : 'Task failed or cancelled',
-            ]
+            ],
         ];
 
         $this->stateManager->mergeResumePayload($execution, $payload);
-        
+
         $this->logService->info('Resuming workflow after task completion', [
             'execution_id' => $execution->id,
             'task_id' => $task->id,
-            'success' => $isSuccess
+            'success' => $isSuccess,
         ]);
 
         ExecuteWorkflowJob::dispatch($execution->id);

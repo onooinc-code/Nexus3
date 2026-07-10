@@ -2,11 +2,9 @@
 
 namespace App\Listeners;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 use Illuminate\Support\Str;
 
 class ContactMessageReceivedListener
@@ -44,20 +42,20 @@ class ContactMessageReceivedListener
                 $match = false;
             }
 
-            if (isset($conditions['topic']) && !Str::contains(strtolower($topic), strtolower($conditions['topic']))) {
+            if (isset($conditions['topic']) && ! Str::contains(strtolower($topic), strtolower($conditions['topic']))) {
                 $match = false;
             }
 
             if ($match) {
                 Log::info('ECA Rule Matched', ['rule_id' => $rule->id]);
-                
+
                 // Instead of executing immediately, queue it as an autonomous trigger
                 // or execute directly depending on the logic
                 $actions = json_decode($rule->actions, true) ?? [];
 
                 if (isset($actions['reply'])) {
                     // Trigger a reply action (simulate)
-                    Log::info('Executing autonomous reply: ' . $actions['reply']['message']);
+                    Log::info('Executing autonomous reply: '.$actions['reply']['message']);
                 }
 
                 if (isset($actions['notify'])) {
@@ -67,16 +65,16 @@ class ContactMessageReceivedListener
                         'body' => $actions['notify']['message'] ?? 'Autonomous action completed.',
                         'status' => 'pending',
                         'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now()
+                        'updated_at' => Carbon::now(),
                     ]);
                 }
 
                 DB::table('autonomous_logs')->insert([
                     'action_taken' => 'Executed event-based ECA rule',
-                    'reasoning' => 'Event matched ECA rule: ' . $rule->name,
+                    'reasoning' => 'Event matched ECA rule: '.$rule->name,
                     'status' => 'completed',
                     'created_at' => Carbon::now(),
-                    'updated_at' => Carbon::now()
+                    'updated_at' => Carbon::now(),
                 ]);
             }
         }

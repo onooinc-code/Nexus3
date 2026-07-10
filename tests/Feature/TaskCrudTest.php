@@ -25,7 +25,7 @@ class TaskCrudTest extends TestCase
                 'type' => 'manual',
             ]);
 
-        file_put_contents('/tmp/taskcrud_response_post.json', $response->getContent() . "\n", FILE_APPEND);
+        file_put_contents('/tmp/taskcrud_response_post.json', $response->getContent()."\n", FILE_APPEND);
         $response->assertStatus(201)
             ->assertJsonPath('data.title', 'Test task')
             ->assertJsonPath('data.status', 'todo');
@@ -33,7 +33,7 @@ class TaskCrudTest extends TestCase
         file_put_contents('/tmp/taskcrud_progress.log', "post completed\n", FILE_APPEND);
 
         $task = AgentTask::first();
-        file_put_contents('/tmp/taskcrud_progress.log', "task id=" . ($task?->id ?? 'null') . " count=" . AgentTask::count() . "\n", FILE_APPEND);
+        file_put_contents('/tmp/taskcrud_progress.log', 'task id='.($task?->id ?? 'null').' count='.AgentTask::count()."\n", FILE_APPEND);
 
         $response = $this->actingAs($user, 'sanctum')
             ->patchJson("/api/v1/tasks/{$task->id}", [
@@ -41,7 +41,7 @@ class TaskCrudTest extends TestCase
                 'priority' => 8,
             ]);
 
-        file_put_contents('/tmp/taskcrud_response_patch.json', $response->getContent() . "\n", FILE_APPEND);
+        file_put_contents('/tmp/taskcrud_response_patch.json', $response->getContent()."\n", FILE_APPEND);
         $response->assertStatus(200)
             ->assertJsonPath('data.title', 'Updated title')
             ->assertJsonPath('data.priority', 8);
@@ -50,7 +50,7 @@ class TaskCrudTest extends TestCase
         $response = $this->actingAs($user, 'sanctum')
             ->postJson("/api/v1/tasks/{$task->id}/cancel");
 
-        file_put_contents('/tmp/taskcrud_response_cancel.json', $response->getContent() . "\n", FILE_APPEND);
+        file_put_contents('/tmp/taskcrud_response_cancel.json', $response->getContent()."\n", FILE_APPEND);
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $task->id);
         file_put_contents('/tmp/taskcrud_progress.log', "cancel completed\n", FILE_APPEND);

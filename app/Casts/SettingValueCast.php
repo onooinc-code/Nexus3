@@ -28,6 +28,7 @@ class SettingValueCast implements CastsAttributes
         }
 
         $decoded = json_decode($value, true);
+
         return json_last_error() === JSON_ERROR_NONE ? $decoded : $value;
     }
 
@@ -45,7 +46,7 @@ class SettingValueCast implements CastsAttributes
         $encoded = is_string($value) ? $value : json_encode($value);
 
         // Sometimes json_encode is applied by caller, ensure we don't double encode
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             $encoded = json_encode($value);
         } else {
             // Check if it's already a valid json object/array
@@ -54,7 +55,7 @@ class SettingValueCast implements CastsAttributes
                 $encoded = json_encode($value);
             }
         }
-        
+
         // Actually to mimic laravel's json cast:
         $jsonValue = json_encode($value);
 

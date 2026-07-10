@@ -33,12 +33,12 @@ class ExportContactDataJob implements ShouldQueue
         ];
 
         $json = json_encode($data, JSON_PRETTY_PRINT);
-        
-        $filename = "export_contact_{$this->contact->id}_" . time() . ".zip";
+
+        $filename = "export_contact_{$this->contact->id}_".time().'.zip';
         $path = storage_path("app/public/{$filename}");
-        
-        $zip = new ZipArchive();
-        if ($zip->open($path, ZipArchive::CREATE) === TRUE) {
+
+        $zip = new ZipArchive;
+        if ($zip->open($path, ZipArchive::CREATE) === true) {
             $zip->addFromString('contact_data.json', $json);
             $zip->close();
         }
@@ -48,7 +48,7 @@ class ExportContactDataJob implements ShouldQueue
             'action' => 'data_exported',
             'actor_type' => 'user',
             'actor_id' => $this->actorId,
-            'description' => "Export generated for " . $this->requesterEmail
+            'description' => 'Export generated for '.$this->requesterEmail,
         ]);
     }
 }

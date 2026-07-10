@@ -2,8 +2,8 @@
 
 namespace App\Services\Engines;
 
-use App\Models\Memory;
 use App\Models\Contact;
+use App\Models\Memory;
 use Illuminate\Support\Facades\Log;
 
 class MemoryManagementEngine
@@ -17,6 +17,7 @@ class MemoryManagementEngine
     ];
 
     protected int $maxMemoriesPerContact = 100;
+
     protected int $retentionDays = 365;
 
     public function store(array $data): array
@@ -27,7 +28,7 @@ class MemoryManagementEngine
         $source = $data['source'] ?? 'manual';
         $metadata = $data['metadata'] ?? [];
 
-        if (!$contactId || !$content) {
+        if (! $contactId || ! $content) {
             return [
                 'success' => false,
                 'error' => 'contact_id and content are required',
@@ -35,7 +36,7 @@ class MemoryManagementEngine
         }
 
         $contact = Contact::find($contactId);
-        if (!$contact) {
+        if (! $contact) {
             return [
                 'success' => false,
                 'error' => "Contact not found: {$contactId}",
@@ -94,7 +95,7 @@ class MemoryManagementEngine
         $limit = $criteria['limit'] ?? 10;
 
         $memories = Memory::query()
-            ->when($contactId, fn($q) => $q->forContact($contactId))
+            ->when($contactId, fn ($q) => $q->forContact($contactId))
             ->where('content', 'like', "%{$query}%")
             ->orderBy('created_at', 'desc')
             ->limit($limit)
@@ -111,7 +112,7 @@ class MemoryManagementEngine
     public function forget(string $memoryId): array
     {
         $memory = Memory::find($memoryId);
-        if (!$memory) {
+        if (! $memory) {
             return [
                 'success' => false,
                 'error' => "Memory not found: {$memoryId}",

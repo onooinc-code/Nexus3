@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Agent;
+use App\Models\AgentRuntimeLog;
 use App\Services\AgentConfigurationService;
-use App\Services\AgentLifecycleService;
 use App\Services\AgentExecutionService;
-use App\Services\AgentSimulationService;
+use App\Services\AgentLifecycleService;
 use App\Services\AgentQuarantineService;
 use App\Services\AgentRateLimiter;
+use App\Services\AgentSimulationService;
 use App\Services\LogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -47,7 +48,7 @@ class AgentController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -133,7 +134,7 @@ class AgentController extends Controller
             $settings['guidelines'] = $validated['guidelines'];
             unset($validated['guidelines']);
         }
-        
+
         // Merge with existing validated settings if provided
         $validated['settings'] = array_merge($settings, $validated['settings'] ?? []);
 
@@ -198,7 +199,7 @@ class AgentController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to execute agent',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 400);
         }
     }
@@ -228,7 +229,7 @@ class AgentController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Simulation failed',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 400);
         }
     }
@@ -276,7 +277,7 @@ class AgentController extends Controller
                 'available_transitions' => $this->lifecycle->getAvailableTransitions($agent),
                 'config' => $this->config->load($agent),
                 'rate_limit' => $this->rateLimiter->check($agent),
-            ]
+            ],
         ]);
     }
 
@@ -284,7 +285,7 @@ class AgentController extends Controller
     {
         $this->authorize('view', $agent);
 
-        $logs = \App\Models\AgentRuntimeLog::where('agent_id', $agent->id)
+        $logs = AgentRuntimeLog::where('agent_id', $agent->id)
             ->orderBy('created_at', 'desc')
             ->paginate($request->per_page ?? 20);
 

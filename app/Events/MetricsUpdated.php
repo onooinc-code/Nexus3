@@ -13,8 +13,11 @@ class MetricsUpdated implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $total_contacts;
+
     public $active_tasks;
+
     public $agent_count;
+
     public $memory_count;
 
     /**
@@ -31,7 +34,7 @@ class MetricsUpdated implements ShouldBroadcast
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
+     * @return array<int, Channel>
      */
     public function broadcastOn(): array
     {

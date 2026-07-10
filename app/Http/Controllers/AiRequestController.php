@@ -2,29 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
-use App\Services\AiModelsHub\IntentRoutingEngine;
-use App\Services\AiModelsHub\DynamicProviderRegistry;
-use App\Services\AiModelsHub\PayloadAdapterFactory;
-use App\Services\AiModelsHub\EncryptedApiKeyStorage;
-use App\Services\AiModelsHub\CircuitBreaker;
-use App\Services\AiModelsHub\UsageTracker;
 use App\Http\Middleware\SsrfProtectionMiddleware;
-use App\Models\IntentRouting;
-use App\Models\AIProvider;
 use App\Models\AIModel;
+use App\Models\AIProvider;
+use App\Models\IntentRouting;
+use App\Services\AiModelsHub\CircuitBreaker;
+use App\Services\AiModelsHub\DynamicProviderRegistry;
+use App\Services\AiModelsHub\EncryptedApiKeyStorage;
+use App\Services\AiModelsHub\IntentRoutingEngine;
+use App\Services\AiModelsHub\PayloadAdapterFactory;
+use App\Services\AiModelsHub\UsageTracker;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 class AiRequestController extends Controller
 {
     protected $intentRoutingEngine;
+
     protected $providerRegistry;
+
     protected $payloadAdapterFactory;
+
     protected $encryptedKeyStorage;
+
     protected $circuitBreaker;
+
     protected $usageTracker;
 
     public function __construct(
@@ -48,7 +53,7 @@ class AiRequestController extends Controller
      */
     public function handleRequest(Request $request)
     {
-        if ($request->has('intent') && !$request->has('intent_name')) {
+        if ($request->has('intent') && ! $request->has('intent_name')) {
             $request->merge(['intent_name' => $request->input('intent')]);
         }
 
@@ -67,30 +72,30 @@ class AiRequestController extends Controller
             // 1. Resolve intent to provider/model configuration
             $routing = $this->intentRoutingEngine->resolveIntent($request->intent_name);
 
-            if (!$routing) {
+            if (! $routing) {
                 return response()->json([
                     'success' => false,
-                    'error' => 'Intent not found'
+                    'error' => 'Intent not found',
                 ], 400);
             }
 
             // 2. Get provider configuration
             $provider = $this->providerRegistry->getProvider($routing['default_provider_id']);
 
-            if (!$provider) {
+            if (! $provider) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Provider not found'
+                    'message' => 'Provider not found',
                 ], 404);
             }
 
             // 3. Get decrypted API key
             $apiKey = $this->encryptedKeyStorage->getDecryptedKey($provider->id);
 
-            if (!$apiKey) {
+            if (! $apiKey) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'API key not found or unable to decrypt'
+                    'message' => 'API key not found or unable to decrypt',
                 ], 404);
             }
 
@@ -101,38 +106,38 @@ class AiRequestController extends Controller
                     'prompt' => $request->prompt,
                     'parameters' => $request->parameters ?? [],
                     'context' => $request->context ?? [],
-                    'model_id' => $routing['default_model_id']
+                    'model_id' => $routing['default_model_id'],
                 ]
             );
 
             // 5. Execute request with circuit breaker protection
             $fallbackClosures = [];
-            if (!empty($routing['fallback_provider_id']) && !empty($routing['fallback_model_id'])) {
+            if (! empty($routing['fallback_provider_id']) && ! empty($routing['fallback_model_id'])) {
                 $fallbackClosures[] = function () use ($routing, $request) {
                     $fallbackProvider = $this->providerRegistry->getProvider($routing['fallback_provider_id']);
-                    if (!$fallbackProvider) {
-                        throw new \Exception("Fallback provider not found");
+                    if (! $fallbackProvider) {
+                        throw new \Exception('Fallback provider not found');
                     }
-                    
+
                     $fallbackApiKey = $this->encryptedKeyStorage->getDecryptedKey($fallbackProvider->id);
-                    if (!$fallbackApiKey) {
-                        throw new \Exception("Fallback API key not found");
+                    if (! $fallbackApiKey) {
+                        throw new \Exception('Fallback API key not found');
                     }
-                    
+
                     $fallbackAdaptedRequest = $this->payloadAdapterFactory->adaptPayload(
                         $fallbackProvider->payload_format,
                         [
                             'prompt' => $request->prompt,
                             'parameters' => $request->parameters ?? [],
                             'context' => $request->context ?? [],
-                            'model_id' => $routing['fallback_model_id']
+                            'model_id' => $routing['fallback_model_id'],
                         ]
                     );
-                    
+
                     $headers = [
                         'Content-Type' => 'application/json',
                     ];
-                    
+
                     $authFormat = $fallbackProvider->auth_header_format;
                     if ($authFormat) {
                         if (str_contains($authFormat, ':')) {
@@ -154,25 +159,25 @@ class AiRequestController extends Controller
                             }
                         }
                     } else {
-                        $headers['Authorization'] = 'Bearer ' . $fallbackApiKey;
+                        $headers['Authorization'] = 'Bearer '.$fallbackApiKey;
                     }
-                    
-                    if (!SsrfProtectionMiddleware::validateUrl($fallbackProvider->base_url)) {
+
+                    if (! SsrfProtectionMiddleware::validateUrl($fallbackProvider->base_url)) {
                         throw new \Exception("SSRF protection blocked fallback provider URL: {$fallbackProvider->base_url}");
                     }
-                    
+
                     $response = Http::withHeaders($headers)
                         ->withOptions(['verify' => config('services.ai.verify_ssl', true)])
                         ->timeout(30)
                         ->post(
-                            $fallbackProvider->base_url . '/' . ltrim($fallbackProvider->generate_endpoint, '/'),
+                            $fallbackProvider->base_url.'/'.ltrim($fallbackProvider->generate_endpoint, '/'),
                             $fallbackAdaptedRequest
                         );
-                    
-                    if (!$response->successful()) {
+
+                    if (! $response->successful()) {
                         throw new \Exception("Fallback request failed with status: {$response->status()}");
                     }
-                    
+
                     return [
                         'success' => true,
                         'provider_id' => $fallbackProvider->id,
@@ -212,11 +217,11 @@ class AiRequestController extends Controller
                             }
                         }
                     } else {
-                        $headers['Authorization'] = 'Bearer ' . $apiKey;
+                        $headers['Authorization'] = 'Bearer '.$apiKey;
                     }
 
                     // Apply SSRF protection to the provider's base URL
-                    if (!SsrfProtectionMiddleware::validateUrl($provider->base_url)) {
+                    if (! SsrfProtectionMiddleware::validateUrl($provider->base_url)) {
                         throw new \Exception("SSRF protection blocked provider URL: {$provider->base_url}");
                     }
 
@@ -224,11 +229,11 @@ class AiRequestController extends Controller
                         ->withOptions(['verify' => config('services.ai.verify_ssl', true)])
                         ->timeout(30)
                         ->post(
-                            $provider->base_url . '/' . ltrim($provider->generate_endpoint, '/'),
+                            $provider->base_url.'/'.ltrim($provider->generate_endpoint, '/'),
                             $adaptedRequest
                         );
 
-                    if (!$response->successful()) {
+                    if (! $response->successful()) {
                         throw new \Exception("Provider request failed with status: {$response->status()}");
                     }
 
@@ -243,11 +248,11 @@ class AiRequestController extends Controller
                 $fallbackClosures
             );
 
-            if (isset($result['success']) && !$result['success']) {
+            if (isset($result['success']) && ! $result['success']) {
                 return response()->json([
                     'success' => false,
                     'message' => 'AI request failed after attempting all fallback options',
-                    'errors' => $result['errors'] ?? []
+                    'errors' => $result['errors'] ?? [],
                 ], 500);
             }
 
@@ -278,13 +283,14 @@ class AiRequestController extends Controller
                 'content' => $adaptedResponse['content'] ?? '',
                 'usage' => $adaptedResponse['usage'] ?? [],
                 'data' => $adaptedResponse,
-                'message' => 'AI request processed successfully'
+                'message' => 'AI request processed successfully',
             ], 200);
         } catch (\Exception $e) {
-            Log::error('Error handling AI request: ' . $e->getMessage());
+            Log::error('Error handling AI request: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to process AI request: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine()
+                'message' => 'Failed to process AI request: '.$e->getMessage().' in '.$e->getFile().':'.$e->getLine(),
             ], 500);
         }
     }
@@ -297,21 +303,21 @@ class AiRequestController extends Controller
         try {
             // Get all intents from the routing table (unique intent names)
             $dbIntents = IntentRouting::distinct('intent_name')->pluck('intent_name')->toArray();
-            
+
             // Define core system intents
             $coreIntents = [
-                'general_chat', 
-                'data_extraction', 
-                'summarization', 
-                'embedding', 
-                'fast_response', 
+                'general_chat',
+                'data_extraction',
+                'summarization',
+                'embedding',
+                'fast_response',
                 'reasoning',
                 'contact_extraction',
-                'intent_classification'
+                'intent_classification',
             ];
-            
+
             $allIntentNames = array_unique(array_merge($coreIntents, $dbIntents));
-            
+
             $intents = collect($allIntentNames)
                 ->map(function ($name) {
                     return [
@@ -371,7 +377,8 @@ class AiRequestController extends Controller
                 ],
             ]);
         } catch (\Exception $e) {
-            Log::error('Error retrieving routing matrix: ' . $e->getMessage());
+            Log::error('Error retrieving routing matrix: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve intent routing matrix',
@@ -408,7 +415,7 @@ class AiRequestController extends Controller
             $fallbackProviderId = $request->input('fallback_provider_id');
             $fallbackModelId = $request->input('fallback_model_id');
 
-            if (!$intentName) {
+            if (! $intentName) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Intent name is required',
@@ -421,7 +428,7 @@ class AiRequestController extends Controller
             if ($providerId) {
                 // Verify provider exists
                 $provider = AIProvider::find($providerId);
-                if (!$provider) {
+                if (! $provider) {
                     return response()->json([
                         'success' => false,
                         'message' => 'Provider not found',
@@ -433,7 +440,7 @@ class AiRequestController extends Controller
             if ($modelId) {
                 // Verify model exists
                 $model = AIModel::find($modelId);
-                if (!$model) {
+                if (! $model) {
                     return response()->json([
                         'success' => false,
                         'message' => 'Model not found',
@@ -451,7 +458,7 @@ class AiRequestController extends Controller
             }
 
             // Ensure ID exists for new records
-            if (!$routing->exists) {
+            if (! $routing->exists) {
                 $routing->id = Str::uuid();
             }
 
@@ -467,7 +474,8 @@ class AiRequestController extends Controller
                 ],
             ], 200);
         } catch (\Exception $e) {
-            Log::error('Error updating intent routing: ' . $e->getMessage());
+            Log::error('Error updating intent routing: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update intent routing',

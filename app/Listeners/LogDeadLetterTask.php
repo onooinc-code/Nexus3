@@ -3,8 +3,8 @@
 namespace App\Listeners;
 
 use App\Events\TaskMovedToDLQEvent;
-use App\Services\LogService;
 use App\Services\DeadLetterQueueService;
+use App\Services\LogService;
 
 class LogDeadLetterTask
 {
@@ -22,7 +22,7 @@ class LogDeadLetterTask
             'related_type' => get_class($event->task),
             'context' => [
                 'error' => $event->exception->getMessage(),
-                'trace' => $event->exception->getTraceAsString()
+                'trace' => $event->exception->getTraceAsString(),
             ],
         ]);
 
@@ -30,7 +30,7 @@ class LogDeadLetterTask
             $this->dlqService->log($event->task, $event->exception);
         } catch (\Throwable $e) {
             $this->logService->error('Failed to save dead letter task record in listener', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }

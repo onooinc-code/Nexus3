@@ -3,7 +3,6 @@
 namespace App\Jobs\HedraSoul;
 
 use App\Models\HedrasoulMessage;
-use App\Services\AiModelsHub\AiModelsHubService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -13,7 +12,7 @@ use Throwable;
 
 /**
  * AnalyzeHedraSoulMessageJob: Classifies message attributes.
- * 
+ *
  * Sends message body to AiModelsHub for NLP analysis, then updates:
  * - intent, topic, tone, sentiment columns on the message record
  */
@@ -22,6 +21,7 @@ class AnalyzeHedraSoulMessageJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 2;
+
     public int $timeout = 60;
 
     public function __construct(public HedrasoulMessage $message) {}
@@ -54,7 +54,7 @@ class AnalyzeHedraSoulMessageJob implements ShouldQueue
 
     /**
      * Classify message using NLP analysis.
-     * 
+     *
      * This is a placeholder - integrate with actual AiModelsHub classification service.
      */
     private function classifyMessage(string $body): array

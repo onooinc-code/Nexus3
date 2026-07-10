@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('agent_runtime_logs')) {
+        if (! Schema::hasTable('agent_runtime_logs')) {
             Schema::create('agent_runtime_logs', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->foreignId('agent_id')->constrained('agents')->onDelete('cascade');

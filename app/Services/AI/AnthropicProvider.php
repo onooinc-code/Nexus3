@@ -2,31 +2,34 @@
 
 namespace App\Services\AI;
 
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
-use App\Models\AIProvider;
 use App\Models\AIModel;
-use App\Services\AiModelsHub\EncryptedApiKeyStorage;
+use App\Models\AIProvider;
 use App\Services\AiModelsHub\AiProviderInterface;
+use App\Services\AiModelsHub\EncryptedApiKeyStorage;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class AnthropicProvider implements AiProviderInterface
 {
     protected $provider;
+
     protected $apiKey;
+
     protected $baseUrl;
+
     protected $models = [];
 
     public function __construct(string $providerId, EncryptedApiKeyStorage $encryptedKeyStorage)
     {
         $this->provider = AIProvider::find($providerId);
-        
-        if (!$this->provider) {
+
+        if (! $this->provider) {
             throw new \Exception("Provider not found: {$providerId}");
         }
-        
+
         $this->apiKey = $encryptedKeyStorage->getDecryptedKey($providerId);
         $this->baseUrl = rtrim($this->provider->base_url, '/');
-        
+
         // Load models from database
         $this->loadModelsFromDatabase();
     }
@@ -35,7 +38,7 @@ class AnthropicProvider implements AiProviderInterface
     {
         $this->models = [];
         $dbModels = AIModel::where('provider_id', $this->provider->id)->get();
-        
+
         foreach ($dbModels as $model) {
             $this->models[$model->id] = [
                 'name' => $model->name,
@@ -44,7 +47,7 @@ class AnthropicProvider implements AiProviderInterface
                 'cost_per_1k_output' => $model->output_cost_per_m / 1000,
             ];
         }
-        
+
         // If no models in database, fallback to some defaults
         if (empty($this->models)) {
             $this->models = [
@@ -78,6 +81,7 @@ class AnthropicProvider implements AiProviderInterface
     {
         // Return first available model or fallback
         $models = $this->getAvailableModels();
+
         return $models[0] ?? 'claude-3-5-sonnet-20241022';
     }
 
@@ -90,7 +94,7 @@ class AnthropicProvider implements AiProviderInterface
             'max_tokens' => $options['max_tokens'] ?? null,
         ]);
 
-        if (!$validation['valid']) {
+        if (! $validation['valid']) {
             return [
                 'success' => false,
                 'error' => implode(', ', $validation['errors']),
@@ -110,13 +114,13 @@ class AnthropicProvider implements AiProviderInterface
                 'messages' => [
                     [
                         'role' => 'user',
-                        'content' => $prompt
-                    ]
-                ]
+                        'content' => $prompt,
+                    ],
+                ],
             ];
 
             // Add system message if provided in context
-            if (isset($options['system']) && !empty($options['system'])) {
+            if (isset($options['system']) && ! empty($options['system'])) {
                 $payload['system'] = $options['system'];
             }
 
@@ -128,9 +132,9 @@ class AnthropicProvider implements AiProviderInterface
 
             $response = Http::withHeaders($headers)
                 ->timeout(30)
-                ->post($this->baseUrl . '/v1/messages', $payload);
+                ->post($this->baseUrl.'/v1/messages', $payload);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 throw new \Exception("Anthropic API error: HTTP {$response->status()} - {$response->body()}");
             }
 
@@ -154,7 +158,7 @@ class AnthropicProvider implements AiProviderInterface
                 'usage' => $usage,
             ];
         } catch (\Throwable $e) {
-            Log::error("Anthropic API error: " . $e->getMessage());
+            Log::error('Anthropic API error: '.$e->getMessage());
 
             return [
                 'success' => false,
@@ -183,7 +187,7 @@ class AnthropicProvider implements AiProviderInterface
             $errors[] = 'Prompt is required';
         }
 
-        if (isset($request['model']) && !isset($this->models[$request['model']])) {
+        if (isset($request['model']) && ! isset($this->models[$request['model']])) {
             $errors[] = "Unknown model: {$request['model']}";
         }
 
@@ -204,7 +208,9 @@ class AnthropicProvider implements AiProviderInterface
     public function estimateCost(string $model, int $inputTokens, int $outputTokens = 0): float
     {
         $modelConfig = $this->models[$model] ?? null;
-        if (!$modelConfig) return 0.0;
+        if (! $modelConfig) {
+            return 0.0;
+        }
 
         $inputCost = ($inputTokens / 1000) * $modelConfig['cost_per_1k_input'];
         $outputCost = ($outputTokens / 1000) * $modelConfig['cost_per_1k_output'];
@@ -218,7 +224,7 @@ class AnthropicProvider implements AiProviderInterface
             $response = Http::withHeaders([
                 'x-api-key' => $this->apiKey,
                 'anthropic-version' => '2023-06-01',
-            ])->get($this->baseUrl . '/v1/models');
+            ])->get($this->baseUrl.'/v1/models');
 
             if ($response->successful()) {
                 return [
@@ -261,7 +267,7 @@ class AnthropicProvider implements AiProviderInterface
         $model = $request['model'] ?? $this->getDefaultModel();
         $temperature = $request['temperature'] ?? 0.7;
         $maxTokens = $request['max_tokens'] ?? null;
-        
+
         return $this->generateText($prompt, [
             'model' => $model,
             'temperature' => $temperature,
@@ -278,7 +284,7 @@ class AnthropicProvider implements AiProviderInterface
             $errors[] = 'Prompt or messages are required';
         }
 
-        if (isset($request['model']) && !isset($this->models[$request['model']])) {
+        if (isset($request['model']) && ! isset($this->models[$request['model']])) {
             $errors[] = "Unknown model: {$request['model']}";
         }
 
@@ -302,6 +308,7 @@ class AnthropicProvider implements AiProviderInterface
     {
         try {
             $response = $this->callAnthropic($this->getDefaultModel(), [['role' => 'user', 'content' => 'hi']], ['max_tokens' => 5]);
+
             return [
                 'provider' => $this->getProviderName(),
                 'status' => 'healthy',
@@ -320,13 +327,13 @@ class AnthropicProvider implements AiProviderInterface
     public function formatRequest(array $prompt, array $options = []): array
     {
         $model = $options['model'] ?? $this->getDefaultModel();
-        
+
         if (is_string($prompt)) {
             $messages = [['role' => 'user', 'content' => $prompt]];
         } else {
             $messages = $prompt;
         }
-        
+
         $payload = [
             'model' => $model,
             'max_tokens' => $options['max_tokens'] ?? 4096,
@@ -334,23 +341,23 @@ class AnthropicProvider implements AiProviderInterface
             'messages' => [
                 [
                     'role' => 'user',
-                    'content' => $prompt
-                ]
-            ]
+                    'content' => $prompt,
+                ],
+            ],
         ];
-        
+
         // Add system message if provided in context
-        if (isset($options['system']) && !empty($options['system'])) {
+        if (isset($options['system']) && ! empty($options['system'])) {
             $payload['system'] = $options['system'];
         }
-        
+
         if (isset($options['top_p'])) {
             $payload['top_p'] = $options['top_p'];
         }
         if (isset($options['stream'])) {
             $payload['stream'] = $options['stream'];
         }
-        
+
         return $payload;
     }
 
@@ -358,11 +365,11 @@ class AnthropicProvider implements AiProviderInterface
     {
         $content = '';
         $usage = [];
-        
+
         if (isset($response['content'][0]['text'])) {
             $content = $response['content'][0]['text'];
         }
-        
+
         if (isset($response['usage'])) {
             $usage = [
                 'input_tokens' => $response['usage']['input_tokens'] ?? 0,
@@ -370,7 +377,7 @@ class AnthropicProvider implements AiProviderInterface
                 'total_tokens' => ($response['usage']['input_tokens'] ?? 0) + ($response['usage']['output_tokens'] ?? 0),
             ];
         }
-        
+
         return [
             'content' => $content,
             'usage' => $usage,
@@ -380,9 +387,9 @@ class AnthropicProvider implements AiProviderInterface
     protected function callAnthropic(string $model, array $messages, array $options = []): array
     {
         $url = "{$this->baseUrl}/v1/messages";
-        
+
         $payload = $this->formatRequest($messages, array_merge($options, ['model' => $model]));
-        
+
         $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
@@ -390,20 +397,20 @@ class AnthropicProvider implements AiProviderInterface
             CURLOPT_POSTFIELDS => json_encode($payload),
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
-                'x-api-key: ' . $this->apiKey,
+                'x-api-key: '.$this->apiKey,
                 'anthropic-version: 2023-06-01',
             ],
             CURLOPT_TIMEOUT => $options['timeout'] ?? 30,
         ]);
-        
+
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        
+
         if ($httpCode >= 400) {
             throw new \RuntimeException("Anthropic API error: HTTP {$httpCode} - {$response}");
         }
-        
+
         return json_decode($response, true) ?: [];
     }
 }

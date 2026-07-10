@@ -2,15 +2,15 @@
 
 namespace App\Services\AiModelsHub;
 
-use Illuminate\Support\Facades\Log;
-use App\Models\IntentRouting;
-use App\Models\AIProvider;
 use App\Models\AIModel;
-use App\Services\AiModelsHub\CacheManager;
+use App\Models\IntentRouting;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class IntentRoutingEngine
 {
     protected $cacheManager;
+
     protected $cacheTTL = 1800; // 30 minutes
 
     public function __construct(CacheManager $cacheManager)
@@ -40,6 +40,7 @@ class IntentRoutingEngine
     public function getDefaultModel($intentName)
     {
         $routing = $this->resolveIntent($intentName);
+
         return $routing ? $routing->defaultModel : null;
     }
 
@@ -49,7 +50,7 @@ class IntentRoutingEngine
     public function getFallbackOptions($intentName)
     {
         $routing = $this->resolveIntent($intentName);
-        if (!$routing) {
+        if (! $routing) {
             return [];
         }
 
@@ -57,7 +58,7 @@ class IntentRoutingEngine
         if ($routing->fallback_provider_id && $routing->fallback_model_id) {
             $fallbacks[] = [
                 'provider' => $routing->fallbackProvider,
-                'model' => $routing->fallbackModel
+                'model' => $routing->fallbackModel,
             ];
         }
 
@@ -72,7 +73,7 @@ class IntentRoutingEngine
         $intentRouting = IntentRouting::updateOrCreate(
             ['intent_name' => $data['intent_name']],
             [
-                'id' => $data['id'] ?? \Illuminate\Support\Str::uuid(),
+                'id' => $data['id'] ?? Str::uuid(),
                 'default_provider_id' => $data['default_provider_id'],
                 'default_model_id' => $data['default_model_id'],
                 'fallback_provider_id' => $data['fallback_provider_id'] ?? null,
@@ -95,8 +96,10 @@ class IntentRoutingEngine
         if ($intentRouting) {
             $intentRouting->delete();
             $this->clearIntentCache($intentName);
+
             return true;
         }
+
         return false;
     }
 
@@ -131,8 +134,8 @@ class IntentRoutingEngine
     {
         // Get the base intent routing
         $baseRouting = $this->resolveIntent($intentName);
-        
-        if (!$baseRouting) {
+
+        if (! $baseRouting) {
             return null;
         }
 
@@ -141,70 +144,71 @@ class IntentRoutingEngine
             return [
                 'primary' => [
                     'provider' => $baseRouting->defaultProvider,
-                    'model' => $baseRouting->defaultModel
+                    'model' => $baseRouting->defaultModel,
                 ],
-                'fallbacks' => $this->getFallbackOptions($intentName)
+                'fallbacks' => $this->getFallbackOptions($intentName),
             ];
         }
 
         // Build a query for dynamic models matching the profiles
-        $query = AIModel::with('provider')->whereHas('provider', function($q) {
+        $query = AIModel::with('provider')->whereHas('provider', function ($q) {
             $q->where('is_active', true);
         })->where('status', 'active');
-        
-        if (!empty($profiles['cost_profile'])) {
+
+        if (! empty($profiles['cost_profile'])) {
             $query->where('cost_profile', $profiles['cost_profile']);
         }
-        
-        if (!empty($profiles['latency_profile'])) {
+
+        if (! empty($profiles['latency_profile'])) {
             $query->where('latency_profile', $profiles['latency_profile']);
         }
-        
-        if (!empty($profiles['security_class'])) {
+
+        if (! empty($profiles['security_class'])) {
             $query->where('security_class', $profiles['security_class']);
         }
-        
-        if (!empty($profiles['language'])) {
+
+        if (! empty($profiles['language'])) {
             $lang = $profiles['language'];
             $query->whereJsonContains('language_support', $lang);
         }
-        
+
         // Find matching models
         $matchingModels = $query->get();
-        
+
         if ($matchingModels->isEmpty()) {
             // Fall back to default if no profiles match
             Log::warning("No models matched the requested profiles for intent {$intentName}. Falling back to default.");
+
             return [
                 'primary' => [
                     'provider' => $baseRouting->defaultProvider,
-                    'model' => $baseRouting->defaultModel
+                    'model' => $baseRouting->defaultModel,
                 ],
-                'fallbacks' => $this->getFallbackOptions($intentName)
+                'fallbacks' => $this->getFallbackOptions($intentName),
             ];
         }
-        
+
         // Select the best match as primary
         $primaryModel = $matchingModels->first();
-        
+
         // Use others as fallbacks
         $fallbacks = [];
         foreach ($matchingModels->skip(1) as $model) {
             $fallbacks[] = [
                 'provider' => $model->provider,
-                'model' => $model
+                'model' => $model,
             ];
         }
-        
+
         // Also append original fallbacks just in case
         $fallbacks = array_merge($fallbacks, $this->getFallbackOptions($intentName));
-        
+
         return [
             'primary' => [
                 'provider' => $primaryModel->provider,
-                'model' => $primaryModel
+                'model' => $primaryModel,
             ],
-            'fallbacks' => $fallbacks
+            'fallbacks' => $fallbacks,
         ];
     }
 }

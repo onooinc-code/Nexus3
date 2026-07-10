@@ -8,9 +8,7 @@ use Illuminate\Http\Request;
 
 class DlqController extends Controller
 {
-    public function __construct(protected DeadLetterQueueService $dlqService)
-    {
-    }
+    public function __construct(protected DeadLetterQueueService $dlqService) {}
 
     /**
      * Display a listing of failed jobs in the DLQ
@@ -30,14 +28,14 @@ class DlqController extends Controller
     {
         $result = $this->dlqService->retry((int) $id);
 
-        if (!$result) {
+        if (! $result) {
             return response()->json([
-                'error' => 'Failed to retry dead letter task'
+                'error' => 'Failed to retry dead letter task',
             ], 422);
         }
 
         return response()->json([
-            'message' => 'Dead letter task execution successfully re-dispatched'
+            'message' => 'Dead letter task execution successfully re-dispatched',
         ]);
     }
 
@@ -48,14 +46,14 @@ class DlqController extends Controller
     {
         $result = $this->dlqService->delete((int) $id);
 
-        if (!$result) {
+        if (! $result) {
             return response()->json([
-                'error' => 'Failed to discard dead letter task'
+                'error' => 'Failed to discard dead letter task',
             ], 422);
         }
 
         return response()->json([
-            'message' => 'Dead letter task successfully discarded'
+            'message' => 'Dead letter task successfully discarded',
         ]);
     }
 
@@ -66,14 +64,14 @@ class DlqController extends Controller
     {
         $request->validate([
             'ids' => ['required', 'array'],
-            'ids.*' => ['required', 'integer']
+            'ids.*' => ['required', 'integer'],
         ]);
 
         $result = $this->dlqService->batchRetry($request->input('ids'));
 
         return response()->json([
             'message' => "Batch processing complete. Retried: {$result['success']}, Failed: {$result['failed']}",
-            'data' => $result
+            'data' => $result,
         ]);
     }
 }

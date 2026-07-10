@@ -15,6 +15,7 @@ class ExecuteWorkflowStep implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $execution;
+
     public $nodeId;
 
     /**

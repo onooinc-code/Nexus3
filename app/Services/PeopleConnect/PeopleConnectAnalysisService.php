@@ -2,10 +2,9 @@
 
 namespace App\Services\PeopleConnect;
 
+use App\Models\PeopleConnect\PeopleConnectConversationTopic;
 use App\Models\PeopleConnect\PeopleConnectMessage;
 use App\Models\PeopleConnect\PeopleConnectMessageAnalysis;
-use App\Models\PeopleConnect\PeopleConnectConversationTopic;
-use Illuminate\Support\Facades\Log;
 
 class PeopleConnectAnalysisService
 {

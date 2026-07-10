@@ -2,11 +2,11 @@
 
 namespace Tests\Unit;
 
+use App\Models\AIModel;
+use App\Models\AIProvider;
+use App\Services\AiModelsHub\UsageTracker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Services\AiModelsHub\UsageTracker;
-use App\Models\AIProvider;
-use App\Models\AIModel;
 
 class UsageTrackerTest extends TestCase
 {
@@ -22,7 +22,7 @@ class UsageTrackerTest extends TestCase
             'output_cost_per_m' => 2.00, // $2.00 per million tokens
         ]);
 
-        $tracker = new UsageTracker();
+        $tracker = new UsageTracker;
 
         $tracker->trackUsage(
             $provider->id,
@@ -51,7 +51,7 @@ class UsageTrackerTest extends TestCase
             'provider_id' => $provider->id,
         ]);
 
-        $tracker = new UsageTracker();
+        $tracker = new UsageTracker;
 
         // Track multiple usage events
         $tracker->trackUsage($provider->id, $model->id, 100, 50);
@@ -72,7 +72,7 @@ class UsageTrackerTest extends TestCase
             'provider_id' => $provider->id,
         ]);
 
-        $tracker = new UsageTracker();
+        $tracker = new UsageTracker;
 
         // Track multiple usage events
         $tracker->trackUsage($provider->id, $model->id, 100, 50);
@@ -95,7 +95,7 @@ class UsageTrackerTest extends TestCase
             'output_cost_per_m' => 2.00,
         ]);
 
-        $tracker = new UsageTracker();
+        $tracker = new UsageTracker;
 
         $tracker->trackUsage($provider->id, $model->id, 1000000, 500000); // 1.00 + 1.00 = 2.00
         $tracker->trackUsage($provider->id, $model->id, 500000, 250000);  // 0.50 + 0.50 = 1.00
@@ -115,7 +115,7 @@ class UsageTrackerTest extends TestCase
             'output_cost_per_m' => 2.00,
         ]);
 
-        $tracker = new UsageTracker();
+        $tracker = new UsageTracker;
 
         $tracker->trackUsage($provider->id, $model->id, 1000000, 500000); // 2.00
         $tracker->trackUsage($provider->id, $model->id, 500000, 250000);  // 1.00

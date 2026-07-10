@@ -7,7 +7,7 @@ use App\Models\ContactTag;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ContactTag>
+ * @extends Factory<ContactTag>
  */
 class ContactTagFactory extends Factory
 {

@@ -5,6 +5,7 @@ namespace App\Services\Workflows;
 use App\Events\WorkflowCompleted;
 use App\Events\WorkflowStarted;
 use App\Events\WorkflowStepCompleted;
+use App\Jobs\ExecuteWorkflowStepJob;
 use App\Models\Workflow;
 use App\Models\WorkflowExecution;
 use App\Models\WorkflowStepLog;
@@ -59,6 +60,7 @@ class WorkflowInterpreter
                 if ($result['pause'] ?? false) {
                     $state['waiting_for'] = $result['waiting_for'] ?? ['type' => 'unknown'];
                     $state['current_step_index'] = $index + 1;
+
                     return $this->stateManager->pause($execution, $state);
                 }
 
@@ -207,11 +209,11 @@ class WorkflowInterpreter
         $outputs = [];
 
         foreach ($branches as $branchIndex => $branchStep) {
-            $branchStep['id'] ??= $step['id'] . '_branch_' . ($branchIndex + 1);
-            $branchStep['name'] ??= $step['name'] . ' Branch ' . ($branchIndex + 1);
+            $branchStep['id'] ??= $step['id'].'_branch_'.($branchIndex + 1);
+            $branchStep['name'] ??= $step['name'].' Branch '.($branchIndex + 1);
             $branchStep['type'] ??= 'action';
 
-            \App\Jobs\ExecuteWorkflowStepJob::dispatch(
+            ExecuteWorkflowStepJob::dispatch(
                 $execution->id,
                 $branchStep,
                 $state['variables'] ?? []
@@ -219,7 +221,7 @@ class WorkflowInterpreter
 
             $outputs[$branchStep['id']] = [
                 'status' => 'queued',
-                'step_id' => $branchStep['id']
+                'step_id' => $branchStep['id'],
             ];
         }
 

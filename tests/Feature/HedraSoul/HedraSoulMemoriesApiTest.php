@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\HedraSoul;
 
-use Tests\TestCase;
-use App\Models\HedraProfileFact;
 use App\Models\HedraMemorySuggestion;
+use App\Models\HedraProfileFact;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class HedraSoulMemoriesApiTest extends TestCase
 {

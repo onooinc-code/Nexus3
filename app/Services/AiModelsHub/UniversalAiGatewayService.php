@@ -5,7 +5,7 @@ namespace App\Services\AiModelsHub;
 use App\Models\Agent;
 use App\Models\AIModel;
 use App\Models\AIProvider;
-use Illuminate\Support\Facades\Log;
+use App\Models\IntentRouting;
 
 /**
  * UniversalAiGatewayService
@@ -27,26 +27,30 @@ class UniversalAiGatewayService
     {
         // 1. Agent-specific model override
         $settings = $agent->settings ?? [];
-        if (!empty($settings['ai_model_id'])) {
+        if (! empty($settings['ai_model_id'])) {
             $model = AIModel::with('provider')->find($settings['ai_model_id']);
-            if ($model) return $model;
+            if ($model) {
+                return $model;
+            }
         }
 
         // 2. Default Gemini Provider
         // Look for Gemini by name, or first model from Gemini provider
         $geminiProvider = AIProvider::where('name', 'like', '%Gemini%')
-                                    ->orWhere('name', 'like', '%Google%')
-                                    ->first();
+            ->orWhere('name', 'like', '%Google%')
+            ->first();
         if ($geminiProvider) {
             $geminiModel = AIModel::with('provider')
-                                  ->where('provider_id', $geminiProvider->id)
-                                  ->where('status', 'active')
-                                  ->first();
-            if ($geminiModel) return $geminiModel;
+                ->where('provider_id', $geminiProvider->id)
+                ->where('status', 'active')
+                ->first();
+            if ($geminiModel) {
+                return $geminiModel;
+            }
         }
 
         // 3. Platform default via intent routing
-        $intentRouting = \App\Models\IntentRouting::where('intent_name', 'agent_execution')
+        $intentRouting = IntentRouting::where('intent_name', 'agent_execution')
             ->with(['defaultModel.provider'])
             ->first();
 
@@ -56,7 +60,7 @@ class UniversalAiGatewayService
 
         // 4. Last resort
         return AIModel::with('provider')
-            ->whereHas('provider', fn($q) => $q->where('is_active', true))
+            ->whereHas('provider', fn ($q) => $q->where('is_active', true))
             ->where('status', 'active')
             ->first();
     }
@@ -68,22 +72,22 @@ class UniversalAiGatewayService
     {
         $model = $this->resolveModel($agent);
 
-        if (!$model || !$model->provider) {
+        if (! $model || ! $model->provider) {
             throw new \RuntimeException('No AI model available for execution. Please ensure Gemini or another provider is active.');
         }
 
         $provider = new DynamicRestProvider($model->provider->id, $this->keyStorage);
 
         $prompt = is_string($context['input']) ? $context['input'] : json_encode($context['input']);
-        
+
         $temperature = $agent->settings['temperature'] ?? 0.7;
         $maxTokens = $agent->settings['max_tokens'] ?? 2048;
 
         $options = [
-            'model'       => $model->external_id ?? $model->name,
-            'temperature' => (float)$temperature,
-            'max_tokens'  => (int)$maxTokens,
-            'system'      => $context['system_prompt'] ?? '',
+            'model' => $model->external_id ?? $model->name,
+            'temperature' => (float) $temperature,
+            'max_tokens' => (int) $maxTokens,
+            'system' => $context['system_prompt'] ?? '',
         ];
 
         // Format prompt as messages array if needed by specific providers
@@ -91,8 +95,8 @@ class UniversalAiGatewayService
 
         $result = $provider->generateText($prompt, $options);
 
-        if (!$result['success']) {
-            throw new \RuntimeException('LLM call failed: ' . ($result['error'] ?? 'Unknown error'));
+        if (! $result['success']) {
+            throw new \RuntimeException('LLM call failed: '.($result['error'] ?? 'Unknown error'));
         }
 
         // Attach resolved model metadata for logging purposes
@@ -108,9 +112,9 @@ class UniversalAiGatewayService
     public function generateEmbeddings(string $text, ?Agent $agent = null): array
     {
         // 1. Resolve model via agent or default
-        $model = $agent ? $this->resolveModel($agent) : $this->resolveModel(new Agent());
+        $model = $agent ? $this->resolveModel($agent) : $this->resolveModel(new Agent);
 
-        if (!$model || !$model->provider) {
+        if (! $model || ! $model->provider) {
             throw new \RuntimeException('No AI provider available for generating embeddings.');
         }
 
@@ -122,8 +126,8 @@ class UniversalAiGatewayService
 
         $result = $provider->generateEmbeddings($text, $options);
 
-        if (!$result['success']) {
-            throw new \RuntimeException('Embedding generation failed: ' . ($result['error'] ?? 'Unknown error'));
+        if (! $result['success']) {
+            throw new \RuntimeException('Embedding generation failed: '.($result['error'] ?? 'Unknown error'));
         }
 
         return $result['vector'] ?? [];

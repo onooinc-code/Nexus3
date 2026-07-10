@@ -84,7 +84,7 @@ return new class extends Migration
             $table->json('tone_mirroring_snapshot')->nullable();
             $table->unsignedBigInteger('context_snapshot_id')->nullable();
             $table->string('trace_id', 100)->nullable();
-            
+
             $table->timestamp('sent_at')->nullable();
             $table->timestamp('delivered_at')->nullable();
             $table->timestamp('read_at')->nullable();

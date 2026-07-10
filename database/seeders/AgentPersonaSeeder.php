@@ -119,6 +119,6 @@ class AgentPersonaSeeder extends Seeder
             );
         }
 
-        $this->command->info('✅ AgentPersonaSeeder complete — ' . count($personas) . ' personas seeded.');
+        $this->command->info('✅ AgentPersonaSeeder complete — '.count($personas).' personas seeded.');
     }
 }

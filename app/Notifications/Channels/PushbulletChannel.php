@@ -2,9 +2,9 @@
 
 namespace App\Notifications\Channels;
 
-use Illuminate\Notifications\Notification;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use Illuminate\Notifications\Notification;
 
 class PushbulletChannel
 {
@@ -12,7 +12,7 @@ class PushbulletChannel
 
     public function __construct()
     {
-        $this->client = new Client();
+        $this->client = new Client;
     }
 
     /**

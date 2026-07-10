@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Workflow;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 
@@ -151,7 +152,7 @@ class WorkflowTemplateSeeder extends Seeder
     public function run(): void
     {
         foreach ($this->templates as $template) {
-            \App\Models\Workflow::updateOrCreate(
+            Workflow::updateOrCreate(
                 ['key' => $template['key']],
                 Arr::except($template, ['key'])
             );

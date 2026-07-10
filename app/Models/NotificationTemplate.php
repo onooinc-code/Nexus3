@@ -5,8 +5,11 @@ namespace App\Models;
 class NotificationTemplate extends BaseModel
 {
     public const CHANNEL_EMAIL = 'email';
+
     public const CHANNEL_SMS = 'sms';
+
     public const CHANNEL_WHATSAPP = 'whatsapp';
+
     public const CHANNEL_PUSH = 'push';
 
     public const CHANNELS = [
@@ -31,7 +34,7 @@ class NotificationTemplate extends BaseModel
     /**
      * Render the template body with given variables.
      *
-     * @param array<string, string> $variables
+     * @param  array<string, string>  $variables
      */
     public function render(array $variables): string
     {
@@ -40,13 +43,14 @@ class NotificationTemplate extends BaseModel
             $body = str_replace("{{$key}}", $value, $body);
             $body = str_replace("{{ $key }}", $value, $body);
         }
+
         return $body;
     }
 
     /**
      * Render the subject line with given variables.
      *
-     * @param array<string, string> $variables
+     * @param  array<string, string>  $variables
      */
     public function renderSubject(array $variables): ?string
     {

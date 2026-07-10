@@ -6,7 +6,7 @@ use App\Models\AIModel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AIModel>
+ * @extends Factory<AIModel>
  */
 class AIModelFactory extends Factory
 {
@@ -15,7 +15,7 @@ class AIModelFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->word() . ' Model',
+            'name' => fake()->word().' Model',
             'provider_id' => null,
             'context_window' => fake()->optional()->numberBetween(512, 8192),
             'input_cost_per_m' => fake()->optional()->randomFloat(6, 0, 0.1),

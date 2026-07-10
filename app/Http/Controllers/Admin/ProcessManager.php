@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Log;
 class ProcessManager
 {
     protected $logsPath;
+
     protected $backendPath;
+
     protected $frontendPath;
 
     public function __construct(string $logsPath)
@@ -36,13 +38,14 @@ class ProcessManager
             };
 
             Log::info("Service started: $service");
+
             return [
                 'status' => 'started',
                 'service' => $service,
                 'timestamp' => now()->toIso8601String(),
             ];
         } catch (\Exception $e) {
-            Log::error("Failed to start $service: " . $e->getMessage());
+            Log::error("Failed to start $service: ".$e->getMessage());
             throw $e;
         }
     }
@@ -56,7 +59,7 @@ class ProcessManager
 
         try {
             // Get PID from file
-            $pidFile = $this->logsPath . '/pids.txt';
+            $pidFile = $this->logsPath.'/pids.txt';
             $pid = $this->getPidForService($pidFile, $service);
 
             if ($pid) {
@@ -71,7 +74,7 @@ class ProcessManager
                 'timestamp' => now()->toIso8601String(),
             ];
         } catch (\Exception $e) {
-            Log::error("Failed to stop $service: " . $e->getMessage());
+            Log::error("Failed to stop $service: ".$e->getMessage());
             throw $e;
         }
     }
@@ -82,11 +85,11 @@ class ProcessManager
     private function startApi(): void
     {
         $cmd = $this->buildCommand([
-            'cd ' . $this->backendPath,
+            'cd '.$this->backendPath,
             'php artisan serve --port=8000',
         ]);
 
-        $logFile = $this->logsPath . '/api.log';
+        $logFile = $this->logsPath.'/api.log';
         $this->executeCommand($cmd, $logFile, 'API');
     }
 
@@ -96,11 +99,11 @@ class ProcessManager
     private function startReverb(): void
     {
         $cmd = $this->buildCommand([
-            'cd ' . $this->backendPath,
+            'cd '.$this->backendPath,
             'php artisan reverb:start --host=0.0.0.0 --port=6001',
         ]);
 
-        $logFile = $this->logsPath . '/reverb.log';
+        $logFile = $this->logsPath.'/reverb.log';
         $this->executeCommand($cmd, $logFile, 'Reverb');
     }
 
@@ -110,11 +113,11 @@ class ProcessManager
     private function startVite(): void
     {
         $cmd = $this->buildCommand([
-            'cd ' . $this->backendPath,
+            'cd '.$this->backendPath,
             'npm run dev -- --port 5173',
         ]);
 
-        $logFile = $this->logsPath . '/vite.log';
+        $logFile = $this->logsPath.'/vite.log';
         $this->executeCommand($cmd, $logFile, 'Vite');
     }
 
@@ -124,11 +127,11 @@ class ProcessManager
     private function startQueue(): void
     {
         $cmd = $this->buildCommand([
-            'cd ' . $this->backendPath,
+            'cd '.$this->backendPath,
             'php artisan queue:work --tries=3 --timeout=90',
         ]);
 
-        $logFile = $this->logsPath . '/queue.log';
+        $logFile = $this->logsPath.'/queue.log';
         $this->executeCommand($cmd, $logFile, 'Queue');
     }
 
@@ -138,11 +141,11 @@ class ProcessManager
     private function startNextJs(): void
     {
         $cmd = $this->buildCommand([
-            'cd ' . $this->frontendPath,
+            'cd '.$this->frontendPath,
             'npm run dev -- --port 3000',
         ]);
 
-        $logFile = $this->logsPath . '/nextjs.log';
+        $logFile = $this->logsPath.'/nextjs.log';
         $this->executeCommand($cmd, $logFile, 'Next.js');
     }
 
@@ -189,13 +192,15 @@ class ProcessManager
      */
     private function getPidForService(string $pidFile, string $service): ?int
     {
-        if (!File::exists($pidFile)) {
+        if (! File::exists($pidFile)) {
             return null;
         }
 
         $content = File::get($pidFile);
         foreach (explode("\n", $content) as $line) {
-            if (empty(trim($line))) continue;
+            if (empty(trim($line))) {
+                continue;
+            }
             [$svc, $pid] = array_map('trim', explode(':', $line));
             if (strtolower($svc) === $service) {
                 return (int) $pid;

@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('contact_analysis_findings', function (Blueprint $table) {
-            if (! \Illuminate\Support\Facades\Schema::hasColumn('contact_analysis_findings', 'evidence_references')) {
+            if (! Schema::hasColumn('contact_analysis_findings', 'evidence_references')) {
                 $table->json('evidence_references')->nullable();
             }
-            if (! \Illuminate\Support\Facades\Schema::hasColumn('contact_analysis_findings', 'source_message_ids')) {
+            if (! Schema::hasColumn('contact_analysis_findings', 'source_message_ids')) {
                 $table->json('source_message_ids')->nullable();
             }
         });

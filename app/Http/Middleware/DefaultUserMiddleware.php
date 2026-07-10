@@ -21,8 +21,8 @@ class DefaultUserMiddleware
         if (app()->environment('local', 'development')) {
             // Get or create default user
             $user = User::where('email', 'admin@nexus.local')->first();
-            
-            if (!$user) {
+
+            if (! $user) {
                 $user = User::create([
                     'name' => 'Admin',
                     'email' => 'admin@nexus.local',

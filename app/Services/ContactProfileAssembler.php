@@ -9,17 +9,13 @@ class ContactProfileAssembler
 {
     /**
      * Assemble the complete 360-degree view profile for a contact.
-     *
-     * @param Contact $contact
-     * @param bool $useCache
-     * @return array
      */
     public function assemble(Contact $contact, bool $useCache = true): array
     {
         $cacheKey = "contact:profile:{$contact->id}";
 
         if ($useCache) {
-            return Cache::remember($cacheKey, 60, fn() => $this->buildProfileData($contact));
+            return Cache::remember($cacheKey, 60, fn () => $this->buildProfileData($contact));
         }
 
         $data = $this->buildProfileData($contact);
@@ -106,15 +102,15 @@ class ContactProfileAssembler
             'reply_mode_override' => $contact->reply_mode_override,
             'metadata' => $contact->metadata ?? [],
             'attributes' => $contact->attributes ?? [],
-            
+
             // Channels and Identifiers
-            'channels' => $contact->channels->map(fn($c) => [
+            'channels' => $contact->channels->map(fn ($c) => [
                 'name' => $c->name,
                 'type' => $c->type,
                 'metadata' => $c->metadata,
             ])->toArray(),
-            
-            'identifiers' => $contact->identifiers->map(fn($id) => [
+
+            'identifiers' => $contact->identifiers->map(fn ($id) => [
                 'type' => $id->type,
                 'value' => $id->value,
                 'is_primary' => (bool) $id->is_primary,
@@ -122,13 +118,13 @@ class ContactProfileAssembler
 
             'aliases' => $contact->aliases->pluck('name')->toArray(),
             'preferences' => $preferences,
-            'reply_rules' => $contact->replyRules->map(fn($r) => [
+            'reply_rules' => $contact->replyRules->map(fn ($r) => [
                 'rule' => $r->rule,
                 'is_active' => (bool) $r->is_active,
                 'source_type' => $r->source_type,
             ])->toArray(),
 
-            'topics' => $contact->topics->map(fn($t) => [
+            'topics' => $contact->topics->map(fn ($t) => [
                 'topic' => $t->topic,
                 'status' => $t->status,
             ])->toArray(),

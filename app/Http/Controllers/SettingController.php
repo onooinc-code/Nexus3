@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\GlobalAgentPauseToggled;
+use App\Events\SettingsActivityLogged;
 use App\Models\Setting;
 use App\Services\CredentialEncryptionService;
 use App\Services\CredentialValidationService;
@@ -202,6 +203,8 @@ class SettingController extends Controller
             'context' => ['key' => $setting->key, 'group' => $setting->group],
         ]);
 
+        SettingsActivityLogged::dispatch('created', ['key' => $setting->key, 'group' => $setting->group], 'Setting created: '.$setting->key);
+
         return response()->json([
             'success' => true,
             'data' => $setting,
@@ -292,6 +295,8 @@ class SettingController extends Controller
             ],
         ]);
 
+        SettingsActivityLogged::dispatch('updated', ['key' => $key, 'group' => $setting->group], 'Setting updated: '.$key);
+
         return response()->json([
             'success' => true,
             'data' => $setting,
@@ -322,6 +327,8 @@ class SettingController extends Controller
             'user_id' => $request->user()?->id,
             'context' => ['key' => $settingKey],
         ]);
+
+        SettingsActivityLogged::dispatch('deleted', ['key' => $settingKey], 'Setting deleted: '.$settingKey);
 
         return response()->json([
             'success' => true,
@@ -554,6 +561,8 @@ class SettingController extends Controller
             'user_id' => $request->user()?->id,
             'context' => ['keys' => array_column($request->input('settings'), 'key'), 'updated_count' => count($updated)],
         ]);
+
+        SettingsActivityLogged::dispatch('bulk_updated', ['keys' => array_column($request->input('settings'), 'key')], count($updated).' settings bulk updated.');
 
         return response()->json([
             'success' => true,
@@ -1040,6 +1049,55 @@ class SettingController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Webhook test failed. Unable to reach webhook endpoint: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Factory reset: Deletes all settings to restore defaults (Emergency control).
+     */
+    public function factoryReset(Request $request): JsonResponse
+    {
+        // Require super-admin for emergency controls
+        if (! ($request->user()->is_super_admin ?? false)) {
+            return response()->json([
+                'message' => 'Forbidden',
+                'error' => 'Super-admin access required for emergency controls',
+            ], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'confirmation' => ['required', 'string', 'in:RESET ALL'],
+            'reason' => ['required', 'string', 'max:500'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            // Delete all settings
+            Setting::truncate();
+            $this->cacheService->clear();
+
+            $this->logService->critical('FACTORY RESET EXECUTED', [
+                'channel' => 'system',
+                'type' => 'security',
+                'user_id' => $request->user()?->id,
+                'context' => ['reason' => $request->input('reason')],
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'System settings have been reset to factory defaults.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to execute factory reset: '.$e->getMessage(),
             ], 500);
         }
     }

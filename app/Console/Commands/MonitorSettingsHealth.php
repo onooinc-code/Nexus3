@@ -26,7 +26,7 @@ class MonitorSettingsHealth extends Command
             // Validate all credentials
             $result = $this->validationService->validateAllCredentials();
 
-            $this->info("Credential validation completed:");
+            $this->info('Credential validation completed:');
             $this->info("  ✓ Valid credentials: {$result['valid_count']}");
             $this->info("  ✗ Invalid credentials: {$result['invalid_count']}");
             $this->info("  Total checked: {$result['total']}");
@@ -44,7 +44,7 @@ class MonitorSettingsHealth extends Command
                     'channel' => 'monitoring',
                     'type' => 'health_check',
                     'invalid_credentials' => collect($result['results'])
-                        ->filter(fn ($r) => !$r['valid'])
+                        ->filter(fn ($r) => ! $r['valid'])
                         ->keys()
                         ->all(),
                 ]);
@@ -52,7 +52,7 @@ class MonitorSettingsHealth extends Command
 
             return self::SUCCESS;
         } catch (\Throwable $exception) {
-            $this->error('Settings health check failed: ' . $exception->getMessage());
+            $this->error('Settings health check failed: '.$exception->getMessage());
             Log::error('Settings health check error', [
                 'channel' => 'monitoring',
                 'type' => 'health_check',

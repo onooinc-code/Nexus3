@@ -2,26 +2,30 @@
 
 namespace App\Repositories;
 
-use App\Services\Memory\WorkingMemoryService;
 use App\Services\Memory\EpisodicMemoryService;
+use App\Services\Memory\GraphMemoryService;
 use App\Services\Memory\SemanticMemoryService;
 use App\Services\Memory\StructuredMemoryService;
-use App\Services\Memory\GraphMemoryService;
+use App\Services\Memory\WorkingMemoryService;
 
 class MemoryRepository
 {
     protected $workingMemoryService;
+
     protected $episodicMemoryService;
+
     protected $semanticMemoryService;
+
     protected $structuredMemoryService;
+
     protected $graphMemoryService;
 
     public function __construct(
         WorkingMemoryService $workingMemoryService,
         EpisodicMemoryService $episodicMemoryService,
-        SemanticMemoryService $semanticMemoryService = null,
-        StructuredMemoryService $structuredMemoryService = null,
-        GraphMemoryService $graphMemoryService = null
+        ?SemanticMemoryService $semanticMemoryService = null,
+        ?StructuredMemoryService $structuredMemoryService = null,
+        ?GraphMemoryService $graphMemoryService = null
     ) {
         $this->workingMemoryService = $workingMemoryService;
         $this->episodicMemoryService = $episodicMemoryService;
@@ -33,8 +37,8 @@ class MemoryRepository
     /**
      * Create a memory in the appropriate storage layer
      *
-     * @param string $type Memory type (working, episodic, semantic, structured, graph)
-     * @param mixed $data Data to store
+     * @param  string  $type  Memory type (working, episodic, semantic, structured, graph)
+     * @param  mixed  $data  Data to store
      * @return mixed
      */
     public function create(string $type, $data)
@@ -52,8 +56,8 @@ class MemoryRepository
     /**
      * Read a memory from the appropriate storage layer
      *
-     * @param string $type Memory type
-     * @param mixed $identifier Identifier for the memory
+     * @param  string  $type  Memory type
+     * @param  mixed  $identifier  Identifier for the memory
      * @return mixed
      */
     public function read(string $type, $identifier)
@@ -71,9 +75,9 @@ class MemoryRepository
     /**
      * Update a memory in the appropriate storage layer
      *
-     * @param string $type Memory type
-     * @param mixed $identifier Identifier for the memory
-     * @param mixed $data New data
+     * @param  string  $type  Memory type
+     * @param  mixed  $identifier  Identifier for the memory
+     * @param  mixed  $data  New data
      * @return mixed
      */
     public function update(string $type, $identifier, $data)
@@ -91,9 +95,8 @@ class MemoryRepository
     /**
      * Delete a memory from the appropriate storage layer
      *
-     * @param string $type Memory type
-     * @param mixed $identifier Identifier for the memory
-     * @return bool
+     * @param  string  $type  Memory type
+     * @param  mixed  $identifier  Identifier for the memory
      */
     public function delete(string $type, $identifier): bool
     {
@@ -110,9 +113,8 @@ class MemoryRepository
     /**
      * Search for memories across storage layers
      *
-     * @param string $query Search query
-     * @param array $types Memory types to search in (optional)
-     * @return array
+     * @param  string  $query  Search query
+     * @param  array  $types  Memory types to search in (optional)
      */
     public function search(string $query, array $types = []): array
     {

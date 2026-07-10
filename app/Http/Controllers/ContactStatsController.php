@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ContactReplyModeChanged;
 use App\Models\Contact;
-use App\Services\ContactStatsService;
 use App\Services\ContactReplyModeService;
+use App\Services\ContactStatsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -105,7 +106,7 @@ class ContactStatsController extends Controller
         );
 
         $newMode = $data['mode'] ?? 'global';
-        event(new \App\Events\ContactReplyModeChanged(
+        event(new ContactReplyModeChanged(
             $contactModel,
             $previousMode,
             $newMode,

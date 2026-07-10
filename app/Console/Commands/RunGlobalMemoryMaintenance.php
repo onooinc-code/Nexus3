@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\RunContactMemoryMaintenanceJob;
 use App\Models\Contact;
 use App\Models\ContactMemoryMaintenanceRun;
 use Illuminate\Console\Command;
@@ -9,6 +10,7 @@ use Illuminate\Console\Command;
 class RunGlobalMemoryMaintenance extends Command
 {
     protected $signature = 'nexus:memory-maintenance {--operation=prune_stale} {--dry-run}';
+
     protected $description = 'Dispatches memory maintenance jobs for all contacts';
 
     public function handle(): int
@@ -26,10 +28,10 @@ class RunGlobalMemoryMaintenance extends Command
                 'operation' => $operation,
                 'status' => 'queued',
                 'scope' => ['contact_id' => $contact->id],
-                'results' => ['dry_run' => $isDryRun]
+                'results' => ['dry_run' => $isDryRun],
             ]);
 
-            \App\Jobs\RunContactMemoryMaintenanceJob::dispatch($run);
+            RunContactMemoryMaintenanceJob::dispatch($run);
             $dispatched++;
         }
 

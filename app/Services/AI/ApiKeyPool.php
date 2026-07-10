@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Log;
 class ApiKeyPool
 {
     protected array $pools = [];
+
     protected string $cachePrefix = 'ai_key_pool_';
+
     protected int $ttlSeconds = 3600;
 
     public function registerPool(string $provider, array $keys): void
@@ -29,7 +31,7 @@ class ApiKeyPool
 
     public function getKey(string $provider): ?string
     {
-        if (!isset($this->pools[$provider])) {
+        if (! isset($this->pools[$provider])) {
             $cached = Cache::get("{$this->cachePrefix}{$provider}");
             if ($cached) {
                 $this->pools[$provider] = $cached;
@@ -39,7 +41,9 @@ class ApiKeyPool
         }
 
         $pool = &$this->pools[$provider];
-        if (empty($pool['keys'])) return null;
+        if (empty($pool['keys'])) {
+            return null;
+        }
 
         $key = $pool['keys'][$pool['current_index'] % $pool['total_keys']];
         $pool['current_index']++;
@@ -56,7 +60,7 @@ class ApiKeyPool
 
     public function addKey(string $provider, string $key): void
     {
-        if (!isset($this->pools[$provider])) {
+        if (! isset($this->pools[$provider])) {
             $this->pools[$provider] = [
                 'keys' => [],
                 'current_index' => 0,
@@ -72,10 +76,14 @@ class ApiKeyPool
 
     public function removeKey(string $provider, string $key): bool
     {
-        if (!isset($this->pools[$provider])) return false;
+        if (! isset($this->pools[$provider])) {
+            return false;
+        }
 
         $index = array_search($key, $this->pools[$provider]['keys'], true);
-        if ($index === false) return false;
+        if ($index === false) {
+            return false;
+        }
 
         unset($this->pools[$provider]['keys'][$index]);
         $this->pools[$provider]['keys'] = array_values($this->pools[$provider]['keys']);
@@ -92,7 +100,7 @@ class ApiKeyPool
 
     public function getPoolStatus(string $provider): array
     {
-        if (!isset($this->pools[$provider])) {
+        if (! isset($this->pools[$provider])) {
             $cached = Cache::get("{$this->cachePrefix}{$provider}");
             if ($cached) {
                 $this->pools[$provider] = $cached;
@@ -107,6 +115,7 @@ class ApiKeyPool
         }
 
         $pool = $this->pools[$provider];
+
         return [
             'provider' => $provider,
             'total_keys' => $pool['total_keys'],
@@ -121,6 +130,7 @@ class ApiKeyPool
         foreach (array_keys($this->pools) as $provider) {
             $statuses[] = $this->getPoolStatus($provider);
         }
+
         return $statuses;
     }
 

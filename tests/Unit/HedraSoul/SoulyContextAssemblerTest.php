@@ -2,15 +2,15 @@
 
 namespace Tests\Unit\HedraSoul;
 
-use Tests\TestCase;
-use App\Models\HedrasoulSession;
-use App\Models\HedrasoulMessage;
-use App\Models\SoulyRuntimeProfile;
-use App\Models\SoulyInstructionVersion;
 use App\Models\HedraProfileFact;
 use App\Models\HedrasoulContextSnapshot;
+use App\Models\HedrasoulMessage;
+use App\Models\HedrasoulSession;
+use App\Models\SoulyInstructionVersion;
+use App\Models\SoulyRuntimeProfile;
 use App\Services\HedraSoul\SoulyContextAssembler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 /**
  * SoulyContextAssemblerTest: Tests context assembly functionality.
@@ -21,12 +21,13 @@ class SoulyContextAssemblerTest extends TestCase
     use RefreshDatabase;
 
     protected SoulyContextAssembler $assembler;
+
     protected SoulyRuntimeProfile $profile;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create instruction version
         $instruction = SoulyInstructionVersion::create([
             'version_number' => 1,
@@ -171,7 +172,7 @@ class SoulyContextAssemblerTest extends TestCase
 
         // Check excluded_items structure
         $excludedItems = $snapshot->excluded_items ?? [];
-        
+
         foreach ($excludedItems as $item) {
             $this->assertArrayHasKey('key', $item);
             $this->assertArrayHasKey('reason', $item);

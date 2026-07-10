@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\TaskQueueService;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,10 +13,15 @@ class AgentTask extends BaseModel
 
     // Status constants matching the spec
     const STATUS_TODO = 'todo';
+
     const STATUS_IN_PROGRESS = 'in-progress';
+
     const STATUS_BLOCKED = 'blocked';
+
     const STATUS_COMPLETED = 'completed';
+
     const STATUS_FAILED = 'failed';
+
     const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
@@ -95,32 +101,36 @@ class AgentTask extends BaseModel
 
     public function cancel(): bool
     {
-        app(\App\Services\TaskQueueService::class)->cancel($this);
+        app(TaskQueueService::class)->cancel($this);
+
         return true;
     }
 
     public function pause(): bool
     {
-        app(\App\Services\TaskQueueService::class)->pause($this);
+        app(TaskQueueService::class)->pause($this);
+
         return true;
     }
 
     public function resume(): bool
     {
-        app(\App\Services\TaskQueueService::class)->resume($this);
+        app(TaskQueueService::class)->resume($this);
+
         return true;
     }
 
     public function complete(array $result = []): bool
     {
-        app(\App\Services\TaskQueueService::class)->complete($this, $result);
+        app(TaskQueueService::class)->complete($this, $result);
+
         return true;
     }
 
-    public function fail(string $error = null): bool
+    public function fail(?string $error = null): bool
     {
-        app(\App\Services\TaskQueueService::class)->fail($this, $error);
+        app(TaskQueueService::class)->fail($this, $error);
+
         return true;
     }
 }
-

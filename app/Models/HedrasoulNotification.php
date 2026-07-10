@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class HedrasoulNotification extends Model
 {
-    use \Illuminate\Database\Eloquent\Factories\HasFactory;
-protected $fillable = [
+    use HasFactory;
+
+    protected $fillable = [
         'notification_type',
         'priority',
         'title',
@@ -38,7 +40,7 @@ protected $fillable = [
         return $query->where('is_dismissed', false)
             ->where(function ($q) {
                 $q->whereNull('snoozed_until')
-                  ->orWhere('snoozed_until', '<', now());
+                    ->orWhere('snoozed_until', '<', now());
             });
     }
 }

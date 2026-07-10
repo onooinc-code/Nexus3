@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Agent>
+ * @extends Factory<Agent>
  */
 class AgentFactory extends Factory
 {
@@ -16,8 +16,8 @@ class AgentFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->company() . ' Agent',
-            'key' => Str::slug(fake()->word() . '-' . fake()->numberBetween(100, 999) . '-' . uniqid()),
+            'name' => fake()->company().' Agent',
+            'key' => Str::slug(fake()->word().'-'.fake()->numberBetween(100, 999).'-'.uniqid()),
             'description' => fake()->sentence(10),
             'provider' => fake()->randomElement(['openai', 'gemini', 'custom']),
             'status' => fake()->randomElement([

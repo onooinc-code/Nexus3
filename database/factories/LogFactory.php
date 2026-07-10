@@ -6,14 +6,14 @@ use App\Models\Log;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Log>
+ * @extends Factory<Log>
  */
 class LogFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
-     * @var class-string<\App\Models\Log>
+     * @var class-string<Log>
      */
     protected $model = Log::class;
 
@@ -62,47 +62,34 @@ class LogFactory extends Factory
 
     /**
      * Set the log level.
-     *
-     * @param string $level
-     * @return static
      */
     public function level(string $level): static
     {
-        return $this->state(fn(array $attributes) => ['level' => $level]);
+        return $this->state(fn (array $attributes) => ['level' => $level]);
     }
 
     /**
      * Set the log channel.
-     *
-     * @param string $channel
-     * @return static
      */
     public function channel(string $channel): static
     {
-        return $this->state(fn(array $attributes) => ['channel' => $channel]);
+        return $this->state(fn (array $attributes) => ['channel' => $channel]);
     }
 
     /**
      * Set the log type.
-     *
-     * @param string $type
-     * @return static
      */
     public function type(string $type): static
     {
-        return $this->state(fn(array $attributes) => ['type' => $type]);
+        return $this->state(fn (array $attributes) => ['type' => $type]);
     }
 
     /**
      * Set the related entity.
-     *
-     * @param int $relatedId
-     * @param string $relatedType
-     * @return static
      */
     public function related(int $relatedId, string $relatedType): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'related_id' => $relatedId,
             'related_type' => $relatedType,
         ]);
@@ -110,19 +97,14 @@ class LogFactory extends Factory
 
     /**
      * Set the user.
-     *
-     * @param int $userId
-     * @return static
      */
     public function forUser(int $userId): static
     {
-        return $this->state(fn(array $attributes) => ['user_id' => $userId]);
+        return $this->state(fn (array $attributes) => ['user_id' => $userId]);
     }
 
     /**
      * Create an info-level log.
-     *
-     * @return static
      */
     public function info(): static
     {
@@ -131,8 +113,6 @@ class LogFactory extends Factory
 
     /**
      * Create a warning-level log.
-     *
-     * @return static
      */
     public function warning(): static
     {
@@ -141,8 +121,6 @@ class LogFactory extends Factory
 
     /**
      * Create an error-level log.
-     *
-     * @return static
      */
     public function error(): static
     {

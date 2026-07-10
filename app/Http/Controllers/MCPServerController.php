@@ -54,7 +54,7 @@ class MCPServerController extends Controller
     public function update(Request $request, MCPServer $mcpServer)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|string|max:255|unique:mcp_servers,name,' . $mcpServer->id,
+            'name' => 'sometimes|string|max:255|unique:mcp_servers,name,'.$mcpServer->id,
             'type' => 'sometimes|string|in:local,remote',
             'connection_config' => 'sometimes|array',
             'status' => 'sometimes|string|in:online,offline,error,connected,disconnected',
@@ -79,12 +79,14 @@ class MCPServerController extends Controller
     public function connect(string $name)
     {
         $result = $this->mcpService->connect($name);
+
         return response()->json($result, $result['success'] ? 200 : 400);
     }
 
     public function disconnect(string $name)
     {
         $result = $this->mcpService->disconnect($name);
+
         return response()->json(['success' => $result]);
     }
 }

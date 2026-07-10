@@ -3,11 +3,11 @@
 namespace App\Services\Routing;
 
 use App\Models\Memory;
-use Illuminate\Support\Facades\Log;
 
 class MemoryRouter
 {
     protected array $typeRoutes = [];
+
     protected ?array $defaultRoute = null;
 
     public function registerTypeRoute(string $memoryType, array $handler): void
@@ -28,7 +28,7 @@ class MemoryRouter
 
         $handler = $this->typeRoutes[$memoryType] ?? $this->defaultRoute;
 
-        if (!$handler) {
+        if (! $handler) {
             return [
                 'success' => false,
                 'error' => "No read route for memory type: {$memoryType}",
@@ -63,7 +63,7 @@ class MemoryRouter
         $memoryType = $context['memory_type'] ?? 'general';
         $handler = $this->typeRoutes[$memoryType] ?? $this->defaultRoute;
 
-        if (!$handler) {
+        if (! $handler) {
             return [
                 'success' => false,
                 'error' => "No write route for memory type: {$memoryType}",

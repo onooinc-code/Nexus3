@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,7 @@ class DashboardController extends Controller
     public function index()
     {
         $data = $this->gatherDashboardData();
+
         return view('dashboard', $data);
     }
 
@@ -51,8 +53,8 @@ class DashboardController extends Controller
     private function getBackendMetrics()
     {
         try {
-            $appHealth = Http::timeout(2)->get(config('app.url') . '/api/v1/health');
-            $monitoringHealth = Http::timeout(2)->get(config('app.url') . '/api/v1/monitoring/health');
+            $appHealth = Http::timeout(2)->get(config('app.url').'/api/v1/health');
+            $monitoringHealth = Http::timeout(2)->get(config('app.url').'/api/v1/monitoring/health');
 
             return [
                 'status' => $monitoringHealth->json()['status'] ?? 'unknown',
@@ -62,7 +64,8 @@ class DashboardController extends Controller
                 'checks' => $monitoringHealth->json()['checks'] ?? [],
             ];
         } catch (\Exception $e) {
-            Log::error('Backend metrics error: ' . $e->getMessage());
+            Log::error('Backend metrics error: '.$e->getMessage());
+
             return ['status' => 'error', 'error' => $e->getMessage()];
         }
     }
@@ -109,19 +112,19 @@ class DashboardController extends Controller
         try {
             DB::connection()->getPdo();
 
-            $dbSize = DB::selectOne("
+            $dbSize = DB::selectOne('
                 SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) as size_mb
                 FROM information_schema.TABLES
                 WHERE table_schema = ?
-            ", [env('DB_DATABASE')]);
+            ', [env('DB_DATABASE')]);
 
-            $tables = DB::select("
+            $tables = DB::select('
                 SELECT table_name, TABLE_ROWS as row_count
                 FROM information_schema.TABLES
                 WHERE table_schema = ?
                 ORDER BY TABLE_ROWS DESC
                 LIMIT 10
-            ", [env('DB_DATABASE')]);
+            ', [env('DB_DATABASE')]);
 
             return [
                 'connected' => true,
@@ -195,7 +198,7 @@ class DashboardController extends Controller
     {
         try {
             $logFile = storage_path('logs/laravel.log');
-            if (!file_exists($logFile)) {
+            if (! file_exists($logFile)) {
                 return [];
             }
 
@@ -239,15 +242,19 @@ class DashboardController extends Controller
                         $hour = substr($bootTimeStr, 8, 2);
                         $minute = substr($bootTimeStr, 10, 2);
                         $second = substr($bootTimeStr, 12, 2);
-                        $bootTime = \Carbon\Carbon::create($year, $month, $day, $hour, $minute, $second);
-                        return $bootTime->diffForHumans(null, true) . ' (since ' . $bootTime->toDateTimeString() . ')';
+                        $bootTime = Carbon::create($year, $month, $day, $hour, $minute, $second);
+
+                        return $bootTime->diffForHumans(null, true).' (since '.$bootTime->toDateTimeString().')';
                     }
                 }
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
+
             return 'Windows Dev Server Online';
         }
 
         $uptime = shell_exec('uptime -p 2>/dev/null || echo "N/A"');
+
         return trim($uptime) ?: 'N/A';
     }
 
@@ -267,7 +274,7 @@ class DashboardController extends Controller
             'cache' => 'getCacheMetrics',
         ];
 
-        if (!isset($methods[$metric])) {
+        if (! isset($methods[$metric])) {
             return response()->json(['error' => 'Invalid metric'], 400);
         }
 
@@ -283,7 +290,8 @@ class DashboardController extends Controller
     {
         $this->authorize('admin');
         Cache::flush();
-        Log::info('Cache cleared by ' . auth()->user()->name);
+        Log::info('Cache cleared by '.auth()->user()->name);
+
         return response()->json(['success' => true, 'message' => 'Cache cleared']);
     }
 
@@ -295,7 +303,8 @@ class DashboardController extends Controller
         $this->authorize('admin');
         try {
             shell_exec('php artisan queue:restart');
-            Log::info('Queue restarted by ' . auth()->user()->name);
+            Log::info('Queue restarted by '.auth()->user()->name);
+
             return response()->json(['success' => true, 'message' => 'Queue restarted']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);

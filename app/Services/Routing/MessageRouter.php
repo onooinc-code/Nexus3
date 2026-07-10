@@ -2,13 +2,14 @@
 
 namespace App\Services\Routing;
 
-use App\Models\Message;
 use App\Models\Conversation;
+use App\Models\Message;
 use Illuminate\Support\Facades\Log;
 
 class MessageRouter
 {
     protected array $routes = [];
+
     protected array $middleware = [];
 
     public function __construct(array $routes = [])
@@ -60,6 +61,7 @@ class MessageRouter
         $defaultRoute = $this->findDefaultRoute();
         if ($defaultRoute) {
             $context['route'] = $defaultRoute;
+
             return [
                 'success' => true,
                 'route' => $defaultRoute,
@@ -79,6 +81,7 @@ class MessageRouter
     {
         if (str_contains($pattern, ':')) {
             [$type, $value] = explode(':', $pattern, 2);
+
             return match ($type) {
                 'intent' => isset($metadata['intent']) && str_contains($metadata['intent'], $value),
                 'sender' => isset($metadata['sender_type']) && $metadata['sender_type'] === $value,
@@ -99,6 +102,7 @@ class MessageRouter
                 return $route;
             }
         }
+
         return $this->routes[0] ?? null;
     }
 
@@ -116,10 +120,11 @@ class MessageRouter
     {
         foreach ($this->middleware as $middleware) {
             $context = $middleware($context);
-            if (!($context['proceed'] ?? true)) {
+            if (! ($context['proceed'] ?? true)) {
                 return $context;
             }
         }
+
         return $context;
     }
 }

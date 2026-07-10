@@ -7,7 +7,7 @@ use App\Models\ConversationSession;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ConversationSession>
+ * @extends Factory<ConversationSession>
  */
 class ConversationSessionFactory extends Factory
 {

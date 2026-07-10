@@ -3,7 +3,9 @@
 namespace App\Events;
 
 use App\Models\AgentTask;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
@@ -27,13 +29,13 @@ class TaskCompletedEvent
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
+     * @return array<int, Channel>
      */
     public function broadcastOn(): array
     {
         return [
-            new \Illuminate\Broadcasting\PrivateChannel('task.' . $this->task->id),
-            new \Illuminate\Broadcasting\Channel('tasks'),
+            new PrivateChannel('task.'.$this->task->id),
+            new Channel('tasks'),
         ];
     }
 

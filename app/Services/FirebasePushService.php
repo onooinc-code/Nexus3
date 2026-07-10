@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\UserPushToken;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -75,7 +76,7 @@ class FirebasePushService
 
     public function sendToUsers(array $userIds, array $payload, array $options = []): bool
     {
-        $tokens = \App\Models\UserPushToken::whereIn('user_id', $userIds)
+        $tokens = UserPushToken::whereIn('user_id', $userIds)
             ->pluck('token')
             ->filter()
             ->unique()

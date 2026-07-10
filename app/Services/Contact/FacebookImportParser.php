@@ -9,16 +9,12 @@ class FacebookImportParser
     /**
      * Parse Facebook JSON export format (from Download Your Info)
      * Expected structure: { "participants": [...], "messages": [...] }
-     *
-     * @param string $jsonContent
-     * @param string|null $timezone
-     * @return array
      */
     public function parseJson(string $jsonContent, ?string $timezone = 'UTC'): array
     {
         $data = json_decode($jsonContent, true);
 
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             return [];
         }
 
@@ -28,7 +24,7 @@ class FacebookImportParser
 
         // Extract messages
         $messagesArray = $data['messages'] ?? [];
-        if (!is_array($messagesArray)) {
+        if (! is_array($messagesArray)) {
             return [];
         }
 
@@ -36,7 +32,7 @@ class FacebookImportParser
         $threadId = $data['title'] ?? $data['thread_id'] ?? null;
 
         foreach ($messagesArray as $msg) {
-            if (!is_array($msg)) {
+            if (! is_array($msg)) {
                 continue;
             }
 
@@ -87,10 +83,6 @@ class FacebookImportParser
     /**
      * Parse Facebook TXT export format (if available)
      * Format: typically "SenderName: Message content\n"
-     *
-     * @param string $content
-     * @param string|null $timezone
-     * @return array
      */
     public function parseTxt(string $content, ?string $timezone = 'UTC'): array
     {
@@ -140,9 +132,6 @@ class FacebookImportParser
 
     /**
      * Build a map of participants for reference
-     *
-     * @param array $participants
-     * @return array
      */
     private function buildParticipantMap(array $participants): array
     {
@@ -159,9 +148,6 @@ class FacebookImportParser
 
     /**
      * Extract attachment information
-     *
-     * @param array $message
-     * @return array
      */
     private function extractAttachments(array $message): array
     {
@@ -182,9 +168,6 @@ class FacebookImportParser
 
     /**
      * Normalize sender identifier for contact matching
-     *
-     * @param string $sender
-     * @return string
      */
     private function normalizeSender(string $sender): string
     {
@@ -193,9 +176,6 @@ class FacebookImportParser
 
     /**
      * Check if message is a system message
-     *
-     * @param string $body
-     * @return bool
      */
     private function isSystemMessage(string $body): bool
     {
@@ -227,9 +207,7 @@ class FacebookImportParser
     /**
      * Parse various timestamp formats (Facebook uses milliseconds typically)
      *
-     * @param mixed $timestamp
-     * @param string $timezone
-     * @return string|null
+     * @param  mixed  $timestamp
      */
     private function parseTimestamp($timestamp, string $timezone): ?string
     {
@@ -241,6 +219,7 @@ class FacebookImportParser
             // Facebook typically uses milliseconds
             if (is_numeric($timestamp)) {
                 $seconds = intval($timestamp / 1000);
+
                 return Carbon::createFromTimestamp($seconds, $timezone)
                     ->setTimezone('UTC')
                     ->toDateTimeString();
@@ -257,6 +236,7 @@ class FacebookImportParser
                 foreach ($formats as $format) {
                     try {
                         $carbon = Carbon::createFromFormat($format, $timestamp, $timezone);
+
                         return $carbon->setTimezone('UTC')->toDateTimeString();
                     } catch (\Exception $e) {
                         continue;
@@ -272,9 +252,6 @@ class FacebookImportParser
 
     /**
      * Calculate dedupe hash for a message
-     *
-     * @param array $message
-     * @return string
      */
     public function calculateDedupeHash(array $message): string
     {

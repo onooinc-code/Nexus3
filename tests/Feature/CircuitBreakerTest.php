@@ -2,9 +2,10 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
+use App\Exceptions\AiRateLimitException;
 use App\Services\AiModelsHub\CircuitBreaker;
 use Illuminate\Support\Facades\Log;
+use Tests\TestCase;
 
 class CircuitBreakerTest extends TestCase
 {
@@ -20,7 +21,7 @@ class CircuitBreakerTest extends TestCase
     public function it_executes_primary_callback_successfully()
     {
         $result = $this->circuitBreaker->executeWithFallback(
-            fn() => ['success' => true, 'data' => 'primary_response', 'provider_id' => 'p1', 'model_id' => 'm1'],
+            fn () => ['success' => true, 'data' => 'primary_response', 'provider_id' => 'p1', 'model_id' => 'm1'],
             []
         );
 
@@ -33,9 +34,9 @@ class CircuitBreakerTest extends TestCase
     public function it_falls_back_to_secondary_when_primary_fails()
     {
         $result = $this->circuitBreaker->executeWithFallback(
-            fn() => throw new \Exception('Primary failed'),
+            fn () => throw new \Exception('Primary failed'),
             [
-                fn() => ['success' => true, 'data' => 'fallback_response', 'provider_id' => 'p2', 'model_id' => 'm2'],
+                fn () => ['success' => true, 'data' => 'fallback_response', 'provider_id' => 'p2', 'model_id' => 'm2'],
             ]
         );
 
@@ -48,10 +49,10 @@ class CircuitBreakerTest extends TestCase
     public function it_returns_failure_when_all_providers_fail()
     {
         $result = $this->circuitBreaker->executeWithFallback(
-            fn() => throw new \Exception('Primary failed'),
+            fn () => throw new \Exception('Primary failed'),
             [
-                fn() => throw new \Exception('Fallback 1 failed'),
-                fn() => throw new \Exception('Fallback 2 failed'),
+                fn () => throw new \Exception('Fallback 1 failed'),
+                fn () => throw new \Exception('Fallback 2 failed'),
             ]
         );
 
@@ -66,9 +67,9 @@ class CircuitBreakerTest extends TestCase
         Log::spy();
 
         $result = $this->circuitBreaker->executeWithFallback(
-            fn() => throw new \App\Exceptions\AiRateLimitException(),
+            fn () => throw new AiRateLimitException,
             [
-                fn() => ['success' => true, 'data' => 'rate_limit_fallback', 'provider_id' => 'p2', 'model_id' => 'm2'],
+                fn () => ['success' => true, 'data' => 'rate_limit_fallback', 'provider_id' => 'p2', 'model_id' => 'm2'],
             ]
         );
 

@@ -3,19 +3,19 @@
 namespace Database\Seeders;
 
 use App\Models\Agent;
+use App\Models\AgentTask;
 use App\Models\AIModel;
 use App\Models\ApiKey;
 use App\Models\Contact;
-use App\Models\ContactNote;
-use App\Models\ContactTag;
-use App\Models\ContactRule;
 use App\Models\ContactCustomField;
+use App\Models\ContactNote;
+use App\Models\ContactRule;
+use App\Models\ContactTag;
 use App\Models\Conversation;
 use App\Models\ConversationSession;
 use App\Models\Memory;
 use App\Models\Message;
 use App\Models\Topic;
-use App\Models\AgentTask;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -28,6 +28,7 @@ class Phase02Seeder extends Seeder
             $this->command->getOutput()->writeln(
                 '  <comment>⊘ Skipping Phase02Seeder — seed data already present.</comment>'
             );
+
             return;
         }
 

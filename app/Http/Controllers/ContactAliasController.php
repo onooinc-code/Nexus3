@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Contact;
-use App\Models\ContactAlias;
 use App\Services\LogService;
 use Illuminate\Http\Request;
 
@@ -20,6 +18,7 @@ class ContactAliasController extends Controller
     public function index(Contact $contact)
     {
         $aliases = $contact->aliases()->orderBy('name')->get();
+
         return response()->json(['data' => $aliases]);
     }
 
@@ -51,6 +50,7 @@ class ContactAliasController extends Controller
     public function show(Contact $contact, $aliasId)
     {
         $alias = $contact->aliases()->findOrFail($aliasId);
+
         return response()->json(['data' => $alias]);
     }
 

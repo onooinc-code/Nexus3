@@ -2,11 +2,8 @@
 
 namespace App\Services\PeopleConnect;
 
-use App\Models\PeopleConnect\PeopleConnectConversation;
 use App\Models\PeopleConnect\PeopleConnectContextSnapshot;
-use App\Models\PeopleConnect\PeopleConnectReplyDraft;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class PeopleConnectAgentReplyService
 {
@@ -18,8 +15,8 @@ class PeopleConnectAgentReplyService
             'mode' => 'reply_draft',
         ]);
 
-        if (!$response->successful()) {
-            throw new \RuntimeException('AgentsHub call failed: ' . $response->body());
+        if (! $response->successful()) {
+            throw new \RuntimeException('AgentsHub call failed: '.$response->body());
         }
 
         $data = $response->json();

@@ -2,6 +2,23 @@
 
 namespace App\Services\HedraSoul;
 
+use App\Events\HedraSoul\HedraSoulApprovalApproved;
+use App\Events\HedraSoul\HedraSoulApprovalRejected;
+use App\Events\HedraSoul\HedraSoulApprovalRequested;
+use App\Events\HedraSoul\HedraSoulAutonomyChanged;
+use App\Events\HedraSoul\HedraSoulCommandDetected;
+use App\Events\HedraSoul\HedraSoulCommandExecuted;
+use App\Events\HedraSoul\HedraSoulInstructionChanged;
+use App\Events\HedraSoul\HedraSoulMemoryApproved;
+use App\Events\HedraSoul\HedraSoulMemorySuggested;
+use App\Events\HedraSoul\HedraSoulMessageCreated;
+use App\Events\HedraSoul\HedraSoulMessageProcessed;
+use App\Events\HedraSoul\HedraSoulModelChanged;
+use App\Events\HedraSoul\HedraSoulNotificationCreated;
+use App\Models\HedrasoulApprovalRequest;
+use App\Models\HedrasoulMessage;
+use App\Models\HedrasoulNotification;
+
 /**
  * HedraSoulRealtimeBroadcaster: Broadcasts all HedraSoulHub realtime events to Reverb.
  * Each event is broadcast on the private channel hedrasoul.hub.{user_id}.
@@ -11,26 +28,30 @@ class HedraSoulRealtimeBroadcaster
     /**
      * Broadcast message created event.
      */
-    public function broadcastMessageCreated(\App\Models\HedrasoulMessage $message, ?int $userId): void
+    public function broadcastMessageCreated(HedrasoulMessage $message, ?int $userId): void
     {
-        if ($userId === null) return;
+        if ($userId === null) {
+            return;
+        }
         try {
-            broadcast(new \App\Events\HedraSoul\HedraSoulMessageCreated($message, $userId))->toOthers();
+            broadcast(new HedraSoulMessageCreated($message, $userId))->toOthers();
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast message created: ' . $e->getMessage());
+            \Log::warning('Failed to broadcast message created: '.$e->getMessage());
         }
     }
 
     /**
      * Broadcast message processed event.
      */
-    public function broadcastMessageProcessed(\App\Models\HedrasoulMessage $message, ?int $userId): void
+    public function broadcastMessageProcessed(HedrasoulMessage $message, ?int $userId): void
     {
-        if ($userId === null) return;
+        if ($userId === null) {
+            return;
+        }
         try {
-            broadcast(new \App\Events\HedraSoul\HedraSoulMessageProcessed($message, $userId))->toOthers();
+            broadcast(new HedraSoulMessageProcessed($message, $userId))->toOthers();
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast message processed: ' . $e->getMessage());
+            \Log::warning('Failed to broadcast message processed: '.$e->getMessage());
         }
     }
 
@@ -39,9 +60,11 @@ class HedraSoulRealtimeBroadcaster
      */
     public function broadcastCommandDetected(array $payload, ?int $userId): void
     {
-        if ($userId === null) return;
+        if ($userId === null) {
+            return;
+        }
         try {
-            broadcast(new \App\Events\HedraSoul\HedraSoulCommandDetected(
+            broadcast(new HedraSoulCommandDetected(
                 $userId,
                 $payload['message_id'] ?? 0,
                 $payload['intent'] ?? '',
@@ -49,7 +72,7 @@ class HedraSoulRealtimeBroadcaster
                 (array) ($payload['policy_result'] ?? [])
             ))->toOthers();
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast command detected: ' . $e->getMessage());
+            \Log::warning('Failed to broadcast command detected: '.$e->getMessage());
         }
     }
 
@@ -58,9 +81,11 @@ class HedraSoulRealtimeBroadcaster
      */
     public function broadcastCommandExecuted(array $payload, ?int $userId): void
     {
-        if ($userId === null) return;
+        if ($userId === null) {
+            return;
+        }
         try {
-            broadcast(new \App\Events\HedraSoul\HedraSoulCommandExecuted(
+            broadcast(new HedraSoulCommandExecuted(
                 $userId,
                 $payload['trace_id'] ?? '',
                 $payload['selected_action'] ?? '',
@@ -68,20 +93,22 @@ class HedraSoulRealtimeBroadcaster
                 $payload['workflows_triggered'] ?? null
             ))->toOthers();
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast command executed: ' . $e->getMessage());
+            \Log::warning('Failed to broadcast command executed: '.$e->getMessage());
         }
     }
 
     /**
      * Broadcast approval requested event.
      */
-    public function broadcastApprovalRequested(\App\Models\HedrasoulApprovalRequest $approval, ?int $userId): void
+    public function broadcastApprovalRequested(HedrasoulApprovalRequest $approval, ?int $userId): void
     {
-        if ($userId === null) return;
+        if ($userId === null) {
+            return;
+        }
         try {
-            broadcast(new \App\Events\HedraSoul\HedraSoulApprovalRequested($userId, $approval))->toOthers();
+            broadcast(new HedraSoulApprovalRequested($userId, $approval))->toOthers();
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast approval requested: ' . $e->getMessage());
+            \Log::warning('Failed to broadcast approval requested: '.$e->getMessage());
         }
     }
 
@@ -90,15 +117,17 @@ class HedraSoulRealtimeBroadcaster
      */
     public function broadcastApprovalApproved(array $payload, ?int $userId): void
     {
-        if ($userId === null) return;
+        if ($userId === null) {
+            return;
+        }
         try {
-            broadcast(new \App\Events\HedraSoul\HedraSoulApprovalApproved(
+            broadcast(new HedraSoulApprovalApproved(
                 $userId,
                 $payload['approval_id'] ?? 0,
                 $payload['decided_by'] ?? null
             ))->toOthers();
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast approval approved: ' . $e->getMessage());
+            \Log::warning('Failed to broadcast approval approved: '.$e->getMessage());
         }
     }
 
@@ -107,15 +136,17 @@ class HedraSoulRealtimeBroadcaster
      */
     public function broadcastApprovalRejected(array $payload, ?int $userId): void
     {
-        if ($userId === null) return;
+        if ($userId === null) {
+            return;
+        }
         try {
-            broadcast(new \App\Events\HedraSoul\HedraSoulApprovalRejected(
+            broadcast(new HedraSoulApprovalRejected(
                 $userId,
                 $payload['approval_id'] ?? 0,
                 $payload['decided_by'] ?? null
             ))->toOthers();
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast approval rejected: ' . $e->getMessage());
+            \Log::warning('Failed to broadcast approval rejected: '.$e->getMessage());
         }
     }
 
@@ -124,9 +155,11 @@ class HedraSoulRealtimeBroadcaster
      */
     public function broadcastInstructionChanged(array $payload, ?int $userId): void
     {
-        if ($userId === null) return;
+        if ($userId === null) {
+            return;
+        }
         try {
-            broadcast(new \App\Events\HedraSoul\HedraSoulInstructionChanged(
+            broadcast(new HedraSoulInstructionChanged(
                 $userId,
                 $payload['version_id'] ?? 0,
                 $payload['version_number'] ?? 0,
@@ -134,7 +167,7 @@ class HedraSoulRealtimeBroadcaster
                 $payload['activated_by'] ?? null
             ))->toOthers();
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast instruction changed: ' . $e->getMessage());
+            \Log::warning('Failed to broadcast instruction changed: '.$e->getMessage());
         }
     }
 
@@ -143,15 +176,17 @@ class HedraSoulRealtimeBroadcaster
      */
     public function broadcastModelChanged(array $payload, ?int $userId): void
     {
-        if ($userId === null) return;
+        if ($userId === null) {
+            return;
+        }
         try {
-            broadcast(new \App\Events\HedraSoul\HedraSoulModelChanged(
+            broadcast(new HedraSoulModelChanged(
                 $userId,
                 $payload['model_instance_id'] ?? 0,
                 $payload['changed_at'] ?? null
             ))->toOthers();
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast model changed: ' . $e->getMessage());
+            \Log::warning('Failed to broadcast model changed: '.$e->getMessage());
         }
     }
 
@@ -160,15 +195,17 @@ class HedraSoulRealtimeBroadcaster
      */
     public function broadcastMemorySuggested(array $payload, ?int $userId): void
     {
-        if ($userId === null) return;
+        if ($userId === null) {
+            return;
+        }
         try {
-            broadcast(new \App\Events\HedraSoul\HedraSoulMemorySuggested(
+            broadcast(new HedraSoulMemorySuggested(
                 $userId,
                 $payload['suggestion_id'] ?? 0,
                 $payload['memory_type'] ?? ''
             ))->toOthers();
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast memory suggested: ' . $e->getMessage());
+            \Log::warning('Failed to broadcast memory suggested: '.$e->getMessage());
         }
     }
 
@@ -177,16 +214,18 @@ class HedraSoulRealtimeBroadcaster
      */
     public function broadcastMemoryApproved(array $payload, ?int $userId): void
     {
-        if ($userId === null) return;
+        if ($userId === null) {
+            return;
+        }
         try {
-            broadcast(new \App\Events\HedraSoul\HedraSoulMemoryApproved(
+            broadcast(new HedraSoulMemoryApproved(
                 $userId,
                 $payload['fact_id'] ?? 0,
                 $payload['suggestion_id'] ?? 0,
                 $payload['memory_type'] ?? ''
             ))->toOthers();
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast memory approved: ' . $e->getMessage());
+            \Log::warning('Failed to broadcast memory approved: '.$e->getMessage());
         }
     }
 
@@ -195,29 +234,33 @@ class HedraSoulRealtimeBroadcaster
      */
     public function broadcastAutonomyChanged(array $payload, ?int $userId): void
     {
-        if ($userId === null) return;
+        if ($userId === null) {
+            return;
+        }
         try {
-            broadcast(new \App\Events\HedraSoul\HedraSoulAutonomyChanged(
+            broadcast(new HedraSoulAutonomyChanged(
                 $userId,
                 $payload['autonomy_mode'] ?? 'unknown',
                 $payload['changed_by'] ?? null,
                 $payload['changed_at'] ?? null
             ))->toOthers();
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast autonomy changed: ' . $e->getMessage());
+            \Log::warning('Failed to broadcast autonomy changed: '.$e->getMessage());
         }
     }
 
     /**
      * Broadcast notification created event.
      */
-    public function broadcastNotificationCreated(\App\Models\HedrasoulNotification $notification, ?int $userId): void
+    public function broadcastNotificationCreated(HedrasoulNotification $notification, ?int $userId): void
     {
-        if ($userId === null) return;
+        if ($userId === null) {
+            return;
+        }
         try {
-            broadcast(new \App\Events\HedraSoul\HedraSoulNotificationCreated($userId, $notification))->toOthers();
+            broadcast(new HedraSoulNotificationCreated($userId, $notification))->toOthers();
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast notification created: ' . $e->getMessage());
+            \Log::warning('Failed to broadcast notification created: '.$e->getMessage());
         }
     }
 }

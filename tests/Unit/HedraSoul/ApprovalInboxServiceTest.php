@@ -2,13 +2,13 @@
 
 namespace Tests\Unit\HedraSoul;
 
-use Tests\TestCase;
+use App\Jobs\HedraSoul\DispatchApprovalReminderJob;
+use App\Jobs\HedraSoul\ExecuteSoulyCommandJob;
 use App\Models\HedrasoulApprovalRequest;
 use App\Services\HedraSoul\ApprovalInboxService;
-use App\Jobs\HedraSoul\ExecuteSoulyCommandJob;
-use App\Jobs\HedraSoul\DispatchApprovalReminderJob;
-use Illuminate\Support\Facades\Queue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
+use Tests\TestCase;
 
 /**
  * ApprovalInboxServiceTest: Tests approval request lifecycle.
@@ -25,22 +25,22 @@ class ApprovalInboxServiceTest extends TestCase
         parent::setUp();
         // Seed the users referenced as decided_by in approve/reject tests
         \DB::table('users')->insertOrIgnore([
-            'id'                => 123,
-            'name'              => 'Test Approver',
-            'email'             => 'approver@test.com',
-            'password'          => bcrypt('password'),
+            'id' => 123,
+            'name' => 'Test Approver',
+            'email' => 'approver@test.com',
+            'password' => bcrypt('password'),
             'email_verified_at' => now(),
-            'created_at'        => now(),
-            'updated_at'        => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
         \DB::table('users')->insertOrIgnore([
-            'id'                => 456,
-            'name'              => 'Test Rejecter',
-            'email'             => 'rejecter@test.com',
-            'password'          => bcrypt('password'),
+            'id' => 456,
+            'name' => 'Test Rejecter',
+            'email' => 'rejecter@test.com',
+            'password' => bcrypt('password'),
             'email_verified_at' => now(),
-            'created_at'        => now(),
-            'updated_at'        => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
         $this->service = app(ApprovalInboxService::class);
         Queue::fake();

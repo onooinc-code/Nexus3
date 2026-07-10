@@ -2,18 +2,15 @@
 
 namespace App\Services\PeopleConnect;
 
+use App\Exceptions\PeopleConnect\DuplicateMessageException;
 use App\Models\PeopleConnect\PeopleConnectMessage;
 use App\Models\PeopleConnect\PeopleConnectProcessingLog;
-use App\Exceptions\PeopleConnect\DuplicateMessageException;
-use Carbon\Carbon;
 
 class PeopleConnectMessageService
 {
     /**
      * Inserts a new message after performing deduplication checks.
      *
-     * @param array $data
-     * @return PeopleConnectMessage
      * @throws DuplicateMessageException
      */
     public function insert(array $data): PeopleConnectMessage
@@ -68,7 +65,7 @@ class PeopleConnectMessageService
             'conversation_id' => $conversationId,
             'event_type' => 'dedup_skipped',
             'description' => "Message insertion skipped due to deduplication check on {$reason}",
-            'payload' => ['waha_message_id' => $messageId]
+            'payload' => ['waha_message_id' => $messageId],
         ]);
     }
 }

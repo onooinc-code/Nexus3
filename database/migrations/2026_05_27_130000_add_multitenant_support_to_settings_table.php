@@ -48,13 +48,13 @@ return new class extends Migration
             // Drop foreign keys safely
             try {
                 $table->dropForeign('settings_workspace_id_foreign');
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Key doesn't exist, continue
             }
 
             try {
                 $table->dropForeign('settings_user_id_foreign');
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Key doesn't exist, continue
             }
 
@@ -62,7 +62,7 @@ return new class extends Migration
             if (Schema::hasColumn('settings', 'scope')) {
                 try {
                     $table->dropIndex(['scope', 'key']);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // Index doesn't exist, continue
                 }
             }
@@ -70,7 +70,7 @@ return new class extends Migration
             if (Schema::hasColumn('settings', 'workspace_id')) {
                 try {
                     $table->dropIndex(['workspace_id', 'key']);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // Index doesn't exist, continue
                 }
             }
@@ -78,14 +78,14 @@ return new class extends Migration
             if (Schema::hasColumn('settings', 'user_id')) {
                 try {
                     $table->dropIndex(['user_id', 'key']);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // Index doesn't exist, continue
                 }
             }
 
             try {
                 $table->dropIndex(['scope', 'workspace_id', 'key']);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Index doesn't exist, continue
             }
 

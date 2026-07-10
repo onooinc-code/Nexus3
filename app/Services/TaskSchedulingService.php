@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Models\AgentTask;
-use App\Services\TaskExecutionService;
-use App\Services\LogService;
 
 class TaskSchedulingService
 {
@@ -38,7 +36,7 @@ class TaskSchedulingService
 
                 // Dispatch execution
                 $this->executionService->executeTask($task);
-                
+
             } catch (\Exception $e) {
                 $this->logService->error('Failed to dispatch due task', [
                     'channel' => 'task_scheduler',

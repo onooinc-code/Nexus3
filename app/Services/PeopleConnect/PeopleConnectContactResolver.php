@@ -4,9 +4,9 @@ namespace App\Services\PeopleConnect;
 
 use App\Models\Contact;
 use App\Models\ContactIdentifier;
-use App\Services\ContactIdentityResolver;
 use App\Services\ContactHubService;
-use Illuminate\Support\Str;
+use App\Services\ContactIdentityResolver;
+use Illuminate\Support\Facades\Cache;
 
 class PeopleConnectContactResolver
 {
@@ -19,10 +19,9 @@ class PeopleConnectContactResolver
      * Resolves a Contact based on WAHA provided details.
      * Creates a new Contact if not found.
      *
-     * @param string $chatId WAHA chatId
-     * @param string $phone Extracted phone number from WAHA
-     * @param string $displayName WAHA pushname/displayName
-     * @return Contact
+     * @param  string  $chatId  WAHA chatId
+     * @param  string  $phone  Extracted phone number from WAHA
+     * @param  string  $displayName  WAHA pushname/displayName
      */
     public function resolve(string $chatId, string $phone, string $displayName = ''): Contact
     {
@@ -30,7 +29,7 @@ class PeopleConnectContactResolver
         // We use Cache::lock() (Redis atomic locks) based on the phone number to serialize resolution.
         // Concurrent requests block and wait up to 5 seconds. Once the lock is acquired, we perform
         // the check again before attempting creation to prevent duplicate contacts.
-        $lock = \Illuminate\Support\Facades\Cache::lock("contact_resolve_{$phone}", 10);
+        $lock = Cache::lock("contact_resolve_{$phone}", 10);
 
         try {
             $lock->block(5);
@@ -46,11 +45,12 @@ class PeopleConnectContactResolver
             if ($contact) {
                 // Ensure the whatsapp identifier is linked if it wasn't
                 $this->identityResolver->linkIdentifier($contact, 'whatsapp', $phone, false);
+
                 return $contact;
             }
 
             // 2. Not found, create new Contact
-            $contactName = !empty($displayName) ? $displayName : 'WAHA Contact ' . substr($phone, -4);
+            $contactName = ! empty($displayName) ? $displayName : 'WAHA Contact '.substr($phone, -4);
 
             $contact = Contact::create([
                 'name' => $contactName,

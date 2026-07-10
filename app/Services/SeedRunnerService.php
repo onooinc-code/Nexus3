@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Setting;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
@@ -60,9 +59,10 @@ class SeedRunnerService
     public function getSeed(string $seedId): ?array
     {
         $seed = $this->availableSeeds[$seedId] ?? null;
-        if (!$seed) {
+        if (! $seed) {
             return null;
         }
+
         return array_merge(['id' => $seedId], $seed);
     }
 
@@ -72,20 +72,20 @@ class SeedRunnerService
     public function runSeed(string $seedId, bool $force = false): array
     {
         $seed = $this->availableSeeds[$seedId] ?? null;
-        if (!$seed) {
+        if (! $seed) {
             throw new Exception("Seeder not found: {$seedId}");
         }
 
         $seedClass = $seed['class'];
 
         try {
-            Log::info("Starting seeder execution", ['seed_id' => $seedId, 'class' => $seedClass]);
+            Log::info('Starting seeder execution', ['seed_id' => $seedId, 'class' => $seedClass]);
 
             // Resolve and call seeder
             $seeder = app($seedClass);
             $seeder->run();
 
-            Log::info("Seeder completed successfully", ['seed_id' => $seedId]);
+            Log::info('Seeder completed successfully', ['seed_id' => $seedId]);
 
             return [
                 'success' => true,
@@ -95,7 +95,7 @@ class SeedRunnerService
                 'timestamp' => now()->toIso8601String(),
             ];
         } catch (Exception $e) {
-            Log::error("Seeder failed", [
+            Log::error('Seeder failed', [
                 'seed_id' => $seedId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -121,7 +121,7 @@ class SeedRunnerService
         foreach ($seedIds as $seedId) {
             $result = $this->runSeed($seedId, $force);
             $results[] = $result;
-            if (!$result['success']) {
+            if (! $result['success']) {
                 $allSuccess = false;
             }
         }
@@ -130,8 +130,8 @@ class SeedRunnerService
             'success' => $allSuccess,
             'results' => $results,
             'total' => count($results),
-            'successful' => collect($results)->filter(fn($r) => $r['success'])->count(),
-            'failed' => collect($results)->filter(fn($r) => !$r['success'])->count(),
+            'successful' => collect($results)->filter(fn ($r) => $r['success'])->count(),
+            'failed' => collect($results)->filter(fn ($r) => ! $r['success'])->count(),
         ];
     }
 }

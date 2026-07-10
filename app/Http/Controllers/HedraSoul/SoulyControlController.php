@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\HedraSoul;
 
 use App\Http\Controllers\Controller;
-use App\Services\HedraSoul\SoulyRuntimeProfileService;
-use App\Services\HedraSoul\SoulyCommandRouter;
-use App\Services\HedraSoul\SoulyActionPolicyService;
 use App\Models\HedrasoulMessage;
+use App\Services\HedraSoul\SoulyActionPolicyService;
+use App\Services\HedraSoul\SoulyCommandRouter;
+use App\Services\HedraSoul\SoulyRuntimeProfileService;
 use Illuminate\Http\Request;
 
 class SoulyControlController extends Controller

@@ -2,36 +2,34 @@
 
 namespace App\Services\HedraSoul;
 
+use App\Jobs\HedraSoul\ProcessHedraSoulMessageJob;
 use App\Models\HedrasoulMessage;
 use App\Models\HedrasoulSession;
-use App\Jobs\HedraSoul\ProcessHedraSoulMessageJob;
 
 class HedraSoulMessageService
 {
     /**
      * Store a message with explicit parameters (used by tests and controllers).
      *
-     * @param HedrasoulSession $session
-     * @param string $body
-     * @param string $senderType 'user' | 'assistant' | 'system'
-     * @param array  $metadata   Optional extra data stored in metadata column
+     * @param  string  $senderType  'user' | 'assistant' | 'system'
+     * @param  array  $metadata  Optional extra data stored in metadata column
      */
     public function storeMessage(HedrasoulSession $session, string $body, string $senderType = 'user', array $metadata = []): HedrasoulMessage
     {
         return $session->messages()->create([
-            'sender_type'  => $senderType,
-            'sender_id'    => auth()->id(),
-            'body'         => $body,
-            'body_format'  => 'markdown',
-            'status'       => 'received',
-            'intent'       => null,
-            'topic'        => null,
-            'tone'         => null,
-            'sentiment'    => null,
-            'risk_level'   => null,
+            'sender_type' => $senderType,
+            'sender_id' => auth()->id(),
+            'body' => $body,
+            'body_format' => 'markdown',
+            'status' => 'received',
+            'intent' => null,
+            'topic' => null,
+            'tone' => null,
+            'sentiment' => null,
+            'risk_level' => null,
             'is_streaming' => false,
-            'token_count'  => 0,
-            'cost_usd'     => 0,
+            'token_count' => 0,
+            'cost_usd' => 0,
         ]);
     }
 
@@ -69,6 +67,7 @@ class HedraSoulMessageService
     public function updateMessage(HedrasoulMessage $message, array $data): HedrasoulMessage
     {
         $message->update($data);
+
         return $message;
     }
 

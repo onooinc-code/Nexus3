@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Jobs\ExecuteWorkflowJob;
+use App\Models\User;
 use App\Models\Workflow;
 use App\Models\WorkflowExecution;
 use App\Services\Workflows\WorkflowInterpreter;
@@ -21,7 +22,7 @@ class WorkflowExecutor
         protected WorkflowTaskDispatcher $dispatcher
     ) {}
 
-    public function execute(Workflow $workflow, array $context = [], string $runMode = 'sync', ?\App\Models\User $user = null): array
+    public function execute(Workflow $workflow, array $context = [], string $runMode = 'sync', ?User $user = null): array
     {
         $version = $this->registry->getExecutableVersion($workflow);
         $this->policyGuard->assertCanExecute($user, $workflow, $version->definition);

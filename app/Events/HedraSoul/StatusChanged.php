@@ -13,6 +13,7 @@ class StatusChanged implements ShouldBroadcastNow
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public string $status;
+
     public int $userId;
 
     public function __construct(string $status, int $userId)
@@ -23,7 +24,7 @@ class StatusChanged implements ShouldBroadcastNow
 
     public function broadcastOn()
     {
-        return new PrivateChannel('hedrasoul.hub.' . $this->userId);
+        return new PrivateChannel('hedrasoul.hub.'.$this->userId);
     }
 
     public function broadcastAs()

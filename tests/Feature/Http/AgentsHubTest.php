@@ -7,9 +7,6 @@ use App\Models\AgentPersona;
 use App\Models\AgentRuntimeLog;
 use App\Models\User;
 use App\Services\AgentExecutionService;
-use App\Services\AgentSimulationService;
-use App\Services\AgentQuarantineService;
-use App\Services\AgentRateLimiter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -19,6 +16,7 @@ class AgentsHubTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private Agent $agent;
 
     protected function setUp(): void
@@ -28,22 +26,22 @@ class AgentsHubTest extends TestCase
         $this->actingAs($this->user, 'sanctum');
 
         $persona = AgentPersona::create([
-            'id'            => Str::uuid(),
-            'name'          => 'Test Persona',
+            'id' => Str::uuid(),
+            'name' => 'Test Persona',
             'system_prompt' => 'You are a test AI agent.',
             'tone_preferences' => ['formality' => 'casual'],
         ]);
 
         $this->agent = Agent::create([
-            'name'                => 'Test Agent',
-            'key'                 => 'test_agent_hub',
-            'description'         => 'Used for AgentsHub feature tests.',
-            'type'                => Agent::TYPE_AUTONOMOUS,
-            'status'              => Agent::STATUS_ACTIVE,
-            'is_active'           => true,
-            'is_system'           => false,
-            'owner_id'            => $this->user->id,
-            'persona_id'          => $persona->id,
+            'name' => 'Test Agent',
+            'key' => 'test_agent_hub',
+            'description' => 'Used for AgentsHub feature tests.',
+            'type' => Agent::TYPE_AUTONOMOUS,
+            'status' => Agent::STATUS_ACTIVE,
+            'is_active' => true,
+            'is_system' => false,
+            'owner_id' => $this->user->id,
+            'persona_id' => $persona->id,
             'rate_limit_per_minute' => 60,
         ]);
     }
@@ -60,7 +58,7 @@ class AgentsHubTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                'data'         => [['id', 'name', 'key', 'type', 'status', 'is_active']],
+                'data' => [['id', 'name', 'key', 'type', 'status', 'is_active']],
                 'current_page',
                 'total',
             ]);
@@ -111,9 +109,9 @@ class AgentsHubTest extends TestCase
     public function test_store_creates_agent_with_valid_payload(): void
     {
         $response = $this->postJson('/api/v1/agents', [
-            'name'        => 'Brand New Agent',
-            'key'         => 'brand_new_agent',
-            'type'        => Agent::TYPE_SPECIALIZED,
+            'name' => 'Brand New Agent',
+            'key' => 'brand_new_agent',
+            'type' => Agent::TYPE_SPECIALIZED,
             'description' => 'Handles post-deployment tasks.',
         ]);
 
@@ -182,14 +180,14 @@ class AgentsHubTest extends TestCase
     {
         $response = $this->putJson("/api/v1/agents/{$this->agent->id}", [
             'description' => 'Updated description',
-            'is_active'   => false,
+            'is_active' => false,
         ]);
 
         $response->assertStatus(200)
             ->assertJsonPath('data.is_active', false);
 
         $this->assertDatabaseHas('agents', [
-            'id'          => $this->agent->id,
+            'id' => $this->agent->id,
             'description' => 'Updated description',
         ]);
     }
@@ -202,7 +200,7 @@ class AgentsHubTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('agents', [
-            'id'                    => $this->agent->id,
+            'id' => $this->agent->id,
             'rate_limit_per_minute' => 30,
         ]);
     }
@@ -224,9 +222,9 @@ class AgentsHubTest extends TestCase
     public function test_destroy_blocks_system_agents(): void
     {
         $systemAgent = Agent::create([
-            'name'      => 'Core System Agent',
-            'key'       => 'core_system',
-            'type'      => Agent::TYPE_SUPERVISOR,
+            'name' => 'Core System Agent',
+            'key' => 'core_system',
+            'type' => Agent::TYPE_SUPERVISOR,
             'is_system' => true,
         ]);
 
@@ -310,7 +308,7 @@ class AgentsHubTest extends TestCase
     public function test_simulate_returns_thought_process(): void
     {
         $response = $this->postJson("/api/v1/agents/{$this->agent->id}/simulate", [
-            'input'      => ['task' => 'Analyze this dataset.'],
+            'input' => ['task' => 'Analyze this dataset.'],
             'mock_tools' => [],
         ]);
 
@@ -332,7 +330,7 @@ class AgentsHubTest extends TestCase
 
         $this->assertDatabaseHas('agent_runtime_logs', [
             'agent_id' => $this->agent->id,
-            'step'     => 'simulation',
+            'step' => 'simulation',
         ]);
     }
 
@@ -364,10 +362,10 @@ class AgentsHubTest extends TestCase
             $mock->shouldReceive('runAsync')
                 ->once()
                 ->andReturn([
-                    'success'  => true,
+                    'success' => true,
                     'trace_id' => 'mock-trace-id-1234',
-                    'mode'     => 'async',
-                    'message'  => 'Agent task queued for execution.',
+                    'mode' => 'async',
+                    'message' => 'Agent task queued for execution.',
                 ]);
         });
 
@@ -395,12 +393,12 @@ class AgentsHubTest extends TestCase
     public function test_logs_returns_paginated_runtime_logs(): void
     {
         AgentRuntimeLog::create([
-            'id'          => Str::uuid(),
-            'agent_id'    => $this->agent->id,
-            'trace_id'    => Str::uuid(),
-            'step'        => 'completed',
-            'input'       => ['task' => 'test'],
-            'output'      => ['result' => 'ok'],
+            'id' => Str::uuid(),
+            'agent_id' => $this->agent->id,
+            'trace_id' => Str::uuid(),
+            'step' => 'completed',
+            'input' => ['task' => 'test'],
+            'output' => ['result' => 'ok'],
             'duration_ms' => 100,
         ]);
 
@@ -448,7 +446,7 @@ class AgentsHubTest extends TestCase
     public function test_persona_store_creates_valid_persona(): void
     {
         $response = $this->postJson('/api/v1/agent-personas', [
-            'name'          => 'Sherlock Mode',
+            'name' => 'Sherlock Mode',
             'system_prompt' => 'You deduce everything with precision.',
             'tone_preferences' => ['formality' => 'very_formal'],
         ]);

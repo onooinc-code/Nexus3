@@ -2,16 +2,17 @@
 
 namespace App\Jobs;
 
-use App\Models\Conversation;
-use App\Models\Message;
+use App\Events\MessageCompleted;
+use App\Events\TokenStreamed;
 use App\Models\AIModel;
 use App\Models\ApiKey;
-use App\Services\AI\RateLimitService;
-use App\Services\AI\GoogleGeminiProvider;
-use App\Services\AI\OpenAIProvider;
+use App\Models\Conversation;
+use App\Models\Message;
 use App\Services\AI\AnthropicProvider;
+use App\Services\AI\GoogleGeminiProvider;
 use App\Services\AI\GroqProvider;
-use Illuminate\Support\Facades\DB;
+use App\Services\AI\OpenAIProvider;
+use App\Services\AI\RateLimitService;
 use Exception;
 
 /**
@@ -35,26 +36,22 @@ class ProcessAiInferenceJob extends BaseJob
 
     /**
      * Job timeout (10 minutes for LLM calls).
-     *
-     * @var int
      */
     public int $timeout = 600;
 
     /**
      * Number of retry attempts.
-     *
-     * @var int
      */
     public int $tries = 3;
 
     /**
      * Constructor.
      *
-     * @param string $conversationId Conversation UUID
-     * @param string $messageId Message UUID (the AI response message)
-     * @param string $prompt User's prompt/question
-     * @param string|null $modelId AI Model UUID
-     * @param string|null $providerId Provider ID (google_gemini, openai, etc.)
+     * @param  string  $conversationId  Conversation UUID
+     * @param  string  $messageId  Message UUID (the AI response message)
+     * @param  string  $prompt  User's prompt/question
+     * @param  string|null  $modelId  AI Model UUID
+     * @param  string|null  $providerId  Provider ID (google_gemini, openai, etc.)
      */
     public function __construct(
         protected string $conversationId,
@@ -69,7 +66,6 @@ class ProcessAiInferenceJob extends BaseJob
     /**
      * Execute the job - Perform AI inference.
      *
-     * @return void
      * @throws Exception
      */
     public function handle(): void
@@ -88,35 +84,36 @@ class ProcessAiInferenceJob extends BaseJob
                     'reason' => 'idempotent_skip',
                     'conversation_id' => $this->conversationId,
                 ]);
+
                 return;
             }
 
             // Fetch models (safely handling deletion)
             $conversation = $this->safelyGetModel(Conversation::class, $this->conversationId);
-            if (!$conversation) {
+            if (! $conversation) {
                 throw new Exception("Conversation not found: {$this->conversationId}");
             }
 
             $responseMessage = $this->safelyGetModel(Message::class, $this->messageId);
-            if (!$responseMessage) {
+            if (! $responseMessage) {
                 throw new Exception("Response message not found: {$this->messageId}");
             }
 
             $aiModel = $this->safelyGetModel(AIModel::class, $this->modelId);
-            if (!$aiModel) {
+            if (! $aiModel) {
                 throw new Exception("AI model not found: {$this->modelId}");
             }
 
             // Get API key for provider
             $apiKey = $this->getApiKeyForProvider($this->providerId);
-            if (!$apiKey) {
+            if (! $apiKey) {
                 throw new Exception("No active API key for provider: {$this->providerId}");
             }
 
             // Check rate limits
             $rateLimitService = app(RateLimitService::class);
             $rateLimitStatus = $rateLimitService->check($this->providerId, $apiKey);
-            if (!$rateLimitStatus['allowed']) {
+            if (! $rateLimitStatus['allowed']) {
                 // Rate limited - release job with exponential backoff
                 $this->handleRateLimit($this->getCurrentAttempt(), 5);
             }
@@ -141,8 +138,8 @@ class ProcessAiInferenceJob extends BaseJob
             $result = $provider->execute($execRequest);
             $durationMs = round((microtime(true) - $startTime) * 1000, 2);
 
-            if (!$result['success']) {
-                throw new Exception("LLM inference failed: " . ($result['error'] ?? 'Unknown error'));
+            if (! $result['success']) {
+                throw new Exception('LLM inference failed: '.($result['error'] ?? 'Unknown error'));
             }
 
             // Extract response content
@@ -156,10 +153,10 @@ class ProcessAiInferenceJob extends BaseJob
                 }
 
                 // Broadcast token stream event
-                event(new \App\Events\TokenStreamed(
+                event(new TokenStreamed(
                     $this->conversationId,
                     $this->messageId,
-                    $token . ' '
+                    $token.' '
                 ));
 
                 // Small delay to simulate streaming (optional - remove for real-time)
@@ -186,7 +183,7 @@ class ProcessAiInferenceJob extends BaseJob
             $rateLimitService->recordSuccess($this->providerId, $apiKey);
 
             // Broadcast message completed event
-            event(new \App\Events\MessageCompleted(
+            event(new MessageCompleted(
                 $this->conversationId,
                 $this->messageId,
                 $responseContent
@@ -224,7 +221,7 @@ class ProcessAiInferenceJob extends BaseJob
                     ]);
                 }
             } catch (Exception $updateEx) {
-                \Log::error("Failed to update message status", [
+                \Log::error('Failed to update message status', [
                     'message_id' => $this->messageId,
                     'exception' => $updateEx->getMessage(),
                 ]);
@@ -238,7 +235,7 @@ class ProcessAiInferenceJob extends BaseJob
     /**
      * Get active API key for provider.
      *
-     * @param string $provider Provider ID
+     * @param  string  $provider  Provider ID
      * @return string|null API key or null
      */
     protected function getApiKeyForProvider(string $provider): ?string
@@ -252,9 +249,10 @@ class ProcessAiInferenceJob extends BaseJob
     /**
      * Get provider instance based on provider ID.
      *
-     * @param string $provider Provider ID
-     * @param string $apiKey API key for provider
+     * @param  string  $provider  Provider ID
+     * @param  string  $apiKey  API key for provider
      * @return object Provider instance
+     *
      * @throws Exception
      */
     protected function getProviderInstance(string $provider, string $apiKey): object
@@ -270,8 +268,6 @@ class ProcessAiInferenceJob extends BaseJob
 
     /**
      * Extract idempotency data from job properties.
-     *
-     * @return array
      */
     protected function extractIdempotencyData(): array
     {

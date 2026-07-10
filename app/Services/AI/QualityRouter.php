@@ -2,11 +2,10 @@
 
 namespace App\Services\AI;
 
-use Illuminate\Support\Facades\Log;
-
 class QualityRouter
 {
     protected ModelSelector $selector;
+
     protected array $qualityTiers = [
         'critical' => ['min_quality' => 90, 'description' => 'Highest quality for critical tasks'],
         'high' => ['min_quality' => 80, 'description' => 'High quality for important tasks'],
@@ -21,7 +20,7 @@ class QualityRouter
 
     public function route(string $tier, array $request): array
     {
-        if (!isset($this->qualityTiers[$tier])) {
+        if (! isset($this->qualityTiers[$tier])) {
             return [
                 'success' => false,
                 'error' => "Unknown quality tier: {$tier}",
@@ -41,7 +40,7 @@ class QualityRouter
 
         $selection = $this->selector->select($criteria);
 
-        if (!$selection) {
+        if (! $selection) {
             return [
                 'success' => false,
                 'error' => "No model found for quality tier: {$tier}",
@@ -86,12 +85,14 @@ class QualityRouter
                 'min_quality' => $config['min_quality'],
             ];
         }
+
         return $tiers;
     }
 
     public function autoRoute(array $request): array
     {
         $tier = $this->getTierForRequest($request);
+
         return $this->route($tier, $request);
     }
 }

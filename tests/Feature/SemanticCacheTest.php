@@ -2,12 +2,15 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Services\AiModelsHub\SemanticCache;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class SemanticCacheTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected SemanticCache $cache;
 
     protected function setUp(): void

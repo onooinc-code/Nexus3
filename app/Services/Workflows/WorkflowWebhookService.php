@@ -3,8 +3,8 @@
 namespace App\Services\Workflows;
 
 use App\Models\WorkflowWebhook;
-use App\Services\WorkflowExecutor;
 use App\Services\LogService;
+use App\Services\WorkflowExecutor;
 
 class WorkflowWebhookService
 {
@@ -15,30 +15,30 @@ class WorkflowWebhookService
 
     public function handleWebhook(WorkflowWebhook $webhook, array $payload, ?string $signature = null): array
     {
-        if (!$webhook->is_active) {
-            throw new \Exception("Webhook is inactive.");
+        if (! $webhook->is_active) {
+            throw new \Exception('Webhook is inactive.');
         }
 
-        if (!$webhook->workflow || !$webhook->workflow->is_active) {
-            throw new \Exception("Associated workflow is inactive or missing.");
+        if (! $webhook->workflow || ! $webhook->workflow->is_active) {
+            throw new \Exception('Associated workflow is inactive or missing.');
         }
 
         if ($webhook->secret_key) {
-            if (!$signature) {
-                throw new \Exception("Signature is required for this webhook.");
+            if (! $signature) {
+                throw new \Exception('Signature is required for this webhook.');
             }
-            
+
             // Expected signature is hash_hmac sha256 of the payload JSON
             $expectedSignature = hash_hmac('sha256', json_encode($payload), $webhook->secret_key);
-            
+
             // Compare securely
-            if (!hash_equals($expectedSignature, $signature)) {
+            if (! hash_equals($expectedSignature, $signature)) {
                 $this->logService->warning('Invalid webhook signature', [
                     'channel' => 'workflow',
                     'webhook_id' => $webhook->id,
                     'provided_signature' => $signature,
                 ]);
-                throw new \Exception("Invalid webhook signature.");
+                throw new \Exception('Invalid webhook signature.');
             }
         }
 

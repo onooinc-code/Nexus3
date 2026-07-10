@@ -4,11 +4,9 @@ namespace App\Services;
 
 use App\Models\Contact;
 use App\Models\ContactAnalysisRun;
-use App\Models\ContactIdentifier;
 use App\Models\ContactImportBatch;
 use App\Models\ContactMemory;
 use App\Models\ContactMessage;
-use App\Models\ContactRelationship;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -33,7 +31,7 @@ class ContactStatsService
             // Stale memories: last_validated_at older than 30 days or never validated
             $staleMemories = ContactMemory::where(function ($q) {
                 $q->whereNull('last_validated_at')
-                  ->orWhere('last_validated_at', '<', now()->subDays(30));
+                    ->orWhere('last_validated_at', '<', now()->subDays(30));
             })->count();
 
             // Identity conflicts: contacts with 2+ identifiers of the same type/value (naïve count)
@@ -54,16 +52,16 @@ class ContactStatsService
             $failedAnalysis = ContactAnalysisRun::where('status', 'failed')->count();
 
             return [
-                'total_contacts'       => $total,
-                'active_contacts'      => $active,
-                'new_imported_messages'=> $newMessages,
-                'pending_analysis_runs'=> $pendingAnalysis,
-                'stale_memory_count'   => $staleMemories,
+                'total_contacts' => $total,
+                'active_contacts' => $active,
+                'new_imported_messages' => $newMessages,
+                'pending_analysis_runs' => $pendingAnalysis,
+                'stale_memory_count' => $staleMemories,
                 'identity_conflict_count' => $identityConflicts,
                 'autopilot_enabled_count' => $autopilotCount,
-                'failed_imports'       => $failedImports,
+                'failed_imports' => $failedImports,
                 'failed_analysis_runs' => $failedAnalysis,
-                'generated_at'         => now()->toIso8601String(),
+                'generated_at' => now()->toIso8601String(),
             ];
         });
     }

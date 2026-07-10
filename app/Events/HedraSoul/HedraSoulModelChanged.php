@@ -21,7 +21,7 @@ class HedraSoulModelChanged implements ShouldBroadcast
 
     public function broadcastOn(): Channel
     {
-        return new PrivateChannel('hedrasoul.hub.' . $this->userId);
+        return new PrivateChannel('hedrasoul.hub.'.$this->userId);
     }
 
     public function broadcastAs(): string

@@ -15,6 +15,7 @@ class AIModel extends BaseModel
     protected $fillable = [
         'id',
         'name',
+        'is_active',
         'provider_id',
         'context_window',
         'input_cost_per_m',
@@ -31,10 +32,11 @@ class AIModel extends BaseModel
     ];
 
     protected $casts = [
+        'is_active' => 'boolean',
         'language_support' => 'array',
-        'presets'          => 'array',
-        'last_synced_at'   => 'datetime',
-        'context_window'   => 'integer',
+        'presets' => 'array',
+        'last_synced_at' => 'datetime',
+        'context_window' => 'integer',
     ];
 
     public function provider(): BelongsTo

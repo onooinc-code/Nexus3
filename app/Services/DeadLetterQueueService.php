@@ -4,8 +4,6 @@ namespace App\Services;
 
 use App\Models\AgentTask;
 use App\Models\DeadLetterTask;
-use App\Services\TaskExecutionService;
-use App\Services\LogService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class DeadLetterQueueService
@@ -24,7 +22,7 @@ class DeadLetterQueueService
             'channel' => 'dlq',
             'task_id' => $task->id,
             'queue' => $queue,
-            'error' => $exception->getMessage()
+            'error' => $exception->getMessage(),
         ]);
 
         return DeadLetterTask::create([
@@ -52,18 +50,19 @@ class DeadLetterQueueService
         $dlqTask = DeadLetterTask::findOrFail($id);
         $task = $dlqTask->task;
 
-        if (!$task) {
+        if (! $task) {
             $this->logService->error('Attempted to retry DLQ task but associated task was not found', [
                 'channel' => 'dlq',
-                'dlq_id' => $id
+                'dlq_id' => $id,
             ]);
+
             return false;
         }
 
         $this->logService->info('Retrying failed task from DLQ', [
             'channel' => 'dlq',
             'task_id' => $task->id,
-            'dlq_id' => $id
+            'dlq_id' => $id,
         ]);
 
         // Reset status to todo and progress to 0
@@ -89,7 +88,7 @@ class DeadLetterQueueService
         $this->logService->warning('Dismissing failed task from DLQ', [
             'channel' => 'dlq',
             'dlq_id' => $id,
-            'task_id' => $dlqTask->task_id
+            'task_id' => $dlqTask->task_id,
         ]);
 
         return $dlqTask->delete();

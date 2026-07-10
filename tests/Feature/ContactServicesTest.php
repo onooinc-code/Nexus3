@@ -4,15 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\Contact;
 use App\Models\ContactIdentifier;
-use App\Models\ContactPreference;
 use App\Models\ContactRelationship;
-use App\Models\ContactAlias;
 use App\Models\User;
-use App\Services\ContactProfileAssembler;
-use App\Services\ContactIdentityResolver;
-use App\Services\ContactAuditService;
-use App\Services\ContactPrivacyService;
 use App\Services\ContactAnalyticsService;
+use App\Services\ContactAuditService;
+use App\Services\ContactIdentityResolver;
+use App\Services\ContactPrivacyService;
+use App\Services\ContactProfileAssembler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -21,9 +19,13 @@ class ContactServicesTest extends TestCase
     use RefreshDatabase;
 
     protected ContactProfileAssembler $profileAssembler;
+
     protected ContactIdentityResolver $identityResolver;
+
     protected ContactAuditService $auditService;
+
     protected ContactPrivacyService $privacyService;
+
     protected ContactAnalyticsService $analyticsService;
 
     protected function setUp(): void
@@ -49,7 +51,7 @@ class ContactServicesTest extends TestCase
 
         // Resolve by exact identifier
         $resolved = $this->identityResolver->resolve([
-            ['type' => ContactIdentifier::TYPE_EMAIL, 'value' => 'HEDRA@resolves.com'] // testing normalization
+            ['type' => ContactIdentifier::TYPE_EMAIL, 'value' => 'HEDRA@resolves.com'], // testing normalization
         ]);
 
         $this->assertNotNull($resolved);
@@ -59,10 +61,10 @@ class ContactServicesTest extends TestCase
     public function test_profile_assembler_builds_complete_profile()
     {
         $contact = Contact::factory()->create(['name' => 'Hedra Profile']);
-        
+
         $this->identityResolver->linkIdentifier($contact, ContactIdentifier::TYPE_EMAIL, 'profile@hedra.com');
         $contact->preferences()->create(['key' => 'theme', 'value' => 'dark']);
-        
+
         $target = Contact::factory()->create(['name' => 'Hedra Target']);
         ContactRelationship::create([
             'source_contact_id' => $contact->id,
@@ -111,7 +113,7 @@ class ContactServicesTest extends TestCase
         $this->assertEquals('Hedra Privacy', $export['name']);
 
         $this->privacyService->eraseProfile($contact, false); // soft delete / redact
-        
+
         $contact->refresh();
         $this->assertEquals('Erased Contact', $contact->name);
         $this->assertNull($contact->email);
@@ -125,7 +127,7 @@ class ContactServicesTest extends TestCase
         $stats = $this->analyticsService->getContactStats($contact, 7);
         $this->assertEquals(0, $stats['message_count']);
         $this->assertArrayHasKey('time_series', $stats);
-        
+
         $globalStats = $this->analyticsService->getGlobalStats();
         $this->assertGreaterThan(0, $globalStats['total_contacts']);
     }

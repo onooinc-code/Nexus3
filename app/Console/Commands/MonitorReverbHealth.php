@@ -28,6 +28,7 @@ class MonitorReverbHealth extends Command
                     'host' => $host,
                     'port' => $port,
                 ]);
+
                 return self::SUCCESS;
             }
 

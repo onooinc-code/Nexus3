@@ -2,35 +2,40 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Events\ContactCreated;
+use App\Events\ContactDeleted;
+use App\Events\ContactUpdated;
+use App\Http\Resources\ContactResource;
+use App\Jobs\AnalyzeContactMessagesJob;
+use App\Jobs\EraseContactDataJob;
+use App\Jobs\ExportContactDataJob;
+use App\Jobs\RunContactMemoryMaintenanceJob;
 use App\Models\Contact;
 use App\Models\ContactAnalysisRun;
-use App\Models\ContactImportBatch;
+use App\Models\ContactAuditEvent;
 use App\Models\ContactIdentifier;
+use App\Models\ContactImportBatch;
 use App\Models\ContactMemoryMaintenanceRun;
 use App\Models\ContactMessage;
 use App\Models\ContactMessageThread;
 use App\Models\ContactReplyRule;
 use App\Models\ContactTopic;
+use App\Models\NotificationLog;
+use App\Services\Contact\ContactMemoryMaintenancePipeline;
 use App\Services\ContactHubService;
 use App\Services\LogService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Facades\Cache;
-use App\Http\Resources\ContactResource;
 use Illuminate\Support\Str;
-use App\Jobs\AnalyzeContactMessagesJob;
-use App\Jobs\RunContactMemoryMaintenanceJob;
-use App\Services\Contact\ContactMemoryMaintenancePipeline;
+use Illuminate\Validation\Rule;
 
 class ContactController extends Controller
 {
     public function __construct(
         protected ContactHubService $contactHubService,
         protected LogService $logService
-    ) {
-    }
+    ) {}
 
     public function index(Request $request)
     {
@@ -96,11 +101,11 @@ class ContactController extends Controller
 
         $identifierCandidates = collect();
 
-        if (!empty($data['email'])) {
+        if (! empty($data['email'])) {
             $identifierCandidates->push(['type' => ContactIdentifier::TYPE_EMAIL, 'value' => $data['email'], 'is_primary' => true]);
         }
 
-        if (!empty($data['phone'])) {
+        if (! empty($data['phone'])) {
             $identifierCandidates->push(['type' => ContactIdentifier::TYPE_PHONE, 'value' => $data['phone'], 'is_primary' => true]);
         }
 
@@ -133,7 +138,7 @@ class ContactController extends Controller
         }
 
         $identifierCandidates = $identifierCandidates->unique(function ($item) {
-            return $item['type'] . ':' . ContactIdentifier::normalize($item['type'], $item['value']);
+            return $item['type'].':'.ContactIdentifier::normalize($item['type'], $item['value']);
         })->values();
 
         $existingContact = Contact::findByIdentifiers($identifierCandidates->toArray());
@@ -175,23 +180,23 @@ class ContactController extends Controller
             'user_id' => $request->user()?->id,
         ]);
 
-        if (!empty($cacheKey) && isset($contact)) {
+        if (! empty($cacheKey) && isset($contact)) {
             Cache::put($cacheKey, $contact->id, 300);
         }
 
         try {
-            event(new \App\Events\ContactCreated($contact));
+            event(new ContactCreated($contact));
         } catch (\Throwable $e) {
             // don't break flow if no listeners
         }
 
-        if (!$existingContact) {
-            \App\Models\NotificationLog::create([
+        if (! $existingContact) {
+            NotificationLog::create([
                 'contact_id' => $contact->id,
                 'channel' => 'system',
                 'recipient' => 'system',
                 'subject' => 'Contact Registered',
-                'body' => "Initial profile configuration completed.",
+                'body' => 'Initial profile configuration completed.',
                 'status' => 'completed',
             ]);
         }
@@ -214,21 +219,21 @@ class ContactController extends Controller
                 ->where('value', $normalized)
                 ->exists();
 
-            if (!$exists) {
+            if (! $exists) {
                 try {
                     $contact->identifiers()->create([
-                        'type'       => $identifier['type'],
-                        'value'      => $normalized,
+                        'type' => $identifier['type'],
+                        'value' => $normalized,
                         'is_primary' => $identifier['is_primary'] ?? false,
                     ]);
-                } catch (\Illuminate\Database\QueryException $e) {
+                } catch (QueryException $e) {
                     // Swallow unique-constraint violations: another contact already holds
                     // this identifier value. We skip rather than crash contact creation.
                     $this->logService->warning('Identifier already held by another contact; skipping.', [
                         'contact_id' => $contact->id,
-                        'type'       => $identifier['type'],
-                        'value'      => $normalized,
-                        'error'      => $e->getMessage(),
+                        'type' => $identifier['type'],
+                        'value' => $normalized,
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -284,7 +289,7 @@ class ContactController extends Controller
         ]);
 
         try {
-            event(new \App\Events\ContactUpdated($contact));
+            event(new ContactUpdated($contact));
         } catch (\Throwable $e) {
         }
 
@@ -311,9 +316,9 @@ class ContactController extends Controller
     {
         $contact = Contact::findOrFail($id);
         $user = auth()->user();
-        
-        \App\Jobs\ExportContactDataJob::dispatch($contact, $user->email ?? 'admin@example.com', $user->id ?? 0);
-        
+
+        ExportContactDataJob::dispatch($contact, $user->email ?? 'admin@example.com', $user->id ?? 0);
+
         return response()->json(['data' => ['status' => 'export_queued', 'message' => 'Export job dispatched']]);
     }
 
@@ -321,9 +326,9 @@ class ContactController extends Controller
     {
         $contact = Contact::findOrFail($id);
         $user = $request->user();
-        
-        \App\Jobs\EraseContactDataJob::dispatch($contact->id, $user->id ?? 0);
-        
+
+        EraseContactDataJob::dispatch($contact->id, $user->id ?? 0);
+
         return response()->json(['data' => ['status' => 'erase_queued', 'message' => 'Erase job dispatched']]);
     }
 
@@ -356,7 +361,7 @@ class ContactController extends Controller
         $contact->delete();
 
         try {
-            event(new \App\Events\ContactDeleted($contact));
+            event(new ContactDeleted($contact));
         } catch (\Throwable $e) {
         }
 
@@ -381,7 +386,7 @@ class ContactController extends Controller
     {
         $contact = Contact::findOrFail($id);
         $days = max(1, (int) $request->query('days', 7));
-        
+
         $analytics = Cache::remember("contact_{$id}_analytics_days_{$days}", 300, function () use ($contact, $days) {
             return $this->contactHubService->getContactAnalyticsWithOptions($contact, $days);
         });
@@ -442,7 +447,7 @@ class ContactController extends Controller
 
         $csv = '';
         foreach ($rows as $row) {
-            $csv .= implode(',', array_map(fn ($item) => '"' . str_replace('"', '""', (string) ($item ?? '')) . '"', $row)) . "\n";
+            $csv .= implode(',', array_map(fn ($item) => '"'.str_replace('"', '""', (string) ($item ?? '')).'"', $row))."\n";
         }
 
         return response($csv, 200, [
@@ -465,6 +470,7 @@ class ContactController extends Controller
         while (($data = fgetcsv($handle, 0, ',')) !== false) {
             if ($header === null) {
                 $header = array_map('trim', $data);
+
                 continue;
             }
 
@@ -507,9 +513,9 @@ class ContactController extends Controller
         $logs = $contact->notificationLogs()->orderBy('created_at', 'desc')->take(50)->get();
         foreach ($logs as $log) {
             $events->push([
-                'id' => 'log_' . $log->id,
+                'id' => 'log_'.$log->id,
                 'type' => $log->channel === 'email' ? 'email' : ($log->channel === 'sms' ? 'call' : 'task'),
-                'title' => $log->subject ?? ('Notification via ' . $log->channel),
+                'title' => $log->subject ?? ('Notification via '.$log->channel),
                 'description' => $log->body ?? 'System notification triggered.',
                 'date' => $log->created_at->toIso8601String(),
                 'status' => $log->status === 'sent' || $log->status === 'delivered' ? 'completed' : 'pending',
@@ -521,10 +527,10 @@ class ContactController extends Controller
         $memories = $contact->memories()->orderBy('created_at', 'desc')->take(50)->get();
         foreach ($memories as $memory) {
             $events->push([
-                'id' => 'mem_' . $memory->id,
+                'id' => 'mem_'.$memory->id,
                 'type' => 'meeting',
                 'title' => 'Memory Recorded',
-                'description' => substr($memory->content, 0, 100) . (strlen($memory->content) > 100 ? '...' : ''),
+                'description' => substr($memory->content, 0, 100).(strlen($memory->content) > 100 ? '...' : ''),
                 'date' => $memory->created_at->toIso8601String(),
                 'status' => 'completed',
                 'source' => 'memory',
@@ -535,10 +541,10 @@ class ContactController extends Controller
         $notes = $contact->notes()->orderBy('created_at', 'desc')->take(50)->get();
         foreach ($notes as $note) {
             $events->push([
-                'id' => 'note_' . $note->id,
+                'id' => 'note_'.$note->id,
                 'type' => 'task',
                 'title' => 'Note Added',
-                'description' => $note->summary ?? substr($note->note, 0, 100) . (strlen($note->note) > 100 ? '...' : ''),
+                'description' => $note->summary ?? substr($note->note, 0, 100).(strlen($note->note) > 100 ? '...' : ''),
                 'date' => $note->created_at->toIso8601String(),
                 'status' => 'completed',
                 'source' => 'note',
@@ -555,7 +561,7 @@ class ContactController extends Controller
     {
         Contact::findOrFail($id);
 
-        $cacheKey = "contact_{$id}_messages_" . md5(json_encode($request->only(['channel', 'search', 'page', 'per_page', 'date_from', 'date_to'])));
+        $cacheKey = "contact_{$id}_messages_".md5(json_encode($request->only(['channel', 'search', 'page', 'per_page', 'date_from', 'date_to'])));
         $data = Cache::remember($cacheKey, 60, function () use ($request, $id) {
             return $this->filteredMessages($request, (int) $id)->paginate($request->integer('per_page', 25));
         });
@@ -626,7 +632,7 @@ class ContactController extends Controller
     {
         Contact::findOrFail($id);
 
-        $events = \App\Models\ContactAuditEvent::query()
+        $events = ContactAuditEvent::query()
             ->where('contact_id', $id)
             ->orderByDesc('created_at')
             ->paginate($request->integer('per_page', 25));
@@ -638,13 +644,13 @@ class ContactController extends Controller
     {
         $this->authorize('viewAny', Contact::class);
         $totalContacts = Contact::count();
-        
+
         $staleContacts = Contact::where('memory_freshness', '<', now()->subDays(config('contacts.memory_staleness_days', 30)))
             ->orWhereNull('memory_freshness')
             ->count();
-            
-        $conflictedContacts = Contact::whereHas('identifiers', fn($q) => $q->where('conflict_detected', true))
-            ->orWhereHas('aliases', fn($q) => $q->where('confidence', '<', 0.7))
+
+        $conflictedContacts = Contact::whereHas('identifiers', fn ($q) => $q->where('conflict_detected', true))
+            ->orWhereHas('aliases', fn ($q) => $q->where('confidence', '<', 0.7))
             ->count();
 
         $contactsByType = Contact::select('type', \DB::raw('count(*) as count'))
@@ -656,9 +662,9 @@ class ContactController extends Controller
             ->get();
 
         $importRates = [
-            'total_records' => (int) \App\Models\ContactImportBatch::sum('total_records'),
-            'imported_records' => (int) \App\Models\ContactImportBatch::sum('imported_records'),
-            'failed_records' => (int) \App\Models\ContactImportBatch::sum('failed_records'),
+            'total_records' => (int) ContactImportBatch::sum('total_records'),
+            'imported_records' => (int) ContactImportBatch::sum('imported_records'),
+            'failed_records' => (int) ContactImportBatch::sum('failed_records'),
         ];
 
         $totalAnalysisCost = ContactAnalysisRun::whereNotNull('cost_metadata')
@@ -680,7 +686,7 @@ class ContactController extends Controller
                 'reply_mode_distribution' => $replyModeDistribution,
                 'import_rates' => $importRates,
                 'total_analysis_cost' => $totalAnalysisCost,
-            ]
+            ],
         ]);
     }
 
@@ -691,9 +697,10 @@ class ContactController extends Controller
         }
 
         $this->authorize('viewAny', Contact::class);
-        $contacts = Contact::whereHas('identifiers', fn($q) => $q->where('conflict_detected', true))
-            ->orWhereHas('aliases', fn($q) => $q->where('confidence', '<', 0.7))
+        $contacts = Contact::whereHas('identifiers', fn ($q) => $q->where('conflict_detected', true))
+            ->orWhereHas('aliases', fn ($q) => $q->where('confidence', '<', 0.7))
             ->paginate($request->integer('per_page', 20));
+
         return response()->json(['data' => $contacts]);
     }
 
@@ -708,6 +715,7 @@ class ContactController extends Controller
         $contacts = Contact::where('memory_freshness', '<', now()->subDays($threshold))
             ->orWhereNull('memory_freshness')
             ->paginate($request->integer('per_page', 20));
+
         return response()->json(['data' => $contacts]);
     }
 
@@ -715,9 +723,10 @@ class ContactController extends Controller
     {
         $contact = Contact::findOrFail($id);
         $this->authorize('view', $contact);
-        $runs = \App\Models\ContactMemoryMaintenanceRun::whereJsonContains('scope->contact_id', (int)$id)
+        $runs = ContactMemoryMaintenanceRun::whereJsonContains('scope->contact_id', (int) $id)
             ->orderBy('created_at', 'desc')
             ->paginate($request->integer('per_page', 20));
+
         return response()->json(['data' => $runs]);
     }
 
@@ -725,14 +734,13 @@ class ContactController extends Controller
     {
         $contact = Contact::findOrFail($id);
         $this->authorize('view', $contact);
-        
+
         $topic = ContactTopic::where('contact_id', $id)->findOrFail($topicId);
+
         return response()->json([
             'data' => $topic->mentions()->with('message')->paginate(20),
         ]);
     }
-
-
 
     public function listReplyRules($id)
     {
@@ -796,7 +804,7 @@ class ContactController extends Controller
 
         return response()->json([
             'data' => ContactTopic::withCount('mentions')
-                ->with(['mentions' => fn($q) => $q->limit(3)])
+                ->with(['mentions' => fn ($q) => $q->limit(3)])
                 ->where('contact_id', $id)
                 ->orderBy('topic')
                 ->get(),
@@ -807,28 +815,28 @@ class ContactController extends Controller
     {
         $contact = Contact::with(['analysisFindings', 'topics', 'preferences', 'replyRules'])->findOrFail($id);
         $this->authorize('view', $contact);
-        
+
         $persona = $this->assemblePersona($contact);
         $talkSpecs = $this->assembleTalkSpecs($contact);
         $emotionalBaseline = $this->assembleEmotionalBaseline($contact);
-        
+
         return response()->json([
             'data' => [
                 'persona' => $persona,
                 'talk_specs' => $talkSpecs,
                 'emotional_baseline' => $emotionalBaseline,
-            ]
+            ],
         ]);
     }
 
     private function assemblePersona(Contact $contact): ?array
     {
         $finding = $contact->analysisFindings->where('finding_type', 'persona')->sortByDesc('created_at')->first();
-        
-        if (!$finding) {
+
+        if (! $finding) {
             return null;
         }
-        
+
         return [
             'relationship_context' => $finding->content['relationship_context'] ?? null,
             'interests' => $finding->content['interests'] ?? [],
@@ -845,11 +853,11 @@ class ContactController extends Controller
     private function assembleTalkSpecs(Contact $contact): ?array
     {
         $finding = $contact->analysisFindings->where('finding_type', 'talk_specs')->sortByDesc('created_at')->first();
-        
-        if (!$finding) {
+
+        if (! $finding) {
             return null;
         }
-        
+
         return [
             'preferred_language' => $finding->content['preferred_language'] ?? null,
             'formality' => $finding->content['formality'] ?? null,
@@ -866,11 +874,11 @@ class ContactController extends Controller
     private function assembleEmotionalBaseline(Contact $contact): ?array
     {
         $finding = $contact->analysisFindings->where('finding_type', 'emotional_baseline')->sortByDesc('created_at')->first();
-        
-        if (!$finding) {
+
+        if (! $finding) {
             return null;
         }
-        
+
         return [
             'sentiment_range' => $finding->content['sentiment_range'] ?? null,
             'common_mood_markers' => $finding->content['common_mood_markers'] ?? [],
@@ -881,6 +889,7 @@ class ContactController extends Controller
             'last_validated_at' => $finding->created_at?->toIso8601String() ?? $contact->memory_freshness?->toIso8601String(),
         ];
     }
+
     public function persona($id)
     {
         $contact = Contact::findOrFail($id);
@@ -998,7 +1007,7 @@ class ContactController extends Controller
         $analysisRun = ContactAnalysisRun::with(['findings', 'contact'])->findOrFail($run);
         $contact = $analysisRun->contact;
 
-        if (!$contact) {
+        if (! $contact) {
             return response()->json(['error' => 'Contact not found for this analysis run.'], 422);
         }
 
@@ -1012,7 +1021,7 @@ class ContactController extends Controller
                     $topics = is_array($finding->content) ? $finding->content : json_decode($finding->content, true);
                     if (is_array($topics)) {
                         foreach ($topics as $topicName) {
-                            \App\Models\ContactTopic::updateOrCreate(
+                            ContactTopic::updateOrCreate(
                                 ['contact_id' => $contact->id, 'topic' => (string) $topicName],
                                 ['mention_count' => \DB::raw('mention_count + 1')]
                             );
@@ -1032,7 +1041,7 @@ class ContactController extends Controller
                     $rules = is_array($finding->content) ? $finding->content : json_decode($finding->content, true);
                     if (is_array($rules)) {
                         foreach ($rules as $ruleText) {
-                            \App\Models\ContactReplyRule::firstOrCreate(
+                            ContactReplyRule::firstOrCreate(
                                 ['contact_id' => $contact->id, 'rule' => (string) $ruleText],
                                 ['is_active' => true]
                             );
@@ -1081,9 +1090,9 @@ class ContactController extends Controller
 
         $run = ContactMemoryMaintenanceRun::create([
             'operation' => $data['operation'],
-            'scope'     => $scope,
-            'status'    => $isDryRun ? 'dry_run' : 'queued',
-            'results'   => [
+            'scope' => $scope,
+            'status' => $isDryRun ? 'dry_run' : 'queued',
+            'results' => [
                 'message' => $isDryRun ? 'Dry run — no changes will be made.' : 'Maintenance queued for background processing.',
                 'dry_run' => $isDryRun,
             ],

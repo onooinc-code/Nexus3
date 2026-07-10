@@ -5,6 +5,12 @@ namespace Tests\Feature;
 use App\Jobs\SyncMemoryJob;
 use App\Models\Contact;
 use App\Models\Memory;
+use App\Services\LogService;
+use App\Services\Memory\EpisodicMemoryService;
+use App\Services\Memory\GraphMemoryService;
+use App\Services\Memory\SemanticMemoryService;
+use App\Services\Memory\StructuredMemoryService;
+use App\Services\Memory\WorkingMemoryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -21,13 +27,13 @@ class QueueTest extends TestCase
             'type' => 'episodic',
         ]);
 
-        $job = new SyncMemoryJob($memory->contact_id, $memory->type, app(\App\Services\LogService::class));
+        $job = new SyncMemoryJob($memory->contact_id, $memory->type, app(LogService::class));
         $result = $job->handle(
-            app(\App\Services\Memory\WorkingMemoryService::class),
-            app(\App\Services\Memory\EpisodicMemoryService::class),
-            app(\App\Services\Memory\SemanticMemoryService::class),
-            app(\App\Services\Memory\StructuredMemoryService::class),
-            app(\App\Services\Memory\GraphMemoryService::class)
+            app(WorkingMemoryService::class),
+            app(EpisodicMemoryService::class),
+            app(SemanticMemoryService::class),
+            app(StructuredMemoryService::class),
+            app(GraphMemoryService::class)
         );
 
         // Job catch block doesn't return false, it catches and returns null.
@@ -44,7 +50,7 @@ class QueueTest extends TestCase
         Queue::fake();
 
         $contact = Contact::factory()->create();
-        SyncMemoryJob::dispatch($contact->id, 'episodic', app(\App\Services\LogService::class));
+        SyncMemoryJob::dispatch($contact->id, 'episodic', app(LogService::class));
 
         Queue::assertPushed(SyncMemoryJob::class, 1);
     }

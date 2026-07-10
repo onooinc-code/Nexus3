@@ -13,8 +13,6 @@ class SystemLog extends Log
 {
     /**
      * Get the user that owns the log.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function user(): BelongsTo
     {

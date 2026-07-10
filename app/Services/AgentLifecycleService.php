@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Agent;
 use App\Events\AgentRegistered;
+use App\Models\Agent;
 use Illuminate\Support\Facades\Log;
 
 class AgentLifecycleService
@@ -12,14 +12,14 @@ class AgentLifecycleService
      * Valid state transitions: current → allowed next states.
      */
     protected array $stateTransitions = [
-        Agent::STATUS_IDLE      => [Agent::STATUS_RUNNING],
-        Agent::STATUS_RUNNING   => [Agent::STATUS_IDLE, Agent::STATUS_PAUSED, Agent::STATUS_ERROR, Agent::STATUS_COMPLETED],
-        Agent::STATUS_PAUSED    => [Agent::STATUS_RUNNING, Agent::STATUS_IDLE, Agent::STATUS_ERROR],
-        Agent::STATUS_ERROR     => [Agent::STATUS_IDLE, Agent::STATUS_RUNNING],
+        Agent::STATUS_IDLE => [Agent::STATUS_RUNNING],
+        Agent::STATUS_RUNNING => [Agent::STATUS_IDLE, Agent::STATUS_PAUSED, Agent::STATUS_ERROR, Agent::STATUS_COMPLETED],
+        Agent::STATUS_PAUSED => [Agent::STATUS_RUNNING, Agent::STATUS_IDLE, Agent::STATUS_ERROR],
+        Agent::STATUS_ERROR => [Agent::STATUS_IDLE, Agent::STATUS_RUNNING],
         Agent::STATUS_COMPLETED => [Agent::STATUS_IDLE],
         // Legacy operational statuses
-        Agent::STATUS_ACTIVE      => [Agent::STATUS_INACTIVE, Agent::STATUS_QUARANTINED],
-        Agent::STATUS_INACTIVE    => [Agent::STATUS_ACTIVE],
+        Agent::STATUS_ACTIVE => [Agent::STATUS_INACTIVE, Agent::STATUS_QUARANTINED],
+        Agent::STATUS_INACTIVE => [Agent::STATUS_ACTIVE],
         Agent::STATUS_QUARANTINED => [Agent::STATUS_ACTIVE],
     ];
 
@@ -41,7 +41,7 @@ class AgentLifecycleService
     public function initialize(Agent $agent): Agent
     {
         $agent->update([
-            'status'           => Agent::STATUS_RUNNING,
+            'status' => Agent::STATUS_RUNNING,
             'last_executed_at' => now(),
         ]);
         $agent->increment('execution_count');
@@ -96,7 +96,7 @@ class AgentLifecycleService
         $agent->increment('error_count');
         $agent->update(['status' => Agent::STATUS_ERROR]);
 
-        $this->log('error', "Agent failed: {$agent->name}" . ($errorMessage ? " — {$errorMessage}" : ''), $agent);
+        $this->log('error', "Agent failed: {$agent->name}".($errorMessage ? " — {$errorMessage}" : ''), $agent);
 
         return $agent->fresh();
     }
@@ -140,11 +140,11 @@ class AgentLifecycleService
     {
         $currentStatus = $agent->status;
 
-        if (!isset($this->stateTransitions[$currentStatus])) {
+        if (! isset($this->stateTransitions[$currentStatus])) {
             throw new \InvalidArgumentException("Invalid current status: {$currentStatus}");
         }
 
-        if (!in_array($newStatus, $this->stateTransitions[$currentStatus])) {
+        if (! in_array($newStatus, $this->stateTransitions[$currentStatus])) {
             throw new \InvalidArgumentException(
                 "Invalid state transition from {$currentStatus} to {$newStatus}"
             );
@@ -176,12 +176,12 @@ class AgentLifecycleService
         }
 
         return [
-            'status'                => $agent->status,
+            'status' => $agent->status,
             'available_transitions' => $this->getAvailableTransitions($agent),
-            'execution_count'       => $agent->execution_count,
-            'success_count'         => $agent->success_count,
-            'error_count'           => $agent->error_count,
-            'last_executed_at'      => $agent->last_executed_at?->toISOString(),
+            'execution_count' => $agent->execution_count,
+            'success_count' => $agent->success_count,
+            'error_count' => $agent->error_count,
+            'last_executed_at' => $agent->last_executed_at?->toISOString(),
         ];
     }
 
@@ -191,9 +191,9 @@ class AgentLifecycleService
     {
         try {
             $this->logService?->{$level}($message, [
-                'channel'      => 'agent',
-                'type'         => 'lifecycle',
-                'related_id'   => $agent->id,
+                'channel' => 'agent',
+                'type' => 'lifecycle',
+                'related_id' => $agent->id,
                 'related_type' => Agent::class,
             ]);
         } catch (\Throwable) {

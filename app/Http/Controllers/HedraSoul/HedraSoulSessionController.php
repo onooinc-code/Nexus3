@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\HedraSoul;
 
 use App\Http\Controllers\Controller;
-use App\Models\HedrasoulSession;
 use App\Models\HedrasoulMessage;
-use App\Services\HedraSoul\HedraSoulSessionService;
+use App\Models\HedrasoulSession;
 use App\Services\HedraSoul\HedraSoulMessageService;
+use App\Services\HedraSoul\HedraSoulSessionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,7 +24,7 @@ class HedraSoulSessionController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        
+
         $query = HedrasoulSession::query()
             ->where('user_id', $user->id);
 

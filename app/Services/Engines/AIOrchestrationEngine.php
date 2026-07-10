@@ -2,29 +2,38 @@
 
 namespace App\Services\Engines;
 
-use App\Services\AI\ModelSelector;
-use App\Services\AI\FallbackChainService;
 use App\Services\AI\CostOptimizer;
+use App\Services\AI\FallbackChainService;
+use App\Services\AI\ModelSelector;
 use App\Services\AI\QualityRouter;
 use App\Services\AI\SpeedRouter;
 use App\Services\Pipelines\ContextAssemblyPipeline;
 use App\Services\Pipelines\MemoryExtractionPipeline;
-use App\Services\Pipelines\ResponseDeliveryPipeline;
 use App\Services\Pipelines\PipelineMonitor;
-use Illuminate\Support\Facades\Log;
+use App\Services\Pipelines\ResponseDeliveryPipeline;
 
 class AIOrchestrationEngine
 {
     protected ModelSelector $modelSelector;
+
     protected FallbackChainService $fallbackChain;
+
     protected CostOptimizer $costOptimizer;
+
     protected QualityRouter $qualityRouter;
+
     protected SpeedRouter $speedRouter;
+
     protected ContextAssemblyPipeline $contextPipeline;
+
     protected MemoryExtractionPipeline $memoryPipeline;
+
     protected ResponseDeliveryPipeline $deliveryPipeline;
+
     protected PipelineMonitor $monitor;
+
     protected array $cache = [];
+
     protected int $cacheTtlSeconds = 300;
 
     public function __construct(
@@ -69,7 +78,7 @@ class AIOrchestrationEngine
             'include_history' => true,
         ]);
 
-        if (!$contextResult['success']) {
+        if (! $contextResult['success']) {
             return [
                 'success' => false,
                 'error' => 'Failed to assemble context',
@@ -99,7 +108,7 @@ class AIOrchestrationEngine
                 break;
             case 'cost':
                 $optimization = $this->costOptimizer->optimize($execRequest, $maxCost);
-                if (!$optimization['success']) {
+                if (! $optimization['success']) {
                     return $optimization;
                 }
                 $result = $optimization['provider']->execute($execRequest);
@@ -117,7 +126,9 @@ class AIOrchestrationEngine
             case 'auto':
             default:
                 $criteria = [];
-                if ($maxCost) $criteria['max_cost_per_1k'] = $maxCost;
+                if ($maxCost) {
+                    $criteria['max_cost_per_1k'] = $maxCost;
+                }
                 $selection = $this->modelSelector->select($criteria);
                 if ($selection) {
                     $result = $selection['provider']->execute($execRequest);

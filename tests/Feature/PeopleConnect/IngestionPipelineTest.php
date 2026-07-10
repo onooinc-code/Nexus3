@@ -2,18 +2,22 @@
 
 namespace Tests\Feature\PeopleConnect;
 
+use App\Jobs\PeopleConnect\AnalyzePeopleConnectMessageJob;
+use App\Jobs\ProcessWahaWebhookJob;
+use App\Models\Contact;
+use App\Models\PeopleConnect\PeopleConnectConversation;
+use App\Models\PeopleConnect\PeopleConnectRawProviderEvent;
+use App\Models\PeopleConnect\PeopleConnectSession;
+use App\Services\PeopleConnect\PeopleConnectContactResolver;
+use App\Services\PeopleConnect\PeopleConnectConversationService;
+use App\Services\PeopleConnect\PeopleConnectMessageService;
+use App\Services\PeopleConnect\PeopleConnectRealtimeBroadcaster;
+use App\Services\PeopleConnect\PeopleConnectSessionService;
+use App\Services\PeopleConnect\WahaWebhookIngestionService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
-use App\Services\PeopleConnect\WahaWebhookIngestionService;
-use App\Models\PeopleConnect\PeopleConnectRawProviderEvent;
-use App\Models\Contact;
-use App\Models\PeopleConnect\PeopleConnectConversation;
-use App\Models\PeopleConnect\PeopleConnectSession;
-use App\Models\PeopleConnect\PeopleConnectMessage;
-use App\Jobs\ProcessWahaWebhookJob;
-use App\Jobs\PeopleConnect\AnalyzePeopleConnectMessageJob;
-use Carbon\Carbon;
 
 class IngestionPipelineTest extends TestCase
 {
@@ -23,7 +27,7 @@ class IngestionPipelineTest extends TestCase
     {
         Queue::fake();
 
-        $service = new WahaWebhookIngestionService();
+        $service = new WahaWebhookIngestionService;
         $payload = [
             'event' => 'message',
             'session' => 'default',
@@ -33,7 +37,7 @@ class IngestionPipelineTest extends TestCase
                 'from' => '12345@c.us',
                 'body' => 'Hello',
                 'timestamp' => time(),
-            ]
+            ],
         ];
 
         // First ingestion
@@ -64,7 +68,7 @@ class IngestionPipelineTest extends TestCase
                 'pushname' => 'John Doe',
                 'body' => 'Test message',
                 'timestamp' => Carbon::now()->timestamp,
-            ]
+            ],
         ];
 
         $rawEvent = PeopleConnectRawProviderEvent::create([
@@ -77,17 +81,17 @@ class IngestionPipelineTest extends TestCase
 
         $job = new ProcessWahaWebhookJob($payload, $rawEvent->id);
         $job->handle(
-            app(\App\Services\PeopleConnect\PeopleConnectContactResolver::class),
-            app(\App\Services\PeopleConnect\PeopleConnectConversationService::class),
-            app(\App\Services\PeopleConnect\PeopleConnectSessionService::class),
-            app(\App\Services\PeopleConnect\PeopleConnectMessageService::class),
-            app(\App\Services\PeopleConnect\PeopleConnectRealtimeBroadcaster::class)
+            app(PeopleConnectContactResolver::class),
+            app(PeopleConnectConversationService::class),
+            app(PeopleConnectSessionService::class),
+            app(PeopleConnectMessageService::class),
+            app(PeopleConnectRealtimeBroadcaster::class)
         );
 
         // Assert Contact created
         $this->assertDatabaseHas('contacts', [
             'name' => 'John Doe',
-            'whatsapp_number' => '98765'
+            'whatsapp_number' => '98765',
         ]);
         $contact = Contact::where('whatsapp_number', '98765')->first();
 
@@ -97,7 +101,7 @@ class IngestionPipelineTest extends TestCase
             'channel' => 'whatsapp',
             'provider_conversation_id' => '98765@c.us',
             'unread_count' => 1,
-            'last_message_preview' => 'Test message'
+            'last_message_preview' => 'Test message',
         ]);
         $conversation = PeopleConnectConversation::where('contact_id', $contact->id)->first();
 
@@ -106,7 +110,7 @@ class IngestionPipelineTest extends TestCase
             'conversation_id' => $conversation->id,
             'contact_id' => $contact->id,
             'status' => 'open',
-            'message_count' => 1
+            'message_count' => 1,
         ]);
         $session = PeopleConnectSession::where('conversation_id', $conversation->id)->first();
 
@@ -118,19 +122,19 @@ class IngestionPipelineTest extends TestCase
             'sender_type' => 'contact',
             'direction' => 'inbound',
             'body' => 'Test message',
-            'waha_message_id' => 'msg_456'
+            'waha_message_id' => 'msg_456',
         ]);
 
         // Assert Raw Event status updated
         $this->assertDatabaseHas('peopleconnect_raw_provider_events', [
             'id' => $rawEvent->id,
-            'processing_status' => 'processed'
+            'processing_status' => 'processed',
         ]);
 
         // Assert analysis job dispatched
         Queue::assertPushed(AnalyzePeopleConnectMessageJob::class);
     }
-    
+
     public function test_process_job_deduplicates_messages()
     {
         Queue::fake([AnalyzePeopleConnectMessageJob::class]);
@@ -144,35 +148,35 @@ class IngestionPipelineTest extends TestCase
                 'from' => '11223@c.us',
                 'body' => 'Hello again',
                 'timestamp' => Carbon::now()->timestamp,
-            ]
+            ],
         ];
 
         $job = new ProcessWahaWebhookJob($payload, null);
         $job->handle(
-            app(\App\Services\PeopleConnect\PeopleConnectContactResolver::class),
-            app(\App\Services\PeopleConnect\PeopleConnectConversationService::class),
-            app(\App\Services\PeopleConnect\PeopleConnectSessionService::class),
-            app(\App\Services\PeopleConnect\PeopleConnectMessageService::class),
-            app(\App\Services\PeopleConnect\PeopleConnectRealtimeBroadcaster::class)
+            app(PeopleConnectContactResolver::class),
+            app(PeopleConnectConversationService::class),
+            app(PeopleConnectSessionService::class),
+            app(PeopleConnectMessageService::class),
+            app(PeopleConnectRealtimeBroadcaster::class)
         );
 
         $this->assertDatabaseCount('peopleconnect_messages', 1);
 
         // Run same job again (e.g. queue retry despite raw dedup)
         $job->handle(
-            app(\App\Services\PeopleConnect\PeopleConnectContactResolver::class),
-            app(\App\Services\PeopleConnect\PeopleConnectConversationService::class),
-            app(\App\Services\PeopleConnect\PeopleConnectSessionService::class),
-            app(\App\Services\PeopleConnect\PeopleConnectMessageService::class),
-            app(\App\Services\PeopleConnect\PeopleConnectRealtimeBroadcaster::class)
+            app(PeopleConnectContactResolver::class),
+            app(PeopleConnectConversationService::class),
+            app(PeopleConnectSessionService::class),
+            app(PeopleConnectMessageService::class),
+            app(PeopleConnectRealtimeBroadcaster::class)
         );
 
         // Message count should still be 1 (DuplicateMessageException caught silently in handle)
         $this->assertDatabaseCount('peopleconnect_messages', 1);
-        
+
         // Processing log should have dedup_skipped
         $this->assertDatabaseHas('peopleconnect_processing_logs', [
-            'event_type' => 'dedup_skipped'
+            'event_type' => 'dedup_skipped',
         ]);
     }
 }

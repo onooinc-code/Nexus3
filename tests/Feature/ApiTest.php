@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Agent;
-use App\Models\Workflow;
 use App\Models\Contact;
-use App\Models\Setting;
+use App\Models\User;
+use App\Models\Workflow;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -33,11 +33,11 @@ class ApiTest extends TestCase
 
     public function test_api_allows_access_with_valid_token(): void
     {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->getJson('/api/v1/agents', [
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ]);
 
         $response->assertStatus(200);
@@ -47,7 +47,7 @@ class ApiTest extends TestCase
 
     public function test_api_returns_json_content_type(): void
     {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user, 'sanctum');
 
         $response = $this->getJson('/api/v1/agents');
@@ -57,7 +57,7 @@ class ApiTest extends TestCase
 
     public function test_api_returns_consistent_error_format(): void
     {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user, 'sanctum');
 
         $response = $this->postJson('/api/v1/agents', []);
@@ -70,7 +70,7 @@ class ApiTest extends TestCase
 
     public function test_api_paginates_index_responses(): void
     {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user, 'sanctum');
 
         Agent::factory()->count(25)->create();
@@ -91,7 +91,7 @@ class ApiTest extends TestCase
 
     public function test_api_filters_agents_by_type(): void
     {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user, 'sanctum');
 
         Agent::factory()->create(['type' => Agent::TYPE_REFLECTION]);
@@ -105,7 +105,7 @@ class ApiTest extends TestCase
 
     public function test_api_filters_workflows_by_status(): void
     {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user, 'sanctum');
 
         Workflow::factory()->create(['status' => Workflow::STATUS_DRAFT]);
@@ -121,7 +121,7 @@ class ApiTest extends TestCase
 
     public function test_api_searches_contacts_by_name(): void
     {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user, 'sanctum');
 
         Contact::factory()->create(['name' => 'Alice Wonderland']);
@@ -137,7 +137,7 @@ class ApiTest extends TestCase
 
     public function test_api_enforces_rate_limits(): void
     {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user, 'sanctum');
 
         // Make many requests to trigger rate limit

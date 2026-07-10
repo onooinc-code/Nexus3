@@ -2,10 +2,9 @@
 
 namespace App\Services\HedraSoul;
 
-use App\Models\HedrasoulApprovalRequest;
-use App\Jobs\HedraSoul\ExecuteSoulyCommandJob;
 use App\Jobs\HedraSoul\DispatchApprovalReminderJob;
-use Illuminate\Support\Facades\Auth;
+use App\Jobs\HedraSoul\ExecuteSoulyCommandJob;
+use App\Models\HedrasoulApprovalRequest;
 
 /**
  * ApprovalInboxService: Manages approval requests for risky/medium/external actions.
@@ -132,6 +131,6 @@ class ApprovalInboxService
         }
 
         // Default to 1 hour
-        return new \DateInterval("PT1H");
+        return new \DateInterval('PT1H');
     }
 }

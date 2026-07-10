@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use App\Models\ContactIdentifier;
 use App\Services\LogService;
@@ -21,6 +20,7 @@ class ContactIdentifierController extends Controller
     public function index(Contact $contact)
     {
         $identifiers = $contact->identifiers()->orderBy('type')->get();
+
         return response()->json(['data' => $identifiers]);
     }
 
@@ -56,6 +56,7 @@ class ContactIdentifierController extends Controller
     public function show(Contact $contact, $identifierId)
     {
         $identifier = $contact->identifiers()->findOrFail($identifierId);
+
         return response()->json(['data' => $identifier]);
     }
 

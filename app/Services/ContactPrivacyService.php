@@ -3,22 +3,22 @@
 namespace App\Services;
 
 use App\Models\Contact;
+use App\Models\ContactAlias;
+use App\Models\ContactAnalysisFinding;
+use App\Models\ContactAnalysisRun;
 use App\Models\ContactAuditEvent;
 use App\Models\ContactChannel;
 use App\Models\ContactIdentifier;
-use App\Models\ContactAlias;
-use App\Models\ContactMessageThread;
-use App\Models\ContactMessage;
-use App\Models\ContactAnalysisRun;
-use App\Models\ContactAnalysisFinding;
 use App\Models\ContactMemory;
 use App\Models\ContactMemoryVersion;
-use App\Models\ContactRelationship;
+use App\Models\ContactMessage;
+use App\Models\ContactMessageThread;
 use App\Models\ContactPreference;
+use App\Models\ContactProfileSnapshot;
+use App\Models\ContactRelationship;
 use App\Models\ContactReplyRule;
 use App\Models\ContactTopic;
 use App\Models\ContactTopicMention;
-use App\Models\ContactProfileSnapshot;
 use Illuminate\Support\Facades\DB;
 
 class ContactPrivacyService
@@ -34,7 +34,7 @@ class ContactPrivacyService
     public function exportProfile(Contact $contact): array
     {
         $this->auditService->logEvent($contact, 'privacy.export');
-        
+
         return $this->profileAssembler->assemble($contact, false);
     }
 
@@ -54,7 +54,7 @@ class ContactPrivacyService
             ContactChannel::where('contact_id', $contact->id)->delete();
             ContactIdentifier::where('contact_id', $contact->id)->delete();
             ContactAlias::where('contact_id', $contact->id)->delete();
-            
+
             // Delete messages and threads
             $threadIds = ContactMessageThread::where('contact_id', $contact->id)->pluck('id');
             ContactMessage::whereIn('thread_id', $threadIds)->orWhere('contact_id', $contact->id)->delete();
@@ -77,7 +77,7 @@ class ContactPrivacyService
 
             ContactPreference::where('contact_id', $contact->id)->delete();
             ContactReplyRule::where('contact_id', $contact->id)->delete();
-            
+
             // Delete topics and mentions
             $topicIds = ContactTopic::where('contact_id', $contact->id)->pluck('id');
             ContactTopicMention::whereIn('topic_id', $topicIds)->delete();

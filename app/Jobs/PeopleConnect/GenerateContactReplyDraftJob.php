@@ -2,16 +2,16 @@
 
 namespace App\Jobs\PeopleConnect;
 
+use App\Models\PeopleConnect\PeopleConnectMessage;
+use App\Models\PeopleConnect\PeopleConnectProcessingLog;
+use App\Models\PeopleConnect\PeopleConnectReplyDraft;
+use App\Services\PeopleConnect\PeopleConnectAgentReplyService;
+use App\Services\PeopleConnect\PeopleConnectContextAssembler;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Models\PeopleConnect\PeopleConnectMessage;
-use App\Models\PeopleConnect\PeopleConnectReplyDraft;
-use App\Services\PeopleConnect\PeopleConnectContextAssembler;
-use App\Services\PeopleConnect\PeopleConnectAgentReplyService;
-use App\Models\PeopleConnect\PeopleConnectProcessingLog;
 use Throwable;
 
 class GenerateContactReplyDraftJob implements ShouldQueue

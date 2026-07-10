@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\PeopleConnect\SyncSingleContactMessagesJob;
+use App\Jobs\PeopleConnect\SyncWahaContactsJob;
+use App\Jobs\PeopleConnect\SyncWahaMessagesJob;
+use App\Jobs\PeopleConnect\WahaBatchAnalyzeJob;
 use App\Models\Contact;
 use App\Models\ContactMessage;
 use App\Models\WahaSyncProcess;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class WahaManageController extends Controller
 {
@@ -18,18 +22,18 @@ class WahaManageController extends Controller
         $activeProcesses = WahaSyncProcess::whereIn('status', ['pending', 'running', 'paused'])
             ->orderBy('created_at', 'desc')
             ->get();
-            
+
         $lastSync = WahaSyncProcess::where('type', 'sync_contacts')
             ->whereNotNull('config')
             ->orderBy('created_at', 'desc')
             ->first();
-            
-        $wahaTotal = $lastSync && isset($lastSync->config['waha_total_contacts']) 
-            ? $lastSync->config['waha_total_contacts'] 
+
+        $wahaTotal = $lastSync && isset($lastSync->config['waha_total_contacts'])
+            ? $lastSync->config['waha_total_contacts']
             : $totalWahaContacts;
-            
-        $unsynced = $lastSync && isset($lastSync->config['nexus_unsynced_contacts']) 
-            ? $lastSync->config['nexus_unsynced_contacts'] 
+
+        $unsynced = $lastSync && isset($lastSync->config['nexus_unsynced_contacts'])
+            ? $lastSync->config['nexus_unsynced_contacts']
             : 0;
 
         return response()->json([
@@ -68,13 +72,13 @@ class WahaManageController extends Controller
     public function startSync(Request $request): JsonResponse
     {
         $type = $request->input('type', 'sync_contacts'); // sync_contacts or sync_messages
-        
+
         // Find existing paused process or create new
         $process = WahaSyncProcess::where('type', $type)
             ->whereIn('status', ['paused', 'failed'])
             ->first();
 
-        if (!$process) {
+        if (! $process) {
             // Cancel any pending/running of same type
             WahaSyncProcess::where('type', $type)
                 ->whereIn('status', ['pending', 'running'])
@@ -90,9 +94,9 @@ class WahaManageController extends Controller
         }
 
         if ($type === 'sync_contacts') {
-            \App\Jobs\PeopleConnect\SyncWahaContactsJob::dispatch($process->id);
+            SyncWahaContactsJob::dispatch($process->id);
         } else {
-            \App\Jobs\PeopleConnect\SyncWahaMessagesJob::dispatch($process->id);
+            SyncWahaMessagesJob::dispatch($process->id);
         }
 
         return response()->json([
@@ -104,15 +108,15 @@ class WahaManageController extends Controller
     public function startContactMessageSync(Request $request, $id): JsonResponse
     {
         $contact = Contact::findOrFail($id);
-        
+
         $process = WahaSyncProcess::create([
             'type' => 'sync_messages',
             'status' => 'pending',
             'started_at' => now(),
-            'config' => ['target_contact_id' => $id]
+            'config' => ['target_contact_id' => $id],
         ]);
 
-        \App\Jobs\PeopleConnect\SyncSingleContactMessagesJob::dispatch($id, $process->id);
+        SyncSingleContactMessagesJob::dispatch($id, $process->id);
 
         return response()->json([
             'message' => 'Contact message sync started',
@@ -125,8 +129,10 @@ class WahaManageController extends Controller
         $process = WahaSyncProcess::findOrFail($id);
         if (in_array($process->status, ['running', 'pending'])) {
             $process->update(['status' => 'paused']);
+
             return response()->json(['message' => 'Process paused successfully. It will stop after the current batch.']);
         }
+
         return response()->json(['message' => 'Process is not running'], 400);
     }
 
@@ -149,7 +155,7 @@ class WahaManageController extends Controller
             'config' => $validated,
         ]);
 
-        \App\Jobs\PeopleConnect\WahaBatchAnalyzeJob::dispatch($process->id);
+        WahaBatchAnalyzeJob::dispatch($process->id);
 
         return response()->json([
             'message' => 'Analysis process started',

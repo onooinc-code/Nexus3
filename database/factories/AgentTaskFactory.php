@@ -7,7 +7,7 @@ use App\Models\AgentTask;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AgentTask>
+ * @extends Factory<AgentTask>
  */
 class AgentTaskFactory extends Factory
 {

@@ -2,15 +2,18 @@
 
 namespace App\Services\AiModelsHub;
 
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 use Exception;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class CircuitBreaker
 {
     protected $serviceName;
+
     protected $failureThreshold = 5;
+
     protected $recoveryTimeout = 60; // seconds
+
     protected $cachePrefix = 'circuit_breaker:';
 
     public function __construct(string $serviceName = 'default', int $failureThreshold = 5, int $recoveryTimeout = 60)
@@ -23,20 +26,22 @@ class CircuitBreaker
     public function isOpen($serviceName = null)
     {
         $service = $serviceName ?? $this->serviceName;
+
         return $this->isCircuitOpen($service);
     }
 
     public function execute(callable $callback)
     {
         if ($this->isOpen()) {
-            throw new \Exception('Circuit breaker is open');
+            throw new Exception('Circuit breaker is open');
         }
 
         try {
             $result = $callback();
             $this->recordSuccess($this->serviceName);
+
             return $result;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->recordFailure($this->serviceName);
             throw $e;
         }
@@ -45,12 +50,12 @@ class CircuitBreaker
     public function getStatus($serviceName = null)
     {
         $service = $serviceName ?? $this->serviceName;
-        $stateKey = $this->cachePrefix . "provider:{$service}:state";
-        $failureKey = $this->cachePrefix . "provider:{$service}:failures";
-        
+        $stateKey = $this->cachePrefix."provider:{$service}:state";
+        $failureKey = $this->cachePrefix."provider:{$service}:failures";
+
         $state = Cache::get($stateKey, 'closed');
         $failures = (int) Cache::get($failureKey, 0);
-        
+
         return [
             'state' => $state,
             'failure_count' => $failures,
@@ -61,51 +66,55 @@ class CircuitBreaker
 
     /**
      * Execute a callback with circuit breaker protection and fallback
-     * @param callable $primaryCallback
-     * @param callable[] $fallbackCallbacks
+     *
+     * @param  callable[]  $fallbackCallbacks
      * @return mixed
+     *
      * @throws Exception
      */
     public function executeWithFallback(callable $primaryCallback, array $fallbackCallbacks = [])
     {
         $errors = [];
-        
+
         try {
             $result = $primaryCallback();
             $result['fallback_triggered'] = false;
+
             return $result;
         } catch (Exception $e) {
             Log::warning("Primary provider failed: {$e->getMessage()}");
             $errors[] = $e->getMessage();
-            
+
             if ($e->getCode() == 429) {
-                Log::warning("Rate limit hit on primary execution.");
+                Log::warning('Rate limit hit on primary execution.');
             }
-            
+
             // Try fallback providers
             foreach ($fallbackCallbacks as $index => $fallbackCallback) {
                 try {
-                    Log::info("Trying fallback sequence: " . ($index + 1));
-                    
+                    Log::info('Trying fallback sequence: '.($index + 1));
+
                     $result = $fallbackCallback();
                     $result['fallback_triggered'] = true;
+
                     return $result;
                 } catch (Exception $fallbackE) {
-                    Log::warning("Fallback sequence " . ($index + 1) . " failed: {$fallbackE->getMessage()}");
+                    Log::warning('Fallback sequence '.($index + 1)." failed: {$fallbackE->getMessage()}");
                     $errors[] = $fallbackE->getMessage();
-                    
+
                     if ($fallbackE->getCode() == 429) {
-                        Log::warning("Rate limit hit on fallback.");
+                        Log::warning('Rate limit hit on fallback.');
                     }
+
                     continue;
                 }
             }
-            
+
             // If all fail, return a structured error result instead of just throwing (or throw a custom exception)
             return [
                 'success' => false,
                 'errors' => $errors,
-                'message' => 'All providers failed.'
+                'message' => 'All providers failed.',
             ];
         }
     }
@@ -115,20 +124,22 @@ class CircuitBreaker
      */
     protected function isCircuitOpen($providerId)
     {
-        $key = $this->cachePrefix . "provider:{$providerId}:state";
+        $key = $this->cachePrefix."provider:{$providerId}:state";
         $state = Cache::get($key, 'closed');
-        
+
         if ($state === 'open') {
             // Check if recovery timeout has passed
-            $lastFailureTime = Cache::get($this->cachePrefix . "provider:{$providerId}:last_failure");
+            $lastFailureTime = Cache::get($this->cachePrefix."provider:{$providerId}:last_failure");
             if ($lastFailureTime && (now()->getTimestamp() - $lastFailureTime) > $this->recoveryTimeout) {
                 // Try half-open state
                 Cache::put($key, 'half-open', $this->recoveryTimeout);
+
                 return false;
             }
+
             return true;
         }
-        
+
         return false;
     }
 
@@ -137,18 +148,18 @@ class CircuitBreaker
      */
     protected function recordFailure($providerId)
     {
-        $key = $this->cachePrefix . "provider:{$providerId}:failures";
+        $key = $this->cachePrefix."provider:{$providerId}:failures";
         $failures = Cache::increment($key, 1);
-        
+
         if ($failures === 1) {
             // First failure, set expiration
             Cache::put($key, 1, $this->recoveryTimeout);
         }
-        
+
         if ($failures >= $this->failureThreshold) {
             // Open the circuit
-            Cache::put($this->cachePrefix . "provider:{$providerId}:state", 'open', $this->recoveryTimeout);
-            Cache::put($this->cachePrefix . "provider:{$providerId}:last_failure", now()->getTimestamp(), $this->recoveryTimeout);
+            Cache::put($this->cachePrefix."provider:{$providerId}:state", 'open', $this->recoveryTimeout);
+            Cache::put($this->cachePrefix."provider:{$providerId}:last_failure", now()->getTimestamp(), $this->recoveryTimeout);
         }
     }
 
@@ -158,7 +169,7 @@ class CircuitBreaker
     protected function recordSuccess($providerId)
     {
         // Reset failure count on success
-        Cache::forget($this->cachePrefix . "provider:{$providerId}:failures");
-        Cache::put($this->cachePrefix . "provider:{$providerId}:state", 'closed', $this->recoveryTimeout);
+        Cache::forget($this->cachePrefix."provider:{$providerId}:failures");
+        Cache::put($this->cachePrefix."provider:{$providerId}:state", 'closed', $this->recoveryTimeout);
     }
 }

@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Casts\SettingValueCast;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,12 +25,13 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $workspace_id
  * @property int $user_id
  * @property string $description
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class Setting extends Model
 {
-   use HasFactory;
+    use HasFactory;
+
     /**
      * The table associated with the model.
      *
@@ -59,7 +63,7 @@ class Setting extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'value' => \App\Casts\SettingValueCast::class,
+        'value' => SettingValueCast::class,
         'is_public' => 'boolean',
         'is_encrypted' => 'boolean',
         'created_at' => 'datetime',
@@ -70,26 +74,37 @@ class Setting extends Model
      * Scope constants for multi-tenancy.
      */
     public const SCOPE_GLOBAL = 'global';
+
     public const SCOPE_WORKSPACE = 'workspace';
+
     public const SCOPE_USER = 'user';
 
     /**
      * Setting type constants.
      */
     public const TYPE_STRING = 'string';
+
     public const TYPE_INTEGER = 'integer';
+
     public const TYPE_BOOLEAN = 'boolean';
+
     public const TYPE_JSON = 'json';
+
     public const TYPE_TEXT = 'text';
 
     /**
      * Setting group constants.
      */
     public const GROUP_GENERAL = 'general';
+
     public const GROUP_SECURITY = 'security';
+
     public const GROUP_AI = 'ai';
+
     public const GROUP_NOTIFICATIONS = 'notifications';
+
     public const GROUP_INTEGRATIONS = 'integrations';
+
     public const GROUP_UI = 'ui';
 
     /**
@@ -97,7 +112,7 @@ class Setting extends Model
      */
     public function workspace()
     {
-        return $this->belongsTo(\App\Models\Workspace::class);
+        return $this->belongsTo(Workspace::class);
     }
 
     /**
@@ -105,7 +120,7 @@ class Setting extends Model
      */
     public function user()
     {
-        return $this->belongsTo(\App\Models\User::class);
+        return $this->belongsTo(User::class);
     }
 
     /**
@@ -147,25 +162,24 @@ class Setting extends Model
     {
         return $query->where(function ($q) use ($userId, $workspaceId) {
             $q->where('scope', self::SCOPE_GLOBAL)
-              ->orWhere(function ($q2) use ($workspaceId) {
-                  if ($workspaceId) {
-                      $q2->where('scope', self::SCOPE_WORKSPACE)
-                         ->where('workspace_id', $workspaceId);
-                  }
-              })
-              ->orWhere(function ($q3) use ($userId) {
-                  $q3->where('scope', self::SCOPE_USER)
-                     ->where('user_id', $userId);
-              });
+                ->orWhere(function ($q2) use ($workspaceId) {
+                    if ($workspaceId) {
+                        $q2->where('scope', self::SCOPE_WORKSPACE)
+                            ->where('workspace_id', $workspaceId);
+                    }
+                })
+                ->orWhere(function ($q3) use ($userId) {
+                    $q3->where('scope', self::SCOPE_USER)
+                        ->where('user_id', $userId);
+                });
         });
     }
 
     /**
      * Scope to filter by group.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $group
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder  $query
+     * @return Builder
      */
     public function scopeByGroup($query, string $group)
     {
@@ -175,9 +189,8 @@ class Setting extends Model
     /**
      * Scope to filter by type.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $type
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder  $query
+     * @return Builder
      */
     public function scopeByType($query, string $type)
     {
@@ -187,8 +200,8 @@ class Setting extends Model
     /**
      * Scope to get public settings only.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder  $query
+     * @return Builder
      */
     public function scopePublic($query)
     {
@@ -198,8 +211,8 @@ class Setting extends Model
     /**
      * Scope to get private settings only.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder  $query
+     * @return Builder
      */
     public function scopePrivate($query)
     {
@@ -225,8 +238,7 @@ class Setting extends Model
     /**
      * Set the value with automatic type casting.
      *
-     * @param mixed $value
-     * @return void
+     * @param  mixed  $value
      */
     public function setTypedValue($value): void
     {
@@ -240,8 +252,6 @@ class Setting extends Model
 
     /**
      * Get the label for the setting group.
-     *
-     * @return string
      */
     public function getGroupLabelAttribute(): string
     {
@@ -259,7 +269,7 @@ class Setting extends Model
     public function setValue($value): bool
     {
         $this->value = $value;
+
         return $this->save();
     }
 }
-

@@ -14,7 +14,7 @@ class AgentStarted implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public Agent  $agent,
+        public Agent $agent,
         public string $traceId
     ) {}
 

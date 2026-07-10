@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\PeopleConnect\PeopleConnectConversation;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -10,12 +13,19 @@ class Contact extends BaseModel
     use SoftDeletes;
 
     public const TYPE_CONTACT = 'contact';
+
     public const TYPE_CLIENT = 'client';
+
     public const TYPE_FAMILY = 'family';
+
     public const TYPE_FRIEND = 'friend';
+
     public const TYPE_FIANCEE = 'fiancée';
+
     public const TYPE_PARTNER = 'partner';
+
     public const TYPE_PROSPECT = 'prospect';
+
     public const TYPE_VENDOR = 'vendor';
 
     public const TYPES = [
@@ -71,14 +81,14 @@ class Contact extends BaseModel
         return $this->hasMany(Conversation::class);
     }
 
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
     public function peopleConnectConversations(): HasMany
     {
-        return $this->hasMany(\App\Models\PeopleConnect\PeopleConnectConversation::class);
+        return $this->hasMany(PeopleConnectConversation::class);
     }
 
     public function notes(): HasMany
@@ -91,16 +101,17 @@ class Contact extends BaseModel
         return $this->hasMany(ContactTag::class);
     }
 
-    public function favoritedBy(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function favoritedBy(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'contact_favorites')->withTimestamps();
     }
 
     public function isFavoritedBy(?User $user): bool
     {
-        if (!$user) {
+        if (! $user) {
             return false;
         }
+
         return $this->favoritedBy()->where('users.id', $user->id)->exists();
     }
 
@@ -188,8 +199,6 @@ class Contact extends BaseModel
         return $this->hasMany(ContactAnalysisFinding::class);
     }
 
-
-
     public function topics(): HasMany
     {
         return $this->hasMany(ContactTopic::class);
@@ -207,7 +216,7 @@ class Contact extends BaseModel
 
     public function scopeOfType($query, string $type)
     {
-        if (!in_array($type, self::TYPES, true)) {
+        if (! in_array($type, self::TYPES, true)) {
             return $query;
         }
 
@@ -234,7 +243,7 @@ class Contact extends BaseModel
     public static function findByIdentifiers(array $identifiers): ?self
     {
         $candidates = array_filter($identifiers, function ($identifier) {
-            return !empty($identifier['type']) && !empty($identifier['value']);
+            return ! empty($identifier['type']) && ! empty($identifier['value']);
         });
 
         if (empty($candidates)) {

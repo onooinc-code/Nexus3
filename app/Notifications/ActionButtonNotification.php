@@ -2,9 +2,9 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Channels\PushbulletChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use App\Notifications\Channels\PushbulletChannel;
 
 class ActionButtonNotification extends Notification
 {
@@ -78,7 +78,7 @@ class ActionButtonNotification extends Notification
         if (! empty($this->actions)) {
             $body .= "\nAvailable Actions:\n";
             foreach ($this->actions as $index => $action) {
-                $body .= "  ".($index + 1).". {$action['label']}";
+                $body .= '  '.($index + 1).". {$action['label']}";
                 if (isset($action['url'])) {
                     $body .= " - {$action['url']}";
                 }

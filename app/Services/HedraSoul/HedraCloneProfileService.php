@@ -3,7 +3,6 @@
 namespace App\Services\HedraSoul;
 
 use App\Models\HedraCloneSource;
-use Illuminate\Support\Collection;
 
 /**
  * HedraCloneProfileService: Manages clone sources that shape Souly's behavior.
@@ -28,6 +27,7 @@ class HedraCloneProfileService
     public function update(HedraCloneSource $source, array $data): HedraCloneSource
     {
         $source->update($data);
+
         return $source;
     }
 

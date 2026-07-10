@@ -2,12 +2,13 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use App\Models\AIProvider;
-use App\Models\AIModel;
-use App\Models\AIApiKey;
 use App\Models\User;
+use App\Services\AiModelsHub\EncryptedApiKeyStorage;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
+use Tests\TestCase;
 
 class AiProviderTest extends TestCase
 {
@@ -27,13 +28,13 @@ class AiProviderTest extends TestCase
     public function it_creates_a_new_provider()
     {
         $response = $this->postJson('/api/v1/ai/providers', [
-            'name'                  => 'Test Provider',
-            'base_url'              => 'https://api.test.com',
+            'name' => 'Test Provider',
+            'base_url' => 'https://api.test.com',
             'models_fetch_endpoint' => '/models',
-            'generate_endpoint'     => '/generate',
-            'auth_header_format'    => 'Bearer {key}',
-            'payload_format'        => 'openai',
-            'is_active'             => true,
+            'generate_endpoint' => '/generate',
+            'auth_header_format' => 'Bearer {key}',
+            'payload_format' => 'openai',
+            'is_active' => true,
         ]);
 
         $response->assertStatus(201);
@@ -55,7 +56,7 @@ class AiProviderTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('ai_providers', [
-            'name'     => 'Test Provider',
+            'name' => 'Test Provider',
             'base_url' => 'https://api.test.com',
         ]);
     }
@@ -81,8 +82,8 @@ class AiProviderTest extends TestCase
         $response->assertStatus(200);
         $response->assertJson([
             'success' => true,
-            'data'    => [
-                'id'   => $provider->id,
+            'data' => [
+                'id' => $provider->id,
                 'name' => $provider->name,
             ],
         ]);
@@ -92,28 +93,28 @@ class AiProviderTest extends TestCase
     public function it_updates_a_provider()
     {
         $provider = AIProvider::factory()->create([
-            'name'      => 'Original Name',
+            'name' => 'Original Name',
             'is_active' => true,
         ]);
 
         $response = $this->putJson("/api/v1/ai/providers/{$provider->id}", [
-            'name'      => 'Updated Name',
-            'base_url'  => $provider->base_url, // base_url still required by validator
+            'name' => 'Updated Name',
+            'base_url' => $provider->base_url, // base_url still required by validator
             'is_active' => false,
         ]);
 
         $response->assertStatus(200);
         $response->assertJson([
             'success' => true,
-            'data'    => [
-                'name'      => 'Updated Name',
+            'data' => [
+                'name' => 'Updated Name',
                 'is_active' => false,
             ],
         ]);
 
         $this->assertDatabaseHas('ai_providers', [
-            'id'        => $provider->id,
-            'name'      => 'Updated Name',
+            'id' => $provider->id,
+            'name' => 'Updated Name',
             'is_active' => false,
         ]);
     }
@@ -138,21 +139,21 @@ class AiProviderTest extends TestCase
     {
         $provider = AIProvider::factory()->create([
             'models_fetch_endpoint' => '/models',
-            'generate_endpoint'     => '/generate',
+            'generate_endpoint' => '/generate',
         ]);
 
         // Mock HTTP response from external provider API
-        \Illuminate\Support\Facades\Http::fake([
-            '*' => \Illuminate\Support\Facades\Http::response([
+        Http::fake([
+            '*' => Http::response([
                 'data' => [
                     [
-                        'id'             => 'gpt-4',
-                        'name'           => 'GPT-4',
+                        'id' => 'gpt-4',
+                        'name' => 'GPT-4',
                         'context_length' => 8192,
                     ],
                     [
-                        'id'             => 'gpt-3.5-turbo',
-                        'name'           => 'GPT-3.5 Turbo',
+                        'id' => 'gpt-3.5-turbo',
+                        'name' => 'GPT-3.5 Turbo',
                         'context_length' => 4096,
                     ],
                 ],
@@ -163,18 +164,18 @@ class AiProviderTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJson([
-            'message'      => 'Models synchronized successfully',
+            'message' => 'Models synchronized successfully',
             'synced_count' => 2,
         ]);
 
         $this->assertDatabaseCount('ai_models', 2);
         $this->assertDatabaseHas('ai_models', [
             'provider_id' => $provider->id,
-            'name'        => 'gpt-4',
+            'name' => 'gpt-4',
         ]);
         $this->assertDatabaseHas('ai_models', [
             'provider_id' => $provider->id,
-            'name'        => 'gpt-3.5-turbo',
+            'name' => 'gpt-3.5-turbo',
         ]);
     }
 
@@ -182,25 +183,26 @@ class AiProviderTest extends TestCase
     public function it_tests_provider_connection_successfully_with_case_insensitive_headers()
     {
         $provider = AIProvider::factory()->create([
-            'base_url'              => 'https://api.test.com',
+            'base_url' => 'https://api.test.com',
             'models_fetch_endpoint' => '/models',
-            'generate_endpoint'     => '/generate',
-            'auth_header_format'    => 'Bearer {KEY}',
+            'generate_endpoint' => '/generate',
+            'auth_header_format' => 'Bearer {KEY}',
         ]);
 
         // Store mock API key
-        $keyStorage = $this->app->make(\App\Services\AiModelsHub\EncryptedApiKeyStorage::class);
+        $keyStorage = $this->app->make(EncryptedApiKeyStorage::class);
         $keyStorage->storeKey($provider->id, 'test-api-key-123', 'Test key');
 
         // Mock HTTP response
-        \Illuminate\Support\Facades\Http::fake([
-            'https://api.test.com/models' => function (\Illuminate\Http\Client\Request $request) {
+        Http::fake([
+            'https://api.test.com/models' => function (Request $request) {
                 // Assert that authorization header was correctly resolved case-insensitively
                 if ($request->hasHeader('Authorization', 'Bearer test-api-key-123')) {
-                    return \Illuminate\Support\Facades\Http::response(['status' => 'ok'], 200);
+                    return Http::response(['status' => 'ok'], 200);
                 }
-                return \Illuminate\Support\Facades\Http::response(['error' => 'Unauthorized'], 401);
-            }
+
+                return Http::response(['error' => 'Unauthorized'], 401);
+            },
         ]);
 
         $response = $this->postJson("/api/v1/ai/providers/{$provider->id}/test");
@@ -209,7 +211,7 @@ class AiProviderTest extends TestCase
         $response->assertJson([
             'success' => true,
             'status' => 'healthy',
-            'message' => 'Connection to provider successful'
+            'message' => 'Connection to provider successful',
         ]);
     }
 }

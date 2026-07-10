@@ -3,7 +3,6 @@
 namespace App\Agents;
 
 use App\Models\Agent;
-use App\Models\AgentTask;
 use App\Services\AgentLifecycleService;
 use App\Services\AgentRegistry;
 use Illuminate\Support\Facades\Log;
@@ -11,9 +10,13 @@ use Illuminate\Support\Facades\Log;
 class TeamAgent
 {
     protected Agent $agent;
+
     protected AgentLifecycleService $lifecycle;
+
     protected AgentRegistry $registry;
+
     protected array $teamMembers = [];
+
     protected array $executionResults = [];
 
     public function __construct(Agent $agent)
@@ -48,6 +51,7 @@ class TeamAgent
             ];
         } catch (\Throwable $e) {
             $this->lifecycle->fail($this->agent, $e->getMessage());
+
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
@@ -66,6 +70,7 @@ class TeamAgent
                 ];
             }
         }
+
         return $members;
     }
 

@@ -2,11 +2,11 @@
 
 namespace Tests\Unit\HedraSoul;
 
-use Tests\TestCase;
 use App\Models\SoulyInstructionVersion;
 use App\Models\SoulyRuntimeProfile;
 use App\Services\HedraSoul\SoulyInstructionVersionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 /**
  * SoulyInstructionVersionServiceTest: Tests instruction versioning and lifecycle.
@@ -24,13 +24,13 @@ class SoulyInstructionVersionServiceTest extends TestCase
 
         // Seed user 123 so that activated_by FK (souly_instruction_versions → users) is satisfied
         \DB::table('users')->insert([
-            'id'                => 123,
-            'name'              => 'Test User',
-            'email'             => 'testuser@nexus.test',
-            'password'          => bcrypt('password'),
+            'id' => 123,
+            'name' => 'Test User',
+            'email' => 'testuser@nexus.test',
+            'password' => bcrypt('password'),
             'email_verified_at' => now(),
-            'created_at'        => now(),
-            'updated_at'        => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         // Create runtime profile
@@ -193,7 +193,7 @@ class SoulyInstructionVersionServiceTest extends TestCase
             // All others should be archived or draft
             $invalidStatuses = SoulyInstructionVersion::whereNotIn('status', ['active', 'archived'])
                 ->count();
-            $this->assertEquals(0, $invalidStatuses, 
+            $this->assertEquals(0, $invalidStatuses,
                 "After iteration $i: Found versions with invalid status");
         }
     }

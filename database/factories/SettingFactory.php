@@ -6,7 +6,7 @@ use App\Models\Setting;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Setting>
+ * @extends Factory<Setting>
  */
 class SettingFactory extends Factory
 {
@@ -15,7 +15,7 @@ class SettingFactory extends Factory
     public function definition(): array
     {
         return [
-            'key' => fake()->slug() . '-' . uniqid(),
+            'key' => fake()->slug().'-'.uniqid(),
             'value' => fake()->word(),
             'type' => fake()->randomElement([
                 Setting::TYPE_STRING,

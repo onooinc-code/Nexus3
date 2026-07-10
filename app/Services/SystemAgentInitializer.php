@@ -4,9 +4,10 @@ namespace App\Services;
 
 use App\Models\Agent;
 use App\Models\AgentPersona;
-use Illuminate\Support\Str;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class SystemAgentInitializer
 {
@@ -28,7 +29,7 @@ class SystemAgentInitializer
                 'description' => 'Default persona for knowledge extraction.',
                 'system_prompt' => 'You are a precise data extraction agent. Extract structured entities and relationships from the provided text. Return ONLY JSON.',
                 'tone_preferences' => ['tone' => 'clinical', 'style' => 'direct'],
-            ]
+            ],
         ],
         [
             'key' => 'intent-analyzer',
@@ -44,7 +45,7 @@ class SystemAgentInitializer
                 'description' => 'Default persona for intent routing.',
                 'system_prompt' => 'You are an intent classification agent. Analyze the user request and determine the primary intent category. Respond concisely.',
                 'tone_preferences' => ['tone' => 'neutral', 'style' => 'analytical'],
-            ]
+            ],
         ],
         [
             'key' => 'contact-reply',
@@ -60,8 +61,8 @@ class SystemAgentInitializer
                 'description' => 'Default persona for drafting replies.',
                 'system_prompt' => 'You are a communication assistant. Draft a polite and empathetic reply to the contact based on their previous messages and context.',
                 'tone_preferences' => ['tone' => 'empathetic', 'style' => 'conversational'],
-            ]
-        ]
+            ],
+        ],
     ];
 
     /**
@@ -74,14 +75,14 @@ class SystemAgentInitializer
 
         try {
             // Ensure a default system owner exists (e.g., admin user)
-            $owner = \App\Models\User::first();
+            $owner = User::first();
             $ownerId = $owner ? $owner->id : null;
 
             foreach ($this->defaultSystemAgents as $config) {
                 // Check if agent exists
                 $agent = Agent::where('key', $config['key'])->first();
 
-                if (!$agent) {
+                if (! $agent) {
                     // Create Persona
                     $persona = AgentPersona::create([
                         'id' => Str::uuid()->toString(),
@@ -112,10 +113,12 @@ class SystemAgentInitializer
             }
 
             DB::commit();
+
             return ['success' => true, 'seeded' => $seeded];
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Failed to seed system agents: " . $e->getMessage());
+            Log::error('Failed to seed system agents: '.$e->getMessage());
+
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }

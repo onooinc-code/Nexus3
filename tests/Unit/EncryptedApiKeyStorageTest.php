@@ -2,13 +2,10 @@
 
 namespace Tests\Unit;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Tests\TestCase;
-use App\Services\AiModelsHub\EncryptedApiKeyStorage;
 use App\Models\AIProvider;
-use App\Models\AIApiKey;
-use Illuminate\Support\Facades\Crypt;
+use App\Services\AiModelsHub\EncryptedApiKeyStorage;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class EncryptedApiKeyStorageTest extends TestCase
 {
@@ -18,7 +15,7 @@ class EncryptedApiKeyStorageTest extends TestCase
     public function it_stores_and_retrieves_encrypted_api_key()
     {
         $provider = AIProvider::factory()->create();
-        $storage = new EncryptedApiKeyStorage();
+        $storage = new EncryptedApiKeyStorage;
         $apiKey = 'sk-test-1234567890abcdef';
 
         $storedKey = $storage->storeKey($provider->id, $apiKey, 'Test Key');
@@ -40,7 +37,7 @@ class EncryptedApiKeyStorageTest extends TestCase
     /** @test */
     public function it_returns_null_for_nonexistent_provider_key()
     {
-        $storage = new EncryptedApiKeyStorage();
+        $storage = new EncryptedApiKeyStorage;
 
         $key = $storage->getDecryptedKey('nonexistent-provider-id');
 
@@ -51,7 +48,7 @@ class EncryptedApiKeyStorageTest extends TestCase
     public function it_checks_if_key_exists_for_provider()
     {
         $provider = AIProvider::factory()->create();
-        $storage = new EncryptedApiKeyStorage();
+        $storage = new EncryptedApiKeyStorage;
 
         // Initially no key should exist
         $this->assertFalse($storage->hasKey($provider->id));
@@ -65,7 +62,7 @@ class EncryptedApiKeyStorageTest extends TestCase
     public function it_updates_existing_api_key()
     {
         $provider = AIProvider::factory()->create();
-        $storage = new EncryptedApiKeyStorage();
+        $storage = new EncryptedApiKeyStorage;
 
         // Store initial key
         $storage->storeKey($provider->id, 'old-key', 'Original Key');
@@ -84,7 +81,7 @@ class EncryptedApiKeyStorageTest extends TestCase
     public function it_deactivates_api_key()
     {
         $provider = AIProvider::factory()->create();
-        $storage = new EncryptedApiKeyStorage();
+        $storage = new EncryptedApiKeyStorage;
 
         // Store a key
         $storage->storeKey($provider->id, 'test-key');

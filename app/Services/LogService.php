@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Log;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log as LaravelLog;
 
@@ -17,15 +18,12 @@ class LogService
 {
     /**
      * The default log channel to use.
-     *
-     * @var string
      */
     protected string $channel;
 
     /**
      * Create a new LogService instance.
      *
-     * @param string|null $channel
      * @return void
      */
     public function __construct(?string $channel = null)
@@ -36,9 +34,7 @@ class LogService
     /**
      * Log a debug message.
      *
-     * @param string $message
-     * @param array<string, mixed> $context
-     * @return Log
+     * @param  array<string, mixed>  $context
      */
     public function debug(string $message, array $context = []): Log
     {
@@ -48,9 +44,7 @@ class LogService
     /**
      * Log an info message.
      *
-     * @param string $message
-     * @param array<string, mixed> $context
-     * @return Log
+     * @param  array<string, mixed>  $context
      */
     public function info(string $message, array $context = []): Log
     {
@@ -60,9 +54,7 @@ class LogService
     /**
      * Log a notice message.
      *
-     * @param string $message
-     * @param array<string, mixed> $context
-     * @return Log
+     * @param  array<string, mixed>  $context
      */
     public function notice(string $message, array $context = []): Log
     {
@@ -72,9 +64,7 @@ class LogService
     /**
      * Log a warning message.
      *
-     * @param string $message
-     * @param array<string, mixed> $context
-     * @return Log
+     * @param  array<string, mixed>  $context
      */
     public function warning(string $message, array $context = []): Log
     {
@@ -84,9 +74,7 @@ class LogService
     /**
      * Log an error message.
      *
-     * @param string $message
-     * @param array<string, mixed> $context
-     * @return Log
+     * @param  array<string, mixed>  $context
      */
     public function error(string $message, array $context = []): Log
     {
@@ -96,9 +84,7 @@ class LogService
     /**
      * Log a critical message.
      *
-     * @param string $message
-     * @param array<string, mixed> $context
-     * @return Log
+     * @param  array<string, mixed>  $context
      */
     public function critical(string $message, array $context = []): Log
     {
@@ -108,9 +94,7 @@ class LogService
     /**
      * Log an alert message.
      *
-     * @param string $message
-     * @param array<string, mixed> $context
-     * @return Log
+     * @param  array<string, mixed>  $context
      */
     public function alert(string $message, array $context = []): Log
     {
@@ -120,9 +104,7 @@ class LogService
     /**
      * Log an emergency message.
      *
-     * @param string $message
-     * @param array<string, mixed> $context
-     * @return Log
+     * @param  array<string, mixed>  $context
      */
     public function emergency(string $message, array $context = []): Log
     {
@@ -132,10 +114,7 @@ class LogService
     /**
      * Write a log entry at the specified level.
      *
-     * @param string $level
-     * @param string $message
-     * @param array<string, mixed> $context
-     * @return Log
+     * @param  array<string, mixed>  $context
      */
     public function log(string $level, string $message, array $context = []): Log
     {
@@ -154,13 +133,13 @@ class LogService
 
         // Persist to database
         $log = Log::create([
-            'level'        => $level,
-            'channel'      => $context['channel'] ?? 'app',
-            'message'      => $message,
-            'context'      => $storedContext,
-            'type'         => $context['type'] ?? Log::TYPE_APPLICATION,
-            'user_id'      => $context['user_id'] ?? null,
-            'related_id'   => $context['related_id'] ?? null,
+            'level' => $level,
+            'channel' => $context['channel'] ?? 'app',
+            'message' => $message,
+            'context' => $storedContext,
+            'type' => $context['type'] ?? Log::TYPE_APPLICATION,
+            'user_id' => $context['user_id'] ?? null,
+            'related_id' => $context['related_id'] ?? null,
             'related_type' => $context['related_type'] ?? null,
         ]);
 
@@ -170,13 +149,10 @@ class LogService
     /**
      * Log a message for a related entity.
      *
-     * @param string $level
-     * @param string $message
-     * @param string $entityName  Human-readable entity label (e.g. 'task', 'agent')
-     * @param string $relatedType Fully-qualified model class or morph alias
-     * @param int    $relatedId   Primary key of the related record
-     * @param array  $context     Optional extra context
-     * @return Log
+     * @param  string  $entityName  Human-readable entity label (e.g. 'task', 'agent')
+     * @param  string  $relatedType  Fully-qualified model class or morph alias
+     * @param  int  $relatedId  Primary key of the related record
+     * @param  array  $context  Optional extra context
      */
     public function logRelated(
         string $level,
@@ -186,16 +162,16 @@ class LogService
         int $relatedId,
         array $context = []
     ): Log {
-        $context['related_id']   = $relatedId;
+        $context['related_id'] = $relatedId;
         $context['related_type'] = $relatedType;
+
         return $this->log($level, $message, $context);
     }
 
     /**
      * Get recent logs.
      *
-     * @param int $limit
-     * @return \Illuminate\Database\Eloquent\Collection<int, Log>
+     * @return Collection<int, Log>
      */
     public function recent(int $limit = 100)
     {
@@ -205,9 +181,8 @@ class LogService
     /**
      * Get logs by level.
      *
-     * @param string|array $levels
-     * @param int $limit
-     * @return \Illuminate\Database\Eloquent\Collection<int, Log>
+     * @param  string|array  $levels
+     * @return Collection<int, Log>
      */
     public function byLevel($levels, int $limit = 100)
     {
@@ -217,9 +192,8 @@ class LogService
     /**
      * Get logs by channel.
      *
-     * @param string|array $channels
-     * @param int $limit
-     * @return \Illuminate\Database\Eloquent\Collection<int, Log>
+     * @param  string|array  $channels
+     * @return Collection<int, Log>
      */
     public function byChannel($channels, int $limit = 100)
     {
@@ -228,8 +202,6 @@ class LogService
 
     /**
      * Get log statistics.
-     *
-     * @return array
      */
     public function getStats(): array
     {
@@ -257,8 +229,6 @@ class LogService
 
     /**
      * Get available log levels.
-     *
-     * @return array
      */
     public function getLevels(): array
     {
@@ -276,8 +246,6 @@ class LogService
 
     /**
      * Get available log channels.
-     *
-     * @return array
      */
     public function getChannels(): array
     {
@@ -291,8 +259,6 @@ class LogService
 
     /**
      * Get all channel definitions with labels.
-     *
-     * @return array
      */
     public function getChannelDefinitions(): array
     {
@@ -313,8 +279,7 @@ class LogService
     /**
      * Get error-level logs.
      *
-     * @param int $limit
-     * @return \Illuminate\Database\Eloquent\Collection<int, Log>
+     * @return Collection<int, Log>
      */
     public function getErrors(int $limit = 100)
     {
@@ -323,9 +288,6 @@ class LogService
 
     /**
      * Get a log by ID.
-     *
-     * @param int $id
-     * @return Log|null
      */
     public function getById(int $id): ?Log
     {
@@ -334,23 +296,20 @@ class LogService
 
     /**
      * Delete a log by ID.
-     *
-     * @param int $id
-     * @return bool
      */
     public function delete(int $id): bool
     {
         $log = Log::find($id);
-        if (!$log) {
+        if (! $log) {
             return false;
         }
+
         return $log->delete();
     }
 
     /**
      * Clear logs older than specified days.
      *
-     * @param int $days
      * @return int Number of deleted records
      */
     public function clearOldLogs(int $days): int

@@ -13,7 +13,7 @@ class AIProviderFactory extends Factory
     {
         return [
             'id' => fake()->uuid(),
-            'name' => fake()->company() . ' AI',
+            'name' => fake()->company().' AI',
             'base_url' => fake()->url(),
             'models_fetch_endpoint' => '/v1/models',
             'generate_endpoint' => '/v1/chat/completions',

@@ -2,10 +2,10 @@
 
 namespace App\Services\HedraSoul;
 
-use App\Models\HedrasoulSession;
-use App\Models\HedrasoulMessage;
-use App\Models\HedrasoulContextSnapshot;
 use App\Models\HedraProfileFact;
+use App\Models\HedrasoulContextSnapshot;
+use App\Models\HedrasoulMessage;
+use App\Models\HedrasoulSession;
 
 /**
  * SoulyContextAssembler: Builds a complete context snapshot for message processing.
@@ -14,6 +14,7 @@ use App\Models\HedraProfileFact;
 class SoulyContextAssembler
 {
     const TOKEN_BUDGET = 8000;  // Default context token budget
+
     const RECENT_MESSAGES_LIMIT = 20;
 
     /**
@@ -35,7 +36,7 @@ class SoulyContextAssembler
             ->take(self::RECENT_MESSAGES_LIMIT)
             ->get()
             ->reverse()
-            ->map(fn($msg) => [
+            ->map(fn ($msg) => [
                 'id' => $msg->id,
                 'sender_type' => $msg->sender_type,
                 'body' => $msg->body,
@@ -45,15 +46,15 @@ class SoulyContextAssembler
 
         // Get mentions from trigger message
         $mentions = $trigger->mentions()
-            ->with(['relatedObject' => function ($q) { 
+            ->with(['relatedObject' => function ($q) {
                 // Polymorphic eager load would go here
             }])
             ->get()
-            ->map(fn($m) => [
+            ->map(fn ($m) => [
                 'type' => $m->mention_type,
                 'display_name' => $m->display_name,
                 'sensitivity' => $m->sensitivity,
-                'resolved' => !is_null($m->resolved_at),
+                'resolved' => ! is_null($m->resolved_at),
             ])
             ->toArray();
 
@@ -61,7 +62,7 @@ class SoulyContextAssembler
         $injectedFacts = HedraProfileFact::where('is_approved', true)
             ->whereNotIn('visibility_scope', ['archived'])
             ->get()
-            ->map(fn($f) => [
+            ->map(fn ($f) => [
                 'type' => $f->memory_type,
                 'content' => $f->content,
                 'confidence' => $f->confidence,
@@ -95,7 +96,7 @@ class SoulyContextAssembler
             $payload['recent_messages'] = array_slice($payload['recent_messages'], -10);
             $excludedItems[] = [
                 'key' => 'older_messages',
-                'reason' => 'Exceeded token budget (limit: ' . self::TOKEN_BUDGET . ')',
+                'reason' => 'Exceeded token budget (limit: '.self::TOKEN_BUDGET.')',
             ];
 
             // Recalculate after truncation
@@ -127,15 +128,15 @@ class SoulyContextAssembler
     {
         $risk = 'low';
 
-        if (!empty($payload['injected_facts'])) {
-            $sensitiveItems = array_filter($payload['injected_facts'], 
-                fn($f) => in_array($f['type'], ['boundary', 'decision', 'correction']));
-            if (!empty($sensitiveItems)) {
+        if (! empty($payload['injected_facts'])) {
+            $sensitiveItems = array_filter($payload['injected_facts'],
+                fn ($f) => in_array($f['type'], ['boundary', 'decision', 'correction']));
+            if (! empty($sensitiveItems)) {
                 $risk = 'medium';
             }
         }
 
-        if ($payload['external_messaging_access'] && !empty($payload['mentions'])) {
+        if ($payload['external_messaging_access'] && ! empty($payload['mentions'])) {
             $risk = 'high';
         }
 

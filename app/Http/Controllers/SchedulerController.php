@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\SchedulerJob;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class SchedulerController extends Controller
 {
@@ -14,9 +14,10 @@ class SchedulerController extends Controller
     public function index(Request $request): JsonResponse
     {
         $jobs = SchedulerJob::orderBy('id', 'desc')->get();
+
         return response()->json([
             'success' => true,
-            'data' => $jobs
+            'data' => $jobs,
         ]);
     }
 
@@ -37,7 +38,7 @@ class SchedulerController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $job
+            'data' => $job,
         ], 201);
     }
 
@@ -48,7 +49,7 @@ class SchedulerController extends Controller
     {
         return response()->json([
             'success' => true,
-            'data' => $schedulerJob
+            'data' => $schedulerJob,
         ]);
     }
 
@@ -58,7 +59,7 @@ class SchedulerController extends Controller
     public function update(Request $request, $id): JsonResponse
     {
         $schedulerJob = SchedulerJob::findOrFail($id);
-        
+
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'type' => 'sometimes|string|in:command,job,webhook,script',
@@ -71,7 +72,7 @@ class SchedulerController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $schedulerJob
+            'data' => $schedulerJob,
         ]);
     }
 
@@ -85,7 +86,7 @@ class SchedulerController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Job deleted successfully'
+            'message' => 'Job deleted successfully',
         ]);
     }
 }

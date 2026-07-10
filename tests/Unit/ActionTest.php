@@ -3,8 +3,13 @@
 namespace Tests\Unit;
 
 use App\Models\Agent;
-use App\Models\Workflow;
 use App\Models\AgentTask;
+use App\Models\Contact;
+use App\Models\Memory;
+use App\Models\Setting;
+use App\Models\User;
+use App\Models\Workflow;
+use App\Services\LogService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -208,7 +213,6 @@ class ActionTest extends TestCase
         $this->assertEquals('todo', $task->fresh()->status);
     }
 
-
     public function test_task_complete_action_marks_task_completed(): void
     {
         $task = AgentTask::factory()->create(['status' => 'running']);
@@ -233,7 +237,7 @@ class ActionTest extends TestCase
 
     public function test_memory_store_action_creates_memory(): void
     {
-        $contact = \App\Models\Contact::factory()->create();
+        $contact = Contact::factory()->create();
 
         $memoryData = [
             'contact_id' => $contact->id,
@@ -242,7 +246,7 @@ class ActionTest extends TestCase
             'source' => 'test',
         ];
 
-        $memory = \App\Models\Memory::create($memoryData);
+        $memory = Memory::create($memoryData);
 
         $this->assertDatabaseHas('memories', ['content' => 'Test memory content']);
         $this->assertEquals($contact->id, $memory->contact_id);
@@ -250,11 +254,11 @@ class ActionTest extends TestCase
 
     public function test_memory_search_action_filters_by_type(): void
     {
-        $contact = \App\Models\Contact::factory()->create();
-        \App\Models\Memory::factory()->create(['contact_id' => $contact->id, 'type' => 'episodic']);
-        \App\Models\Memory::factory()->create(['contact_id' => $contact->id, 'type' => 'semantic']);
+        $contact = Contact::factory()->create();
+        Memory::factory()->create(['contact_id' => $contact->id, 'type' => 'episodic']);
+        Memory::factory()->create(['contact_id' => $contact->id, 'type' => 'semantic']);
 
-        $results = \App\Models\Memory::where('contact_id', $contact->id)
+        $results = Memory::where('contact_id', $contact->id)
             ->where('type', 'episodic')
             ->get();
 
@@ -270,10 +274,10 @@ class ActionTest extends TestCase
             'name' => 'John Doe',
             'email' => 'john@example.com',
             'phone' => '+1234567890',
-            'type' => \App\Models\Contact::TYPE_CLIENT,
+            'type' => Contact::TYPE_CLIENT,
         ];
 
-        $contact = \App\Models\Contact::create($contactData);
+        $contact = Contact::create($contactData);
 
         $this->assertDatabaseHas('contacts', ['email' => 'john@example.com']);
         $this->assertEquals('John Doe', $contact->name);
@@ -281,7 +285,7 @@ class ActionTest extends TestCase
 
     public function test_contact_update_action_modifies_contact(): void
     {
-        $contact = \App\Models\Contact::factory()->create(['name' => 'Old Name']);
+        $contact = Contact::factory()->create(['name' => 'Old Name']);
 
         $contact->update(['name' => 'New Name']);
 
@@ -290,7 +294,7 @@ class ActionTest extends TestCase
 
     public function test_contact_delete_action_soft_deletes_contact(): void
     {
-        $contact = \App\Models\Contact::factory()->create();
+        $contact = Contact::factory()->create();
 
         $contact->delete();
 
@@ -301,7 +305,7 @@ class ActionTest extends TestCase
 
     public function test_setting_set_action_updates_value(): void
     {
-        $setting = \App\Models\Setting::factory()->create([
+        $setting = Setting::factory()->create([
             'key' => 'test_key',
             'value' => 'old_value',
         ]);
@@ -313,7 +317,7 @@ class ActionTest extends TestCase
 
     public function test_setting_get_action_returns_typed_value(): void
     {
-        $setting = \App\Models\Setting::factory()->create([
+        $setting = Setting::factory()->create([
             'key' => 'test_int',
             'type' => 'integer',
             'value' => '42',
@@ -328,9 +332,9 @@ class ActionTest extends TestCase
 
     public function test_log_info_action_creates_log_entry(): void
     {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
 
-        app(\App\Services\LogService::class)->info('Test info message', [
+        app(LogService::class)->info('Test info message', [
             'context' => 'test',
             'user_id' => $user->id,
         ]);
@@ -342,10 +346,9 @@ class ActionTest extends TestCase
         ]);
     }
 
-
     public function test_log_error_action_creates_log_entry(): void
     {
-        app(\App\Services\LogService::class)->error('Test error message', [
+        app(LogService::class)->error('Test error message', [
             'context' => 'test',
             'exception' => new \RuntimeException('Test exception'),
         ]);
@@ -358,12 +361,11 @@ class ActionTest extends TestCase
 
     public function test_log_debug_action_creates_log_entry(): void
     {
-        app(\App\Services\LogService::class)->debug('Test debug message');
+        app(LogService::class)->debug('Test debug message');
 
         $this->assertDatabaseHas('logs', [
             'level' => 'debug',
             'message' => 'Test debug message',
         ]);
     }
-
 }

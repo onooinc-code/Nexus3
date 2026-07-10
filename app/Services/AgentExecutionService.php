@@ -2,19 +2,18 @@
 
 namespace App\Services;
 
-use App\Models\Agent;
-use App\Models\AgentPersona;
-use App\Models\AgentRuntimeLog;
-use App\Models\AIModel;
-use App\Models\AIProvider;
-use App\Events\AgentStarted;
 use App\Events\AgentCompleted;
 use App\Events\AgentFailed;
+use App\Events\AgentStarted;
+use App\Jobs\ExecuteAgentTaskJob;
+use App\Models\Agent;
+use App\Models\AgentRuntimeLog;
+use App\Models\AgentTask;
 use App\Services\AiModelsHub\DynamicRestProvider;
 use App\Services\AiModelsHub\EncryptedApiKeyStorage;
-use App\Services\LogService;
-use Illuminate\Support\Str;
+use App\Services\AiModelsHub\UniversalAiGatewayService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * AgentExecutionService
@@ -58,11 +57,11 @@ class AgentExecutionService
             $this->emitCompleted($agent, $traceId, $result);
 
             return [
-                'success'    => true,
-                'trace_id'   => $traceId,
-                'mode'       => 'sync',
-                'result'     => $result,
-                'duration_ms'=> $durationMs,
+                'success' => true,
+                'trace_id' => $traceId,
+                'mode' => 'sync',
+                'result' => $result,
+                'duration_ms' => $durationMs,
             ];
         } catch (\Throwable $e) {
             $durationMs = (int) ((microtime(true) - $startedAt) * 1000);
@@ -74,11 +73,11 @@ class AgentExecutionService
             Log::error("AgentExecutionService: Agent [{$agent->id}] failed - {$e->getMessage()}");
 
             return [
-                'success'    => false,
-                'trace_id'   => $traceId,
-                'mode'       => 'sync',
-                'error'      => $e->getMessage(),
-                'duration_ms'=> $durationMs,
+                'success' => false,
+                'trace_id' => $traceId,
+                'mode' => 'sync',
+                'error' => $e->getMessage(),
+                'duration_ms' => $durationMs,
             ];
         }
     }
@@ -91,27 +90,27 @@ class AgentExecutionService
         $traceId = Str::uuid()->toString();
 
         // 1. Create the AgentTask record
-        $task = \App\Models\AgentTask::create([
+        $task = AgentTask::create([
             'agent_id' => $agent->id,
-            'title' => 'Async Execution: ' . substr(is_array($input) ? json_encode($input) : $input, 0, 50),
-            'status' => \App\Models\AgentTask::STATUS_TODO,
+            'title' => 'Async Execution: '.substr(is_array($input) ? json_encode($input) : $input, 0, 50),
+            'status' => AgentTask::STATUS_TODO,
             'type' => 'agent',
             'payload_data' => $input,
             'metadata' => [
                 'trace_id' => $traceId,
-                'initiated_via' => 'AgentExecutionService@runAsync'
-            ]
+                'initiated_via' => 'AgentExecutionService@runAsync',
+            ],
         ]);
 
         // 2. Dispatch job with the task model
-        \App\Jobs\ExecuteAgentTaskJob::dispatch($task);
+        ExecuteAgentTaskJob::dispatch($task);
 
         return [
-            'success'  => true,
+            'success' => true,
             'trace_id' => $traceId,
-            'task_id'  => $task->id,
-            'mode'     => 'async',
-            'message'  => 'Agent task queued for execution.',
+            'task_id' => $task->id,
+            'mode' => 'async',
+            'message' => 'Agent task queued for execution.',
         ];
     }
 
@@ -127,12 +126,12 @@ class AgentExecutionService
             : "You are {$agent->name}, an AI agent. Complete the task provided.";
 
         // Append tone preferences if set
-        if ($agent->persona && !empty($agent->persona->tone_preferences)) {
+        if ($agent->persona && ! empty($agent->persona->tone_preferences)) {
             $tones = $agent->persona->tone_preferences;
-            if (!empty($tones['tone'])) {
+            if (! empty($tones['tone'])) {
                 $systemPrompt .= "\n\nTone: {$tones['tone']}.";
             }
-            if (!empty($tones['style'])) {
+            if (! empty($tones['style'])) {
                 $systemPrompt .= " Style: {$tones['style']}.";
             }
         }
@@ -140,7 +139,7 @@ class AgentExecutionService
         // Build tool descriptions for the prompt
         $toolDescriptions = $agent->tools
             ->where('is_active', true)
-            ->map(fn($t) => "- {$t->name}: {$t->description}")
+            ->map(fn ($t) => "- {$t->name}: {$t->description}")
             ->implode("\n");
 
         if ($toolDescriptions) {
@@ -149,10 +148,10 @@ class AgentExecutionService
 
         return [
             'system_prompt' => $systemPrompt,
-            'input'         => $input,
-            'tools'         => $agent->tools->where('is_active', true)->values()->toArray(),
-            'agent_id'      => $agent->id,
-            'agent_name'    => $agent->name,
+            'input' => $input,
+            'tools' => $agent->tools->where('is_active', true)->values()->toArray(),
+            'agent_id' => $agent->id,
+            'agent_name' => $agent->name,
         ];
     }
 
@@ -161,13 +160,13 @@ class AgentExecutionService
      */
     protected function callLLM(Agent $agent, array $context, string $traceId): array
     {
-        $gateway = app(\App\Services\AiModelsHub\UniversalAiGatewayService::class);
-        
+        $gateway = app(UniversalAiGatewayService::class);
+
         $result = $gateway->executeWithAgent($agent, $context);
-        
+
         $this->logStep($agent, null, $traceId, 'llm_call', [
-            'model'     => $result['used_model'] ?? 'unknown',
-            'provider'  => $result['used_provider'] ?? 'unknown',
+            'model' => $result['used_model'] ?? 'unknown',
+            'provider' => $result['used_provider'] ?? 'unknown',
         ], null, null);
 
         return $result;
@@ -177,22 +176,22 @@ class AgentExecutionService
      * Write a step to agent_runtime_logs.
      */
     public function logStep(
-        Agent   $agent,
+        Agent $agent,
         ?string $taskId,
-        string  $traceId,
-        string  $step,
-        mixed   $input,
-        mixed   $output,
-        ?int    $durationMs
+        string $traceId,
+        string $step,
+        mixed $input,
+        mixed $output,
+        ?int $durationMs
     ): void {
         AgentRuntimeLog::create([
-            'id'          => Str::uuid()->toString(),
-            'agent_id'    => $agent->id,
-            'task_id'     => $taskId,
-            'trace_id'    => $traceId,
-            'step'        => $step,
-            'input'       => $input,
-            'output'      => $output,
+            'id' => Str::uuid()->toString(),
+            'agent_id' => $agent->id,
+            'task_id' => $taskId,
+            'trace_id' => $traceId,
+            'step' => $step,
+            'input' => $input,
+            'output' => $output,
             'duration_ms' => $durationMs,
         ]);
     }

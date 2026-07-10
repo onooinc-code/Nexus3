@@ -2,11 +2,10 @@
 
 namespace Tests\Feature\HedraSoul;
 
-use Tests\TestCase;
 use App\Models\HedrasoulSession;
-use App\Models\HedrasoulMessage;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class HedraSoulSessionApiTest extends TestCase
 {

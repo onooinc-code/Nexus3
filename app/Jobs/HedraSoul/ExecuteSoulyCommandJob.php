@@ -3,9 +3,9 @@
 namespace App\Jobs\HedraSoul;
 
 use App\Models\HedrasoulApprovalRequest;
-use App\Services\HedraSoul\SoulyTraceService;
-use App\Services\HedraSoul\HedraSoulRealtimeBroadcaster;
 use App\Services\HedraSoul\HedraSoulNotificationService;
+use App\Services\HedraSoul\HedraSoulRealtimeBroadcaster;
+use App\Services\HedraSoul\SoulyTraceService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -15,7 +15,7 @@ use Throwable;
 
 /**
  * ExecuteSoulyCommandJob: Executes an approved command.
- * 
+ *
  * Called by ApprovalInboxService::approve() after user approval.
  * Executes the approved action via AgentsHub, records trace, broadcasts completion.
  */
@@ -24,6 +24,7 @@ class ExecuteSoulyCommandJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 120;
 
     public function __construct(public HedrasoulApprovalRequest $approvalRequest) {}
@@ -42,7 +43,7 @@ class ExecuteSoulyCommandJob implements ShouldQueue
             // Step 3: Record trace
             $traceService = app(SoulyTraceService::class);
             $trace = $traceService->record([
-                'message_id' => $this->approvalRequest->source_id ? 
+                'message_id' => $this->approvalRequest->source_id ?
                     (is_numeric($this->approvalRequest->source_id) ? $this->approvalRequest->source_id : null) : null,
                 'trace_id' => $executionResult['trace_id'] ?? \Str::uuid(),
                 'parsed_intent' => $this->approvalRequest->action_description,
@@ -77,7 +78,7 @@ class ExecuteSoulyCommandJob implements ShouldQueue
 
     /**
      * Execute action via AgentsHub.
-     * 
+     *
      * This is a placeholder - integrate with actual AgentsHub implementation.
      */
     private function executeViaAgentsHub(array $payload, string $actionDescription): array
@@ -110,7 +111,7 @@ class ExecuteSoulyCommandJob implements ShouldQueue
         // Update approval request status to failed
         $this->approvalRequest->update([
             'status' => 'failed',
-            'decision_notes' => 'Execution failed: ' . $e->getMessage(),
+            'decision_notes' => 'Execution failed: '.$e->getMessage(),
         ]);
 
         // Create failure notification
@@ -118,7 +119,7 @@ class ExecuteSoulyCommandJob implements ShouldQueue
             type: 'agent_failure',
             priority: 'high',
             title: 'Command Execution Failed',
-            body: 'Failed to execute the approved command: ' . $e->getMessage(),
+            body: 'Failed to execute the approved command: '.$e->getMessage(),
             relatedId: $this->approvalRequest->id,
             relatedType: 'approval_request',
         );
@@ -126,4 +127,3 @@ class ExecuteSoulyCommandJob implements ShouldQueue
         // notification service already broadcast the event above
     }
 }
-

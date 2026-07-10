@@ -19,15 +19,12 @@ class SettingCacheService
 {
     /**
      * The cache TTL in seconds.
-     *
-     * @var int
      */
     protected int $ttl;
 
     /**
      * Create a new SettingCacheService instance.
      *
-     * @param int|null $ttl
      * @return void
      */
     public function __construct(?int $ttl = null)
@@ -38,14 +35,14 @@ class SettingCacheService
     /**
      * Get a setting value by key, with cache.
      *
-     * @param string $key
-     * @param mixed $default
+     * @param  mixed  $default
      * @return mixed
      */
     public function get(string $key, $default = null)
     {
         return Cache::remember("setting.{$key}", $this->ttl, function () use ($key, $default) {
             $setting = Setting::where('key', $key)->first();
+
             return $setting ? $setting->getTypedValue() : $default;
         });
     }
@@ -53,7 +50,6 @@ class SettingCacheService
     /**
      * Get all settings, optionally filtered by group.
      *
-     * @param string|null $group
      * @return array<string, mixed>
      */
     public function getAll(?string $group = null): array
@@ -95,6 +91,7 @@ class SettingCacheService
             foreach ($settings as $setting) {
                 $result[$setting->key] = $setting->getTypedValue();
             }
+
             return $result;
         });
     }
@@ -102,9 +99,7 @@ class SettingCacheService
     /**
      * Set a setting value and update cache.
      *
-     * @param string $key
-     * @param mixed $value
-     * @return void
+     * @param  mixed  $value
      */
     public function set(string $key, $value): void
     {
@@ -117,7 +112,7 @@ class SettingCacheService
 
     public function forget(string $key, ?string $group = null): void
     {
-        if (!$group) {
+        if (! $group) {
             $setting = Setting::where('key', $key)->first();
             $group = $setting?->group;
         }
@@ -133,20 +128,18 @@ class SettingCacheService
 
     /**
      * Clear all settings cache.
-     *
-     * @return void
      */
     public function clear(): void
     {
         Cache::forget('settings.all');
         Cache::forget('settings.public');
-        
+
         $settings = Setting::select('key', 'group')->get();
         $groups = [];
-        
+
         foreach ($settings as $setting) {
             Cache::forget("setting.{$setting->key}");
-            if ($setting->group && !isset($groups[$setting->group])) {
+            if ($setting->group && ! isset($groups[$setting->group])) {
                 $groups[$setting->group] = true;
                 Cache::forget("settings.group.{$setting->group}");
             }
@@ -155,9 +148,6 @@ class SettingCacheService
 
     /**
      * Check if a setting exists.
-     *
-     * @param string $key
-     * @return bool
      */
     public function has(string $key): bool
     {

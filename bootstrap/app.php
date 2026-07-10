@@ -1,9 +1,10 @@
 <?php
 
+use App\Http\Middleware\AutoLoginDevMiddleware;
+use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -18,11 +19,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
         if (env('APP_ENV') === 'local') {
             $middleware->replace(
-                \Illuminate\Auth\Middleware\Authenticate::class,
-                \App\Http\Middleware\AutoLoginDevMiddleware::class
+                Authenticate::class,
+                AutoLoginDevMiddleware::class
             );
         }
-        $middleware->append(\App\Http\Middleware\AutoLoginDevMiddleware::class);
+        $middleware->append(AutoLoginDevMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

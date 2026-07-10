@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::table('agents', function (Blueprint $table) {
-             $table->string('type')->default('reflection')->after('provider');
-             $table->timestamp('last_executed_at')->nullable()->after('is_active');
-             $table->integer('execution_count')->default(0)->after('last_executed_at');
-             $table->integer('success_count')->default(0)->after('execution_count');
-             $table->integer('error_count')->default(0)->after('success_count');
-       });
+        Schema::table('agents', function (Blueprint $table) {
+            $table->string('type')->default('reflection')->after('provider');
+            $table->timestamp('last_executed_at')->nullable()->after('is_active');
+            $table->integer('execution_count')->default(0)->after('last_executed_at');
+            $table->integer('success_count')->default(0)->after('execution_count');
+            $table->integer('error_count')->default(0)->after('success_count');
+        });
     }
 
     /**

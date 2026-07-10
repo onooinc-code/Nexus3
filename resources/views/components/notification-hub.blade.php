@@ -170,22 +170,34 @@ const notificationHub = {
     },
 
     // Setup Echo listener with retry if the script loads later
-    setupEchoListener() {
-        if (!window.Echo) {
-            console.warn('[NotificationHub] Echo not ready, retrying in 400ms.');
-            setTimeout(() => this.setupEchoListener(), 400);
+    setupEchoListener(retryCount = 0) {
+        // If Echo is explicitly null (offline mode set by app.blade.php), skip silently
+        if (window.Echo === null) {
+            console.info('[NotificationHub] Reverb offline — real-time notifications disabled.');
             return;
         }
 
-        window.Echo.private(`notifications.${this.userId}`)
-            .listen('notification.received', (data) => {
-                console.log('[NotificationHub] Received notification:', data);
-                this.addNotification(data);
-                this.showBrowserNotification(data);
-            })
-            .error((error) => {
-                console.error('[NotificationHub] Echo subscription error:', error);
-            });
+        if (!window.Echo || typeof window.Echo.private !== 'function') {
+            if (retryCount < 5) {
+                setTimeout(() => this.setupEchoListener(retryCount + 1), 500);
+            } else {
+                console.info('[NotificationHub] Echo not available — real-time notifications disabled.');
+            }
+            return;
+        }
+
+        try {
+            window.Echo.private(`notifications.${this.userId}`)
+                .listen('notification.received', (data) => {
+                    this.addNotification(data);
+                    this.showBrowserNotification(data);
+                })
+                .error((error) => {
+                    console.warn('[NotificationHub] Echo subscription error:', error);
+                });
+        } catch (e) {
+            console.warn('[NotificationHub] Echo listener setup failed:', e);
+        }
     },
 
     // Setup DOM interaction

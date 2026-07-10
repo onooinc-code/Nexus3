@@ -4,7 +4,6 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -15,6 +14,7 @@ class AgentStepCompleted implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $agent;
+
     public $stepData;
 
     /**
@@ -29,20 +29,20 @@ class AgentStepCompleted implements ShouldBroadcast
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
+     * @return array<int, Channel>
      */
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('agent.' . $this->agent->id),
+            new PrivateChannel('agent.'.$this->agent->id),
         ];
     }
-    
+
     public function broadcastWith(): array
     {
         return [
             'agent_id' => $this->agent->id,
-            'step' => $this->stepData
+            'step' => $this->stepData,
         ];
     }
 }

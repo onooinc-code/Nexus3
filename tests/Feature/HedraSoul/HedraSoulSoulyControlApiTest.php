@@ -2,13 +2,14 @@
 
 namespace Tests\Feature\HedraSoul;
 
-use Tests\TestCase;
-use App\Models\SoulyRuntimeProfile;
-use App\Models\AiInstance;
-use App\Models\User;
 use App\Events\HedraSoul\HedraSoulAutonomyChanged;
+use App\Models\AiInstance;
+use App\Models\HedrasoulSession;
+use App\Models\SoulyRuntimeProfile;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Tests\TestCase;
 
 class HedraSoulSoulyControlApiTest extends TestCase
 {
@@ -165,7 +166,7 @@ class HedraSoulSoulyControlApiTest extends TestCase
         ]);
 
         // Create a session for the simulate endpoint
-        $session = \App\Models\HedrasoulSession::factory()->create();
+        $session = HedrasoulSession::factory()->create();
 
         $response = $this->actingAs($this->user, 'sanctum')
             ->postJson('/api/v1/hedrasoul/souly/simulate', [

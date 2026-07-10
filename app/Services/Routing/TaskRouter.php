@@ -2,15 +2,16 @@
 
 namespace App\Services\Routing;
 
-use App\Models\Task;
 use App\Models\Agent;
+use App\Models\Task;
 use App\Models\Workflow;
-use Illuminate\Support\Facades\Log;
 
 class TaskRouter
 {
     protected array $agentRegistry = [];
+
     protected array $workflowRegistry = [];
+
     protected array $defaultRoutes = [];
 
     public function registerAgent(string $type, Agent $agent): void
@@ -38,6 +39,7 @@ class TaskRouter
 
         if (isset($this->defaultRoutes[$taskType])) {
             $route = $this->defaultRoutes[$taskType];
+
             return $this->resolveRoute($route['target'], $route['target_id'], $task);
         }
 

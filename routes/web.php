@@ -16,6 +16,7 @@ Route::post('/dashboard/refresh-metric', [DashboardController::class, 'refreshMe
 
 // --- Nexus Monolithic Hubs Routes ---
 use App\Http\Controllers\SystemTelemetryController;
+use App\Http\Controllers\Web\AiHubController;
 use App\Http\Controllers\Web\HubController;
 use App\Http\Controllers\Web\TasksHubController;
 
@@ -42,7 +43,32 @@ Route::prefix('hub')->group(function () {
     // Logs, Models, Settings
     Route::get('/logs', [HubController::class, 'logs'])->name('hub.logs');
     Route::get('/models', [HubController::class, 'models'])->name('hub.models');
-    Route::post('/models/{id}/toggle', [HubController::class, 'toggleModel'])->name('hub.models.toggle');
+
+    // AiHubController routes (API Keys, Providers, Models, Routing)
+    Route::post('/models/routing', [AiHubController::class, 'storeRoutingRule'])->name('hub.models.routing.store');
+    Route::post('/models/routing/{id}/toggle', [AiHubController::class, 'toggleRoutingRule'])->name('hub.models.routing.toggle');
+    Route::delete('/models/routing/{id}', [AiHubController::class, 'deleteRoutingRule'])->name('hub.models.routing.delete');
+
+    Route::post('/models/providers/ping', [AiHubController::class, 'pingProvider'])->name('hub.models.providers.ping');
+    Route::post('/models/providers/{id}/sync', [AiHubController::class, 'syncModels'])->name('hub.models.providers.sync');
+    Route::post('/models/providers', [AiHubController::class, 'storeProvider'])->name('hub.models.providers.store');
+    Route::post('/models/providers/toggle', [AiHubController::class, 'toggleProvider'])->name('hub.models.providers.toggle');
+
+    Route::get('/models/api-keys/stats', [AiHubController::class, 'getApiKeysStats'])->name('hub.models.api-keys.stats');
+    Route::post('/models/api-keys', [AiHubController::class, 'storeApiKey'])->name('hub.models.api-keys.store');
+    Route::delete('/models/api-keys/{id}', [AiHubController::class, 'revokeApiKey'])->name('hub.models.api-keys.revoke');
+
+    Route::post('/models/budget', [AiHubController::class, 'updateBudget'])->name('hub.models.budget.update');
+    Route::get('/models/cost-charts', [AiHubController::class, 'costCharts'])->name('hub.models.cost-charts');
+    Route::get('/models/telemetry', [AiHubController::class, 'telemetry'])->name('hub.models.telemetry');
+
+    // Playground routes
+    Route::post('/models/playground/chat', [AiHubController::class, 'simulateChat'])->name('hub.models.playground.chat');
+    Route::post('/models/playground/dispatch-job', [AiHubController::class, 'dispatchJob'])->name('hub.models.playground.dispatch-job');
+
+    // Wildcard routes must be at the end
+    Route::post('/models/{id}/toggle', [AiHubController::class, 'toggleModel'])->name('hub.models.toggle');
+
     Route::get('/settings', [HubController::class, 'settings'])->name('hub.settings');
     Route::post('/settings', [HubController::class, 'updateSettings'])->name('hub.settings.update');
     Route::post('/settings/clear-cache', [HubController::class, 'clearSettingsCache'])->name('hub.settings.clear-cache');
@@ -81,3 +107,11 @@ Route::prefix('hub')->group(function () {
     Route::get('/dashboard/activity-feed', [HubController::class, 'dashboardActivityFeed'])->name('hub.dashboard.activity-feed');
     Route::get('/system/telemetry', [SystemTelemetryController::class, 'getTelemetry'])->name('hub.system.telemetry');
 });
+
+Route::get('/test-ui', function () {
+    return view('hubs.settings', ['settings' => collect([])]);
+});
+
+use App\Http\Controllers\SettingsReferenceController;
+
+Route::get('/hub/settings-reference', [SettingsReferenceController::class, 'index'])->name('hub.settings.reference');

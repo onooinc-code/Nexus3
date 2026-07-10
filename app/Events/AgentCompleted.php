@@ -14,9 +14,9 @@ class AgentCompleted implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public Agent  $agent,
+        public Agent $agent,
         public string $traceId,
-        public array  $result
+        public array $result
     ) {}
 
     public function broadcastOn(): array
@@ -32,10 +32,10 @@ class AgentCompleted implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'agent_id'     => $this->agent->id,
-            'trace_id'     => $this->traceId,
+            'agent_id' => $this->agent->id,
+            'trace_id' => $this->traceId,
             'completed_at' => now()->toISOString(),
-            'success'      => $this->result['success'] ?? true,
+            'success' => $this->result['success'] ?? true,
         ];
     }
 }

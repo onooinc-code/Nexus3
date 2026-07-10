@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\HedraSoul;
 
 use App\Http\Controllers\Controller;
-use App\Models\SoulyRuntimeProfile;
 use App\Models\HedraCloneSource;
 use App\Models\HedraProfileFact;
+use App\Models\SoulyRuntimeProfile;
 use Illuminate\Http\Request;
 
 class HedraProfileController extends Controller
@@ -16,7 +16,7 @@ class HedraProfileController extends Controller
      */
     public function show()
     {
-        $profile = SoulyRuntimeProfile::first() ?? new SoulyRuntimeProfile();
+        $profile = SoulyRuntimeProfile::first() ?? new SoulyRuntimeProfile;
 
         $cloneSources = HedraCloneSource::where('is_archived', false)
             ->selectRaw('source_type, COUNT(*) as count')
@@ -47,7 +47,7 @@ class HedraProfileController extends Controller
             'external_messaging_access' => 'sometimes|boolean',
         ]);
 
-        $profile = SoulyRuntimeProfile::first() ?? new SoulyRuntimeProfile();
+        $profile = SoulyRuntimeProfile::first() ?? new SoulyRuntimeProfile;
         $profile->update($validated);
 
         return response()->json($profile);

@@ -32,6 +32,7 @@ class MetricsController extends Controller
     {
         try {
             $redis = Redis::connection();
+
             return [
                 'default' => $redis->llen('queues:default'),
                 'critical' => $redis->llen('queues:critical'),

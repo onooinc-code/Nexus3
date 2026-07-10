@@ -2,10 +2,8 @@
 
 namespace App\Services\PeopleConnect;
 
-use App\Models\PeopleConnect\PeopleConnectConversation;
 use App\Models\PeopleConnect\PeopleConnectContextSnapshot;
-use App\Models\PeopleConnect\PeopleConnectMessage;
-use Carbon\Carbon;
+use App\Models\PeopleConnect\PeopleConnectConversation;
 
 class PeopleConnectContextAssembler
 {

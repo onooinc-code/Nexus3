@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\HedraSoul;
 
 use App\Http\Controllers\Controller;
-use App\Models\HedraProfileFact;
-use App\Models\HedraMemorySuggestion;
-use App\Services\HedraSoul\HedraMemoryService;
-use App\Services\HedraSoul\HedraMemoryMaintenanceService;
 use App\Jobs\HedraSoul\RebuildHedraCloneProfileJob;
+use App\Models\HedraMemorySuggestion;
+use App\Models\HedraProfileFact;
+use App\Services\HedraSoul\HedraMemoryMaintenanceService;
+use App\Services\HedraSoul\HedraMemoryService;
 use Illuminate\Http\Request;
 
 class HedraMemoryController extends Controller
@@ -126,9 +126,10 @@ class HedraMemoryController extends Controller
         ]);
 
         if ($validated['action'] === 'rebuild_embeddings') {
-            dispatch(new RebuildHedraCloneProfileJob());
+            dispatch(new RebuildHedraCloneProfileJob);
         } elseif ($validated['action'] === 'prune_stale') {
             $pruned = $this->maintenanceService->pruneStale();
+
             return response()->json([
                 'action' => 'prune_stale',
                 'records_pruned' => $pruned,

@@ -2,8 +2,6 @@
 
 namespace App\Services\Engines;
 
-use Illuminate\Support\Facades\Log;
-
 class PersonaToneEngine
 {
     protected array $personas = [
@@ -43,7 +41,7 @@ class PersonaToneEngine
 
     public function setPersonaForContact(string $contactId, string $persona): void
     {
-        if (!isset($this->personas[$persona])) {
+        if (! isset($this->personas[$persona])) {
             throw new \InvalidArgumentException("Unknown persona: {$persona}");
         }
         $this->contactPersonaPreferences[$contactId] = $persona;
@@ -62,7 +60,7 @@ class PersonaToneEngine
 
         $persona = $explicitPersona ?? ($contactId ? $this->getPersonaForContact($contactId) : 'default');
 
-        if (!isset($this->personas[$persona])) {
+        if (! isset($this->personas[$persona])) {
             return [
                 'success' => false,
                 'error' => "Unknown persona: {$persona}",
@@ -88,10 +86,10 @@ class PersonaToneEngine
         $parts = [
             "You are a {$personaConfig['name']} assistant.",
             $personaConfig['description'],
-            "Traits: " . implode(', ', $personaConfig['traits']),
+            'Traits: '.implode(', ', $personaConfig['traits']),
         ];
 
-        return implode(" ", $parts);
+        return implode(' ', $parts);
     }
 
     public function getAvailablePersonas(): array
@@ -105,6 +103,7 @@ class PersonaToneEngine
                 'traits' => $config['traits'],
             ];
         }
+
         return $result;
     }
 }

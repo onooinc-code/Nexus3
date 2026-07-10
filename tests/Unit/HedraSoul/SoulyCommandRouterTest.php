@@ -2,13 +2,13 @@
 
 namespace Tests\Unit\HedraSoul;
 
-use Tests\TestCase;
 use App\Models\HedrasoulMessage;
 use App\Models\HedrasoulSession;
 use App\Models\SoulyRuntimeProfile;
-use App\Services\HedraSoul\SoulyCommandRouter;
 use App\Services\HedraSoul\SoulyActionPolicyService;
+use App\Services\HedraSoul\SoulyCommandRouter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 /**
  * SoulyCommandRouterTest: Tests the classify() method for all 11 intent types.
@@ -19,12 +19,13 @@ class SoulyCommandRouterTest extends TestCase
     use RefreshDatabase;
 
     protected SoulyCommandRouter $router;
+
     protected SoulyActionPolicyService $policyService;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create runtime profile for testing
         SoulyRuntimeProfile::create([
             'autonomy_mode' => 'copilot',
@@ -46,7 +47,7 @@ class SoulyCommandRouterTest extends TestCase
     public function test_plain_question_returns_answer_intent()
     {
         $session = HedrasoulSession::factory()->create(['status' => 'active']);
-        
+
         $message = HedrasoulMessage::create([
             'session_id' => $session->id,
             'sender_type' => 'user',
@@ -69,7 +70,7 @@ class SoulyCommandRouterTest extends TestCase
     public function test_draft_intent_classification()
     {
         $session = HedrasoulSession::factory()->create(['status' => 'active']);
-        
+
         $message = HedrasoulMessage::create([
             'session_id' => $session->id,
             'sender_type' => 'user',
@@ -90,7 +91,7 @@ class SoulyCommandRouterTest extends TestCase
     public function test_create_task_intent_classification()
     {
         $session = HedrasoulSession::factory()->create(['status' => 'active']);
-        
+
         $message = HedrasoulMessage::create([
             'session_id' => $session->id,
             'sender_type' => 'user',
@@ -111,7 +112,7 @@ class SoulyCommandRouterTest extends TestCase
     public function test_execute_agent_intent_classification()
     {
         $session = HedrasoulSession::factory()->create(['status' => 'active']);
-        
+
         $message = HedrasoulMessage::create([
             'session_id' => $session->id,
             'sender_type' => 'user',
@@ -132,7 +133,7 @@ class SoulyCommandRouterTest extends TestCase
     public function test_start_workflow_intent_classification()
     {
         $session = HedrasoulSession::factory()->create(['status' => 'active']);
-        
+
         $message = HedrasoulMessage::create([
             'session_id' => $session->id,
             'sender_type' => 'user',
@@ -153,7 +154,7 @@ class SoulyCommandRouterTest extends TestCase
     public function test_schedule_work_intent_classification()
     {
         $session = HedrasoulSession::factory()->create(['status' => 'active']);
-        
+
         $message = HedrasoulMessage::create([
             'session_id' => $session->id,
             'sender_type' => 'user',
@@ -174,7 +175,7 @@ class SoulyCommandRouterTest extends TestCase
     public function test_open_approval_intent_classification()
     {
         $session = HedrasoulSession::factory()->create(['status' => 'active']);
-        
+
         $message = HedrasoulMessage::create([
             'session_id' => $session->id,
             'sender_type' => 'user',
@@ -195,7 +196,7 @@ class SoulyCommandRouterTest extends TestCase
     public function test_update_profile_intent_classification()
     {
         $session = HedrasoulSession::factory()->create(['status' => 'active']);
-        
+
         $message = HedrasoulMessage::create([
             'session_id' => $session->id,
             'sender_type' => 'user',
@@ -216,7 +217,7 @@ class SoulyCommandRouterTest extends TestCase
     public function test_suggest_memory_intent_classification()
     {
         $session = HedrasoulSession::factory()->create(['status' => 'active']);
-        
+
         $message = HedrasoulMessage::create([
             'session_id' => $session->id,
             'sender_type' => 'user',
@@ -237,7 +238,7 @@ class SoulyCommandRouterTest extends TestCase
     public function test_suggest_setting_intent_classification()
     {
         $session = HedrasoulSession::factory()->create(['status' => 'active']);
-        
+
         $message = HedrasoulMessage::create([
             'session_id' => $session->id,
             'sender_type' => 'user',
@@ -258,7 +259,7 @@ class SoulyCommandRouterTest extends TestCase
     public function test_notify_intent_classification()
     {
         $session = HedrasoulSession::factory()->create(['status' => 'active']);
-        
+
         $message = HedrasoulMessage::create([
             'session_id' => $session->id,
             'sender_type' => 'user',
@@ -279,7 +280,7 @@ class SoulyCommandRouterTest extends TestCase
     public function test_risk_levels_match_intent_types()
     {
         $session = HedrasoulSession::factory()->create(['status' => 'active']);
-        
+
         $testCases = [
             ['answer', 'read'],
             ['draft', 'draft'],
@@ -296,7 +297,7 @@ class SoulyCommandRouterTest extends TestCase
 
         foreach ($testCases as [$expectedIntent, $expectedRisk]) {
             // Create message that matches this intent
-            $body = match($expectedIntent) {
+            $body = match ($expectedIntent) {
                 'answer' => 'What is your name?',
                 'draft' => '/draft write this down',
                 'create_task' => '/task do something',
@@ -320,9 +321,9 @@ class SoulyCommandRouterTest extends TestCase
 
             $intent = $this->router->classify($message);
 
-            $this->assertEquals($expectedIntent, $intent->intent, 
+            $this->assertEquals($expectedIntent, $intent->intent,
                 "Intent mismatch for body: $body");
-            $this->assertEquals($expectedRisk, $intent->riskLevel, 
+            $this->assertEquals($expectedRisk, $intent->riskLevel,
                 "Risk level mismatch for intent: $expectedIntent");
         }
     }
@@ -333,7 +334,7 @@ class SoulyCommandRouterTest extends TestCase
     public function test_policy_service_invoked_and_result_included()
     {
         $session = HedrasoulSession::factory()->create(['status' => 'active']);
-        
+
         $message = HedrasoulMessage::create([
             'session_id' => $session->id,
             'sender_type' => 'user',
@@ -358,7 +359,7 @@ class SoulyCommandRouterTest extends TestCase
     public function test_command_intent_contains_all_required_fields()
     {
         $session = HedrasoulSession::factory()->create(['status' => 'active']);
-        
+
         $message = HedrasoulMessage::create([
             'session_id' => $session->id,
             'sender_type' => 'user',

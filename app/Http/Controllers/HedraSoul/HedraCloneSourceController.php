@@ -29,7 +29,7 @@ class HedraCloneSourceController extends Controller
 
         return response()->json([
             'data' => $sources->items(),
-            'grouped_summary' => $grouped->map(fn($items) => [
+            'grouped_summary' => $grouped->map(fn ($items) => [
                 'source_type' => $items->first()->source_type,
                 'count' => $items->count(),
             ])->values(),

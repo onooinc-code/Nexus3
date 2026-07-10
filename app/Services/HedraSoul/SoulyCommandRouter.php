@@ -10,7 +10,9 @@ use App\Models\HedrasoulMessage;
 class CommandIntent
 {
     public string $intent;
+
     public string $riskLevel;
+
     public PolicyResult $policyResult;
 
     public function __construct(string $intent, string $riskLevel, PolicyResult $policyResult)

@@ -2,9 +2,10 @@
 
 namespace App\Jobs;
 
+use App\Events\MemoryIndexed;
 use App\Models\Memory;
-use Illuminate\Support\Facades\Http;
 use Exception;
+use Illuminate\Support\Facades\Http;
 
 /**
  * Save to Pinecone Job - Store vectorized memory in Pinecone vector database
@@ -27,24 +28,20 @@ class SaveToPineconeJob extends BaseJob
 
     /**
      * Job timeout.
-     *
-     * @var int
      */
     public int $timeout = 60;
 
     /**
      * Number of retry attempts.
-     *
-     * @var int
      */
     public int $tries = 2;
 
     /**
      * Constructor.
      *
-     * @param string $memoryId Memory UUID
-     * @param array $vector Vector embedding array
-     * @param array $metadata Metadata for Pinecone record
+     * @param  string  $memoryId  Memory UUID
+     * @param  array  $vector  Vector embedding array
+     * @param  array  $metadata  Metadata for Pinecone record
      */
     public function __construct(
         protected string $memoryId,
@@ -57,7 +54,6 @@ class SaveToPineconeJob extends BaseJob
     /**
      * Execute the job - Save vector to Pinecone.
      *
-     * @return void
      * @throws Exception
      */
     public function handle(): void
@@ -74,17 +70,18 @@ class SaveToPineconeJob extends BaseJob
                     'reason' => 'idempotent_skip',
                     'memory_id' => $this->memoryId,
                 ]);
+
                 return;
             }
 
             // Fetch memory to ensure it exists and get metadata
             $memory = $this->safelyGetModel(Memory::class, $this->memoryId);
-            if (!$memory) {
+            if (! $memory) {
                 throw new Exception("Memory not found: {$this->memoryId}");
             }
 
             // Validate vector
-            if (empty($this->vector) || !is_array($this->vector)) {
+            if (empty($this->vector) || ! is_array($this->vector)) {
                 throw new Exception("Invalid vector data for memory: {$this->memoryId}");
             }
 
@@ -106,7 +103,7 @@ class SaveToPineconeJob extends BaseJob
             $pineconeResponse = $this->upsertToPinecone($this->memoryId, $this->vector, $pineconeMetadata);
             $durationMs = round((microtime(true) - $startTime) * 1000, 2);
 
-            if (!$pineconeResponse) {
+            if (! $pineconeResponse) {
                 throw new Exception("Pinecone upsert failed for memory: {$this->memoryId}");
             }
 
@@ -124,7 +121,7 @@ class SaveToPineconeJob extends BaseJob
             ]);
 
             // Broadcast event that memory has been indexed
-            event(new \App\Events\MemoryIndexed(
+            event(new MemoryIndexed(
                 $this->memoryId,
                 $this->memoryId
             ));
@@ -154,9 +151,9 @@ class SaveToPineconeJob extends BaseJob
     /**
      * Upsert vector to Pinecone.
      *
-     * @param string $id Unique ID for the vector
-     * @param array $vector Vector embedding
-     * @param array $metadata Vector metadata
+     * @param  string  $id  Unique ID for the vector
+     * @param  array  $vector  Vector embedding
+     * @param  array  $metadata  Vector metadata
      * @return bool Success indicator
      */
     protected function upsertToPinecone(string $id, array $vector, array $metadata): bool
@@ -166,8 +163,8 @@ class SaveToPineconeJob extends BaseJob
             $environment = config('services.pinecone.environment', 'us-east-1-aws');
             $indexName = config('services.pinecone.index_name', 'nexussoul-memory');
 
-            if (!$apiKey) {
-                throw new Exception("Pinecone API key not configured");
+            if (! $apiKey) {
+                throw new Exception('Pinecone API key not configured');
             }
 
             // Pinecone API endpoint
@@ -191,30 +188,31 @@ class SaveToPineconeJob extends BaseJob
             ]);
 
             if ($response->failed()) {
-                \Log::error("Pinecone upsert failed", [
+                \Log::error('Pinecone upsert failed', [
                     'status' => $response->status(),
                     'body' => $response->body(),
                     'vector_id' => $id,
                 ]);
+
                 return false;
             }
 
             $result = $response->json();
+
             return isset($result['upsertedCount']) && $result['upsertedCount'] > 0;
 
         } catch (Exception $e) {
-            \Log::error("Error upserting to Pinecone", [
+            \Log::error('Error upserting to Pinecone', [
                 'exception' => $e->getMessage(),
                 'vector_id' => $id,
             ]);
+
             return false;
         }
     }
 
     /**
      * Extract idempotency data from job properties.
-     *
-     * @return array
      */
     protected function extractIdempotencyData(): array
     {

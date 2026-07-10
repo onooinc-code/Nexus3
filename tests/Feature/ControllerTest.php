@@ -3,12 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\Agent;
-use App\Models\Workflow;
+use App\Models\AgentTask;
 use App\Models\Contact;
-use App\Models\Setting;
-use App\Models\SystemLog;
-use App\Models\AIModel;
+use App\Models\User;
+use App\Models\Workflow;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class ControllerTest extends TestCase
@@ -18,7 +18,7 @@ class ControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user, 'sanctum');
     }
 
@@ -86,7 +86,7 @@ class ControllerTest extends TestCase
 
     public function test_task_controller_cancel_updates_status(): void
     {
-        $task = \App\Models\AgentTask::factory()->create(['status' => 'pending']);
+        $task = AgentTask::factory()->create(['status' => 'pending']);
         $response = $this->postJson("/api/v1/tasks/{$task->id}/cancel");
         $response->assertStatus(200)
             ->assertJsonPath('message', 'Task cancelled');
@@ -142,7 +142,7 @@ class ControllerTest extends TestCase
         $response = $this->postJson('/api/v1/ai-models', [
             'name' => 'Test Model',
             'provider' => 'openai',
-            'provider_id' => \Illuminate\Support\Str::uuid()->toString(),
+            'provider_id' => Str::uuid()->toString(),
             'model' => 'gpt-4',
             'api_key' => 'test-key',
         ]);

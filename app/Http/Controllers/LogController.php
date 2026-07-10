@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Log;
 use App\Services\LogService;
 use Illuminate\Http\JsonResponse;
@@ -26,9 +25,6 @@ class LogController extends Controller
 
     /**
      * Display a listing of logs with filters.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
@@ -97,14 +93,13 @@ class LogController extends Controller
     /**
      * Display the specified log.
      *
-     * @param int $id
-     * @return JsonResponse
+     * @param  int  $id
      */
     public function show($id): JsonResponse
     {
         $log = $this->logService->getById((int) $id);
 
-        if (!$log) {
+        if (! $log) {
             return response()->json([
                 'success' => false,
                 'message' => 'Log not found',
@@ -119,9 +114,6 @@ class LogController extends Controller
 
     /**
      * Get error-level logs.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function errors(Request $request): JsonResponse
     {
@@ -142,8 +134,6 @@ class LogController extends Controller
 
     /**
      * Get available log levels.
-     *
-     * @return JsonResponse
      */
     public function levels(): JsonResponse
     {
@@ -155,8 +145,6 @@ class LogController extends Controller
 
     /**
      * Get available log channels.
-     *
-     * @return JsonResponse
      */
     public function channels(): JsonResponse
     {
@@ -168,8 +156,6 @@ class LogController extends Controller
 
     /**
      * Get log statistics.
-     *
-     * @return JsonResponse
      */
     public function stats(): JsonResponse
     {
@@ -182,14 +168,13 @@ class LogController extends Controller
     /**
      * Remove the specified log.
      *
-     * @param int $id
-     * @return JsonResponse
+     * @param  int  $id
      */
     public function destroy($id): JsonResponse
     {
         $deleted = $this->logService->delete((int) $id);
 
-        if (!$deleted) {
+        if (! $deleted) {
             return response()->json([
                 'success' => false,
                 'message' => 'Log not found',
@@ -204,9 +189,6 @@ class LogController extends Controller
 
     /**
      * Clear all logs or logs older than specified days.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function clear(Request $request): JsonResponse
     {
@@ -223,6 +205,7 @@ class LogController extends Controller
 
         if ($request->has('older_than_days')) {
             $deleted = $this->logService->clearOldLogs((int) $request->input('older_than_days'));
+
             return response()->json([
                 'success' => true,
                 'message' => "Deleted {$deleted} logs older than {$request->input('older_than_days')} days.",

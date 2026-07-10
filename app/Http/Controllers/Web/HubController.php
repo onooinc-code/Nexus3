@@ -8,6 +8,7 @@ use App\Jobs\SyncWahaContactsJob;
 use App\Jobs\SyncWahaMessagesJob;
 use App\Models\Agent;
 use App\Models\AgentTask;
+use App\Models\AIApiKey;
 use App\Models\AIModel;
 use App\Models\AIProvider;
 use App\Models\Contact;
@@ -15,6 +16,7 @@ use App\Models\ContactMessage;
 use App\Models\HedrasoulMessage;
 use App\Models\HedrasoulNotification;
 use App\Models\HedrasoulSession;
+use App\Models\IntentRouting;
 use App\Models\Memory;
 use App\Models\NotificationLog;
 use App\Models\ProactiveTrigger;
@@ -255,20 +257,68 @@ class HubController extends Controller
         return view('hubs.logs');
     }
 
-    public function models()
+    public function models(Request $request)
     {
-        $providers = AIProvider::all();
+        $currentPage = $request->get('page', 1);
 
-        return view('hubs.models', compact('providers'));
-    }
+        $providersQuery = AIProvider::withCount(['models', 'apiKeys'])
+            ->with(['apiKeys' => fn($q) => $q->where('is_active', true)->limit(1)]);
+            
+        $allProviders = $providersQuery->get();
 
-    public function toggleModel(Request $request, $id)
-    {
-        $provider = AIProvider::findOrFail($id);
-        $provider->is_active = $request->is_active;
-        $provider->save();
+        // Attach usage stats in bulk (single query)
+        $monthStats = \Illuminate\Support\Facades\DB::table('usage_logs')
+            ->selectRaw('provider_id, SUM(total_cost) as month_cost, COUNT(*) as month_requests, SUM(input_tokens + output_tokens) as month_tokens')
+            ->where('timestamp', '>=', now()->startOfMonth())
+            ->groupBy('provider_id')
+            ->get()->keyBy('provider_id');
 
-        return response()->json(['success' => true]);
+        $todayStats = \Illuminate\Support\Facades\DB::table('usage_logs')
+            ->selectRaw('provider_id, SUM(total_cost) as today_cost, COUNT(*) as today_requests, SUM(input_tokens + output_tokens) as today_tokens')
+            ->where('timestamp', '>=', now()->startOfDay())
+            ->groupBy('provider_id')
+            ->get()->keyBy('provider_id');
+
+        // Attach last ping status per provider
+        $lastPings = \Illuminate\Support\Facades\DB::table('provider_health_metrics')
+            ->select('provider_id', 'status', 'latency_ms')
+            ->whereIn('id', function($q) {
+                $q->selectRaw('MAX(id)')->from('provider_health_metrics')->groupBy('provider_id');
+            })->get()->keyBy('provider_id');
+
+        // Inject into each provider object before passing to view
+        $enrichedProviders = $allProviders->map(function($p) use ($monthStats, $todayStats, $lastPings) {
+            $p->month_stats  = $monthStats[$p->id]  ?? null;
+            $p->today_stats  = $todayStats[$p->id]  ?? null;
+            $p->last_ping    = $lastPings[$p->id]   ?? null;
+            $p->health_status = $p->last_ping?->status ?? ($p->is_active ? 'no_ping' : 'disabled');
+            return $p;
+        });
+
+        // Provider Health Summary for strip
+        $healthSummary = [
+            'active'       => $enrichedProviders->where('is_active', true)->count(),
+            'total'        => $enrichedProviders->count(),
+            'no_key'       => $enrichedProviders->filter(fn($p) => $p->api_keys_count === 0)->count(),
+            'unreachable'  => $enrichedProviders->where('health_status', 'offline')->count(),
+            'degraded'     => $enrichedProviders->where('health_status', 'degraded')->count(),
+            'last_sync_at' => AIProvider::max('last_synced_at'),
+        ];
+
+        // Paginate (after enrichment)
+        $providers = new \Illuminate\Pagination\LengthAwarePaginator(
+            $enrichedProviders->forPage($currentPage, 12), 
+            $enrichedProviders->count(), 
+            12, 
+            $currentPage,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        $models = AIModel::with('provider')->get();
+        $apiKeys = AIApiKey::with('provider')->get();
+        $routingRules = IntentRouting::with(['defaultProvider', 'defaultModel', 'fallbackProvider', 'fallbackModel'])->get();
+
+        return view('hubs.models', compact('providers', 'models', 'apiKeys', 'routingRules', 'healthSummary'));
     }
 
     public function settings()

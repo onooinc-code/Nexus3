@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PeopleConnect\WahaWebhookIngestionService;
+use App\Services\SettingCacheService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Services\PeopleConnect\WahaWebhookIngestionService;
 
 class WebhookController extends Controller
 {
@@ -18,8 +19,8 @@ class WebhookController extends Controller
     public function handleWahaWebhook(Request $request)
     {
         // 1. Validate shared-secret / signature header
-        $expectedSecret = app(\App\Services\SettingCacheService::class)->get('waha_webhook_secret', config('services.waha.webhook_secret'));
-        
+        $expectedSecret = app(SettingCacheService::class)->get('waha_webhook_secret', config('services.waha.webhook_secret'));
+
         if ($expectedSecret) {
             $rawPayload = $request->getContent();
             $verified = false;
@@ -53,7 +54,7 @@ class WebhookController extends Controller
             }
             // Fallback: Check for secret token in query parameters or headers (basic matching)
             else {
-                $providedSecret = $request->header('x-waha-webhook-secret') 
+                $providedSecret = $request->header('x-waha-webhook-secret')
                                ?? $request->header('authorization')
                                ?? $request->query('secret')
                                ?? $request->query('token');
@@ -66,13 +67,14 @@ class WebhookController extends Controller
                 }
             }
 
-            if (!$verified) {
+            if (! $verified) {
                 Log::warning('WAHA Webhook rejected: Invalid signature or secret', [
                     'ip' => $request->ip(),
                     'has_x_webhook_hmac' => $request->hasHeader('x-webhook-hmac'),
                     'has_x_waha_signature' => $request->hasHeader('x-waha-signature'),
                     'has_x_hub_signature_256' => $request->hasHeader('x-hub-signature-256'),
                 ]);
+
                 return response()->json(['message' => 'Unauthorized'], 401);
             }
         }
@@ -92,19 +94,19 @@ class WebhookController extends Controller
         // 3. Delegate to ingestion service
         try {
             $this->ingestionService->ingest($request->all());
-            
+
             return response()->json([
-                'message' => 'Webhook payload queued for processing'
+                'message' => 'Webhook payload queued for processing',
             ], 202);
-            
+
         } catch (\Exception $e) {
             Log::error('WAHA Webhook ingestion failed', [
                 'error' => $e->getMessage(),
-                'payload' => $request->all()
+                'payload' => $request->all(),
             ]);
-            
+
             return response()->json([
-                'message' => 'Internal Server Error'
+                'message' => 'Internal Server Error',
             ], 500);
         }
     }

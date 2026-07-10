@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Contact;
 use App\Models\ContactAuditEvent;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 
@@ -11,13 +12,6 @@ class ContactAuditService
 {
     /**
      * Log a contact-related audit event.
-     *
-     * @param Contact $contact
-     * @param string $action
-     * @param array|null $before
-     * @param array|null $after
-     * @param string|null $traceId
-     * @return ContactAuditEvent
      */
     public function logEvent(
         Contact $contact,
@@ -27,7 +21,7 @@ class ContactAuditService
         ?string $traceId = null
     ): ContactAuditEvent {
         $actor = Auth::user();
-        
+
         return ContactAuditEvent::create([
             'contact_id' => $contact->id,
             'actor_type' => $actor ? get_class($actor) : 'system',
@@ -43,9 +37,7 @@ class ContactAuditService
     /**
      * Retrieve audit events for a contact.
      *
-     * @param Contact $contact
-     * @param int $limit
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function getEvents(Contact $contact, int $limit = 50)
     {

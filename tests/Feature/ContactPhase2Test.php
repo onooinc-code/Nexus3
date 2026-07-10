@@ -32,20 +32,20 @@ class ContactPhase2Test extends TestCase
 
         $response = $this->getJson('/api/v1/contacts/stats');
         $response->assertStatus(200)
-                 ->assertJsonStructure([
-                     'data' => [
-                         'total_contacts',
-                         'active_contacts',
-                         'new_imported_messages',
-                         'pending_analysis_runs',
-                         'stale_memory_count',
-                         'identity_conflict_count',
-                         'autopilot_enabled_count',
-                         'failed_imports',
-                         'failed_analysis_runs',
-                         'generated_at',
-                     ],
-                 ]);
+            ->assertJsonStructure([
+                'data' => [
+                    'total_contacts',
+                    'active_contacts',
+                    'new_imported_messages',
+                    'pending_analysis_runs',
+                    'stale_memory_count',
+                    'identity_conflict_count',
+                    'autopilot_enabled_count',
+                    'failed_imports',
+                    'failed_analysis_runs',
+                    'generated_at',
+                ],
+            ]);
 
         $this->assertGreaterThanOrEqual(3, $response->json('data.total_contacts'));
     }
@@ -60,8 +60,8 @@ class ContactPhase2Test extends TestCase
 
         $response = $this->getJson('/api/v1/contacts/reply-mode');
         $response->assertStatus(200)
-                 ->assertJsonPath('data.mode', ContactReplyModeService::MODE_MANUAL)
-                 ->assertJsonPath('data.is_autopilot_active', false);
+            ->assertJsonPath('data.mode', ContactReplyModeService::MODE_MANUAL)
+            ->assertJsonPath('data.is_autopilot_active', false);
     }
 
     public function test_set_global_reply_mode_to_copilot()
@@ -71,27 +71,27 @@ class ContactPhase2Test extends TestCase
         ]);
 
         $response->assertStatus(200)
-                 ->assertJsonPath('data.mode', 'copilot');
+            ->assertJsonPath('data.mode', 'copilot');
 
         // Verify persistence via the GET endpoint
         $this->getJson('/api/v1/contacts/reply-mode')
-             ->assertJsonPath('data.mode', 'copilot');
+            ->assertJsonPath('data.mode', 'copilot');
     }
 
     public function test_set_global_reply_mode_to_autopilot_returns_warning_flag()
     {
         $this->patchJson('/api/v1/contacts/reply-mode', ['mode' => 'autopilot'])
-             ->assertStatus(200)
-             ->assertJsonPath('data.mode', 'autopilot');
+            ->assertStatus(200)
+            ->assertJsonPath('data.mode', 'autopilot');
 
         $this->getJson('/api/v1/contacts/reply-mode')
-             ->assertJsonPath('data.is_autopilot_active', true);
+            ->assertJsonPath('data.is_autopilot_active', true);
     }
 
     public function test_set_global_reply_mode_rejects_invalid_mode()
     {
         $this->patchJson('/api/v1/contacts/reply-mode', ['mode' => 'turbo-ai'])
-             ->assertStatus(422);
+            ->assertStatus(422);
     }
 
     // =========================================================================
@@ -104,10 +104,10 @@ class ContactPhase2Test extends TestCase
         $contact = Contact::factory()->create(['reply_mode_override' => null]);
 
         $this->getJson("/api/v1/contacts/{$contact->id}/reply-mode")
-             ->assertStatus(200)
-             ->assertJsonPath('data.global_mode', 'copilot')
-             ->assertJsonPath('data.override', null)
-             ->assertJsonPath('data.effective', 'copilot');
+            ->assertStatus(200)
+            ->assertJsonPath('data.global_mode', 'copilot')
+            ->assertJsonPath('data.override', null)
+            ->assertJsonPath('data.effective', 'copilot');
     }
 
     public function test_set_contact_reply_mode_override()
@@ -118,18 +118,18 @@ class ContactPhase2Test extends TestCase
         $this->patchJson("/api/v1/contacts/{$contact->id}/reply-mode", [
             'mode' => 'autopilot',
         ])->assertStatus(200)
-          ->assertJsonPath('data.override', 'autopilot')
-          ->assertJsonPath('data.effective', 'autopilot');
+            ->assertJsonPath('data.override', 'autopilot')
+            ->assertJsonPath('data.effective', 'autopilot');
 
         $this->assertDatabaseHas('contacts', [
-            'id'                 => $contact->id,
-            'reply_mode_override'=> 'autopilot',
+            'id' => $contact->id,
+            'reply_mode_override' => 'autopilot',
         ]);
 
         // Audit event should have been written
         $this->assertDatabaseHas('contact_audit_events', [
             'contact_id' => $contact->id,
-            'action'     => 'reply_mode.changed',
+            'action' => 'reply_mode.changed',
         ]);
     }
 
@@ -140,10 +140,10 @@ class ContactPhase2Test extends TestCase
         $this->patchJson("/api/v1/contacts/{$contact->id}/reply-mode", [
             'mode' => null,
         ])->assertStatus(200)
-          ->assertJsonPath('data.override', null);
+            ->assertJsonPath('data.override', null);
 
         $this->assertDatabaseHas('contacts', [
-            'id'                  => $contact->id,
+            'id' => $contact->id,
             'reply_mode_override' => null,
         ]);
     }

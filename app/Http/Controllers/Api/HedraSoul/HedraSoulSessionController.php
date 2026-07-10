@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\HedraSoul;
 use App\Http\Controllers\Controller;
 use App\Models\HedrasoulSession;
 use App\Services\HedraSoul\HedraSoulSessionService;
-use Illuminate\Http\Request;
 
 class HedraSoulSessionController extends Controller
 {

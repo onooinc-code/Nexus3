@@ -3,6 +3,7 @@
 namespace Tests\Feature\Console;
 
 use App\Services\CredentialValidationService;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -33,7 +34,7 @@ class MonitorSettingsHealthCommandTest extends TestCase
 
     public function test_settings_health_check_is_scheduled(): void
     {
-        $schedule = $this->app->make(\Illuminate\Console\Scheduling\Schedule::class);
+        $schedule = $this->app->make(Schedule::class);
 
         $commands = collect($schedule->events())
             ->map(fn ($event) => $event->command)

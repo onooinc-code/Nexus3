@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ApiKey>
+ * @extends Factory<ApiKey>
  */
 class ApiKeyFactory extends Factory
 {
@@ -16,7 +16,7 @@ class ApiKeyFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->word() . ' key',
+            'name' => fake()->word().' key',
             'key' => Str::random(40),
             'type' => 'api',
             'permissions' => ['read', 'write'],

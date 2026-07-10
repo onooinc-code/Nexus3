@@ -3,16 +3,13 @@
 namespace App\Services\Memory;
 
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 
 class MemorySummaryService
 {
     /**
      * Summarize a memory or memory thread
      *
-     * @param string $content
-     * @param int $maxLength Maximum length of summary
-     * @return string
+     * @param  int  $maxLength  Maximum length of summary
      */
     public function summarize(string $content, int $maxLength = 200): string
     {
@@ -25,7 +22,7 @@ class MemorySummaryService
             // Simple summarization: take first and last parts
             // In a real implementation, you might use an AI model for better summarization
             $halfLength = floor($maxLength / 2);
-            $summary = substr($content, 0, $halfLength) . '...' . substr($content, -$halfLength);
+            $summary = substr($content, 0, $halfLength).'...'.substr($content, -$halfLength);
 
             // Ensure we don't exceed maxLength
             if (strlen($summary) > $maxLength) {
@@ -37,8 +34,9 @@ class MemorySummaryService
             Log::error('MemorySummaryService::summarize failed', [
                 'contentLength' => strlen($content),
                 'maxLength' => $maxLength,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             // Fallback: return truncated content
             return substr($content, 0, $maxLength);
         }
@@ -47,10 +45,8 @@ class MemorySummaryService
     /**
      * Summarize episodic memories for a contact
      *
-     * @param int $contactId
-     * @param int $limit Number of memories to summarize
-     * @param int $maxLength Maximum length of summary
-     * @return string
+     * @param  int  $limit  Number of memories to summarize
+     * @param  int  $maxLength  Maximum length of summary
      */
     public function summarizeEpisodicMemories(int $contactId, int $limit = 10, int $maxLength = 500): string
     {
@@ -60,7 +56,7 @@ class MemorySummaryService
             Log::info('Summarizing episodic memories', [
                 'contactId' => $contactId,
                 'limit' => $limit,
-                'maxLength' => $maxLength
+                'maxLength' => $maxLength,
             ]);
 
             // Placeholder implementation
@@ -69,54 +65,53 @@ class MemorySummaryService
             Log::error('MemorySummaryService::summarizeEpisodicMemories failed', [
                 'contactId' => $contactId,
                 'limit' => $limit,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            return "Unable to generate summary.";
+
+            return 'Unable to generate summary.';
         }
     }
 
     /**
      * Summarize structured memories for a contact
      *
-     * @param int $contactId
-     * @param string|null $factType
-     * @param int $maxLength Maximum length of summary
-     * @return string
+     * @param  int  $maxLength  Maximum length of summary
      */
-    public function summarizeStructuredMemories(int $contactId, string $factType = null, int $maxLength = 300): string
+    public function summarizeStructuredMemories(int $contactId, ?string $factType = null, int $maxLength = 300): string
     {
         try {
             Log::info('Summarizing structured memories', [
                 'contactId' => $contactId,
                 'factType' => $factType,
-                'maxLength' => $maxLength
+                'maxLength' => $maxLength,
             ]);
 
             // Placeholder implementation
             $typeText = $factType ? " of type '{$factType}'" : '';
+
             return "Summary of structured memories{$typeText} for contact {$contactId}.";
         } catch (\Exception $e) {
             Log::error('MemorySummaryService::summarizeStructuredMemories failed', [
                 'contactId' => $contactId,
                 'factType' => $factType,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            return "Unable to generate summary.";
+
+            return 'Unable to generate summary.';
         }
     }
 
     /**
      * Create a summary for prompt injection
      *
-     * @param array $memories Array of memory objects or arrays
-     * @param int $maxLength Maximum length of summary
-     * @return string
+     * @param  array  $memories  Array of memory objects or arrays
+     * @param  int  $maxLength  Maximum length of summary
      */
     public function createPromptSummary(array $memories, int $maxLength = 400): string
     {
         try {
             if (empty($memories)) {
-                return "No relevant memories found.";
+                return 'No relevant memories found.';
             }
 
             // Convert memories to text representation
@@ -147,9 +142,10 @@ class MemorySummaryService
             Log::error('MemorySummaryService::createPromptSummary failed', [
                 'memoryCount' => count($memories),
                 'maxLength' => $maxLength,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            return "Error generating memory summary.";
+
+            return 'Error generating memory summary.';
         }
     }
 }

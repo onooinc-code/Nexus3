@@ -5,14 +5,17 @@ namespace App\Agents;
 use App\Models\Agent;
 use App\Services\AgentLifecycleService;
 use App\Services\AgentToolRegistry;
-use Illuminate\Support\Facades\Log;
 
 class SpecializedAgent
 {
     protected Agent $agent;
+
     protected AgentLifecycleService $lifecycle;
+
     protected AgentToolRegistry $toolRegistry;
+
     protected array $domain = [];
+
     protected array $executionHistory = [];
 
     public function __construct(Agent $agent)
@@ -56,6 +59,7 @@ class SpecializedAgent
             ];
         } catch (\Throwable $e) {
             $this->lifecycle->fail($this->agent, $e->getMessage());
+
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
@@ -111,7 +115,7 @@ class SpecializedAgent
         if (empty($results)) {
             return [
                 'success' => true,
-                'message' => "No specific tools matched. Executing with domain expertise: " . implode(', ', $this->domain),
+                'message' => 'No specific tools matched. Executing with domain expertise: '.implode(', ', $this->domain),
                 'domain_expertise' => $this->domain,
             ];
         }

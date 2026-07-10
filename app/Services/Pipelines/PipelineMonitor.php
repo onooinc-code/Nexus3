@@ -2,13 +2,15 @@
 
 namespace App\Services\Pipelines;
 
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class PipelineMonitor
 {
     protected string $cachePrefix = 'pipeline_metrics_';
+
     protected int $ttlSeconds = 3600;
+
     protected array $metrics = [];
 
     public function recordStageExecution(string $pipeline, string $stage, float $durationMs, bool $success): void
@@ -67,7 +69,7 @@ class PipelineMonitor
 
     public function getPipelineMetrics(string $pipeline): array
     {
-        $allKeys = Cache::getRedis()->keys($this->cachePrefix . $pipeline . '_*');
+        $allKeys = Cache::getRedis()->keys($this->cachePrefix.$pipeline.'_*');
         $stages = [];
 
         foreach ($allKeys as $key) {
@@ -104,6 +106,7 @@ class PipelineMonitor
     protected function getMetricKey(string $pipeline, string $stage): string
     {
         $safeStage = str_replace([' ', '-'], '_', strtolower($stage));
-        return $this->cachePrefix . $pipeline . '_' . $safeStage;
+
+        return $this->cachePrefix.$pipeline.'_'.$safeStage;
     }
 }

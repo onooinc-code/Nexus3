@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Agent;
 use App\Models\MCPServer;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -22,14 +23,15 @@ class MCPIntegrationService
         $server = MCPServer::updateOrCreate(
             ['name' => $name],
             [
-                'id'                => Str::uuid()->toString(),
-                'type'              => $config['type'] ?? 'local',
+                'id' => Str::uuid()->toString(),
+                'type' => $config['type'] ?? 'local',
                 'connection_config' => $config,
-                'status'            => 'offline',
+                'status' => 'offline',
             ]
         );
 
         Log::info("MCP server registered: {$name}");
+
         return $server;
     }
 
@@ -40,6 +42,7 @@ class MCPIntegrationService
     public function getServer(string $name): ?array
     {
         $server = MCPServer::where('name', $name)->first();
+
         return $server?->toArray();
     }
 
@@ -54,7 +57,7 @@ class MCPIntegrationService
     {
         $server = MCPServer::where('name', $name)->first();
 
-        if (!$server) {
+        if (! $server) {
             throw new \InvalidArgumentException("MCP server not found: {$name}");
         }
 
@@ -67,8 +70,9 @@ class MCPIntegrationService
         // Local servers are always reachable; remote servers need a health check
         if ($server->type === 'remote') {
             $result = $this->performHealthCheck($server);
-            if (!$result['success']) {
+            if (! $result['success']) {
                 $server->update(['status' => 'offline']);
+
                 return ['success' => false, 'server' => $name, 'error' => $result['error'] ?? 'Health check failed'];
             }
         }
@@ -76,8 +80,8 @@ class MCPIntegrationService
         $server->update(['status' => 'connected']);
 
         return [
-            'success'      => true,
-            'server'       => $name,
+            'success' => true,
+            'server' => $name,
             'connected_at' => now()->toISOString(),
         ];
     }
@@ -89,12 +93,14 @@ class MCPIntegrationService
             $server->update(['status' => 'offline']);
         }
         Log::info("MCP server disconnected: {$name}");
+
         return true;
     }
 
     public function isConnected(string $name): bool
     {
         $server = MCPServer::where('name', $name)->first();
+
         return $server?->status === 'connected';
     }
 
@@ -103,12 +109,12 @@ class MCPIntegrationService
     public function listTools(string $serverName): array
     {
         $record = MCPServer::where('name', $serverName)->first();
-        if (!$record) {
+        if (! $record) {
             throw new \InvalidArgumentException("MCP server not found: {$serverName}");
         }
 
         $config = $record->connection_config ?? [];
-        $tools  = $config['tools'] ?? [];
+        $tools = $config['tools'] ?? [];
 
         return ['tools' => $tools, 'server' => $serverName];
     }
@@ -117,7 +123,7 @@ class MCPIntegrationService
     {
         $server = MCPServer::where('name', $serverName)->first();
 
-        if (!$server) {
+        if (! $server) {
             throw new \InvalidArgumentException("MCP server not found: {$serverName}");
         }
 
@@ -126,22 +132,22 @@ class MCPIntegrationService
         // For remote connected servers attempt actual HTTP call
         if ($server->type === 'remote' && $server->status === 'connected') {
             $config = $server->connection_config ?? [];
-            $url    = rtrim($config['url'] ?? '', '/');
+            $url = rtrim($config['url'] ?? '', '/');
 
             if ($url) {
                 try {
-                    $response = \Illuminate\Support\Facades\Http::timeout(30)->post($url . '/tools/call', [
+                    $response = Http::timeout(30)->post($url.'/tools/call', [
                         'jsonrpc' => '2.0',
-                        'id'      => uniqid(),
-                        'method'  => 'tools/call',
-                        'params'  => ['name' => $toolName, 'arguments' => $params],
+                        'id' => uniqid(),
+                        'method' => 'tools/call',
+                        'params' => ['name' => $toolName, 'arguments' => $params],
                     ]);
 
                     return [
-                        'success'   => $response->successful(),
-                        'server'    => $serverName,
-                        'tool'      => $toolName,
-                        'result'    => $response->json('result') ?? $response->json(),
+                        'success' => $response->successful(),
+                        'server' => $serverName,
+                        'tool' => $toolName,
+                        'result' => $response->json('result') ?? $response->json(),
                         'called_at' => now()->toISOString(),
                     ];
                 } catch (\Exception $e) {
@@ -152,11 +158,11 @@ class MCPIntegrationService
 
         // Local / offline fallback — succeed immediately
         return [
-            'success'   => true,
-            'server'    => $serverName,
-            'tool'      => $toolName,
-            'params'    => $params,
-            'result'    => "Tool {$toolName} executed on {$serverName}",
+            'success' => true,
+            'server' => $serverName,
+            'tool' => $toolName,
+            'params' => $params,
+            'result' => "Tool {$toolName} executed on {$serverName}",
             'called_at' => now()->toISOString(),
         ];
     }
@@ -170,15 +176,15 @@ class MCPIntegrationService
     {
         $server = MCPServer::where('name', $serverName)->first();
 
-        if (!$server) {
+        if (! $server) {
             throw new \InvalidArgumentException("MCP server not found: {$serverName}");
         }
 
         // Update metadata list
         $metadata = $agent->metadata ?? [];
-        $servers  = $metadata['mcp_servers'] ?? [];
+        $servers = $metadata['mcp_servers'] ?? [];
 
-        if (!in_array($serverName, $servers)) {
+        if (! in_array($serverName, $servers)) {
             $servers[] = $serverName;
         }
 
@@ -193,6 +199,7 @@ class MCPIntegrationService
         }
 
         Log::info("MCP server [{$serverName}] attached to agent [{$agent->name}]");
+
         return ['success' => true, 'agent_id' => $agent->id, 'server' => $serverName];
     }
 
@@ -201,20 +208,22 @@ class MCPIntegrationService
      */
     public function detachFromAgent(Agent $agent, string $serverName): array
     {
-        $server   = MCPServer::where('name', $serverName)->first();
+        $server = MCPServer::where('name', $serverName)->first();
         $metadata = $agent->metadata ?? [];
-        $servers  = $metadata['mcp_servers'] ?? [];
+        $servers = $metadata['mcp_servers'] ?? [];
 
-        $metadata['mcp_servers'] = array_values(array_filter($servers, fn($s) => $s !== $serverName));
+        $metadata['mcp_servers'] = array_values(array_filter($servers, fn ($s) => $s !== $serverName));
         $agent->update(['metadata' => $metadata]);
 
         if ($server) {
             try {
                 $agent->mcpServers()->detach($server->id);
-            } catch (\Throwable) {}
+            } catch (\Throwable) {
+            }
         }
 
         Log::info("MCP server [{$serverName}] detached from agent [{$agent->name}]");
+
         return ['success' => true, 'agent_id' => $agent->id, 'server' => $serverName];
     }
 
@@ -224,6 +233,7 @@ class MCPIntegrationService
     public function getAgentServers(Agent $agent): array
     {
         $metadata = $agent->metadata ?? [];
+
         return $metadata['mcp_servers'] ?? [];
     }
 
@@ -236,6 +246,7 @@ class MCPIntegrationService
             $server->delete();
         }
         Log::info("MCP server unregistered: {$name}");
+
         return true;
     }
 
@@ -245,7 +256,7 @@ class MCPIntegrationService
     public function clear(): void
     {
         MCPServer::query()->delete();
-        Log::info("All MCP servers cleared.");
+        Log::info('All MCP servers cleared.');
     }
 
     // ─── Internal ──────────────────────────────────────────────────────────
@@ -253,14 +264,15 @@ class MCPIntegrationService
     protected function performHealthCheck(MCPServer $server): array
     {
         $config = $server->connection_config ?? [];
-        $url    = $config['url'] ?? null;
+        $url = $config['url'] ?? null;
 
-        if (!$url) {
+        if (! $url) {
             return ['success' => false, 'error' => 'No URL configured'];
         }
 
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(5)->get($url . '/health');
+            $response = Http::timeout(5)->get($url.'/health');
+
             return ['success' => $response->successful()];
         } catch (\Throwable $e) {
             return ['success' => false, 'error' => $e->getMessage()];

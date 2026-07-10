@@ -2,6 +2,8 @@
 
 namespace App\Jobs\PeopleConnect;
 
+use App\Models\WahaSyncProcess;
+use App\Services\PeopleConnect\WahaAnalysisService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -22,10 +24,10 @@ class WahaBatchAnalyzeJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(\App\Services\PeopleConnect\WahaAnalysisService $service): void
+    public function handle(WahaAnalysisService $service): void
     {
-        $process = \App\Models\WahaSyncProcess::find($this->processId);
-        if (!$process || $process->status === 'paused') {
+        $process = WahaSyncProcess::find($this->processId);
+        if (! $process || $process->status === 'paused') {
             return;
         }
 

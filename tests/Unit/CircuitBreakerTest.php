@@ -2,11 +2,10 @@
 
 namespace Tests\Unit;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Tests\TestCase;
 use App\Services\AiModelsHub\CircuitBreaker;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Tests\TestCase;
 
 class CircuitBreakerTest extends TestCase
 {
@@ -41,7 +40,8 @@ class CircuitBreakerTest extends TestCase
             $breaker->execute(function () {
                 throw new \Exception('First failure');
             });
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
 
         $this->assertFalse($breaker->isOpen()); // Still closed
 
@@ -50,7 +50,8 @@ class CircuitBreakerTest extends TestCase
             $breaker->execute(function () {
                 throw new \Exception('Second failure');
             });
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
 
         $this->assertTrue($breaker->isOpen()); // Now open
 
@@ -72,12 +73,14 @@ class CircuitBreakerTest extends TestCase
             $breaker->execute(function () {
                 throw new \Exception('Failure 1');
             });
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
         try {
             $breaker->execute(function () {
                 throw new \Exception('Failure 2');
             });
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
 
         $this->assertTrue($breaker->isOpen());
 
@@ -103,12 +106,14 @@ class CircuitBreakerTest extends TestCase
             $breaker->execute(function () {
                 throw new \Exception('Failure 1');
             });
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
         try {
             $breaker->execute(function () {
                 throw new \Exception('Failure 2');
             });
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
 
         $this->assertTrue($breaker->isOpen());
 

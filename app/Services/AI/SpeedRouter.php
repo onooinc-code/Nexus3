@@ -2,11 +2,10 @@
 
 namespace App\Services\AI;
 
-use Illuminate\Support\Facades\Log;
-
 class SpeedRouter
 {
     protected ModelSelector $selector;
+
     protected array $speedTiers = [
         'instant' => ['max_latency_ms' => 300, 'description' => 'Sub-300ms for real-time'],
         'fast' => ['max_latency_ms' => 800, 'description' => 'Under 800ms for interactive'],
@@ -21,7 +20,7 @@ class SpeedRouter
 
     public function route(string $tier, array $request): array
     {
-        if (!isset($this->speedTiers[$tier])) {
+        if (! isset($this->speedTiers[$tier])) {
             return [
                 'success' => false,
                 'error' => "Unknown speed tier: {$tier}",
@@ -41,7 +40,7 @@ class SpeedRouter
 
         $selection = $this->selector->select($criteria);
 
-        if (!$selection) {
+        if (! $selection) {
             return [
                 'success' => false,
                 'error' => "No model found for speed tier: {$tier}",
@@ -72,10 +71,14 @@ class SpeedRouter
         }
 
         $interactive = $request['interactive'] ?? false;
-        if ($interactive) return 'fast';
+        if ($interactive) {
+            return 'fast';
+        }
 
         $realtime = $request['realtime'] ?? false;
-        if ($realtime) return 'instant';
+        if ($realtime) {
+            return 'instant';
+        }
 
         return 'normal';
     }
@@ -89,12 +92,14 @@ class SpeedRouter
                 'max_latency_ms' => $config['max_latency_ms'],
             ];
         }
+
         return $tiers;
     }
 
     public function autoRoute(array $request): array
     {
         $tier = $this->getTierForRequest($request);
+
         return $this->route($tier, $request);
     }
 }

@@ -4,24 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\AIModel;
 use App\Models\ApiKey;
-use App\Jobs\ExecuteAiModelJob;
-use App\Services\LogService;
-use App\Services\AI\ProviderInterface;
-use App\Services\AI\ModelSelector;
-use App\Services\AI\FallbackChainService;
-use App\Services\AI\CostOptimizer;
-use App\Services\AI\QualityRouter;
-use App\Services\AI\SpeedRouter;
+use App\Services\AI\ApiKeyHealthService;
 use App\Services\AI\ApiKeyPool;
 use App\Services\AI\ApiKeyRotationService;
+use App\Services\AI\CostOptimizer;
+use App\Services\AI\FallbackChainService;
+use App\Services\AI\ModelSelector;
+use App\Services\AI\QualityRouter;
 use App\Services\AI\RateLimitService;
-use App\Services\AI\ApiKeyHealthService;
+use App\Services\AI\SpeedRouter;
 use App\Services\AiModelsHub\DynamicRestProvider;
 use App\Services\AiModelsHub\EncryptedApiKeyStorage;
+use App\Services\LogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class AiModelController extends Controller
 {
@@ -92,6 +88,7 @@ class AiModelController extends Controller
     public function show($id)
     {
         $model = AIModel::with(['provider'])->findOrFail($id);
+
         return response()->json($model);
     }
 
@@ -166,7 +163,7 @@ class AiModelController extends Controller
             ->where('is_active', true)
             ->first()?->key;
 
-        if (!$apiKey) {
+        if (! $apiKey) {
             $this->logService->warning('AI model test failed - no API key', [
                 'channel' => 'ai',
                 'type' => 'test',
@@ -177,7 +174,7 @@ class AiModelController extends Controller
 
             return response()->json([
                 'success' => false,
-                'error' => "No active API key found for provider: " . ($provider?->name ?? 'unknown'),
+                'error' => 'No active API key found for provider: '.($provider?->name ?? 'unknown'),
             ], 400);
         }
 
@@ -218,13 +215,11 @@ class AiModelController extends Controller
         return response()->json($result);
     }
 
-
-
     protected function resolveProvider(string $providerId, string $apiKey)
     {
         // For dynamic routing we use DynamicRestProvider
         // We will need to pass EncryptedApiKeyStorage but for this legacy method signature we can mock it
         // Or simply instantiate it
-        return new \App\Services\AiModelsHub\DynamicRestProvider($providerId, app(\App\Services\AiModelsHub\EncryptedApiKeyStorage::class));
+        return new DynamicRestProvider($providerId, app(EncryptedApiKeyStorage::class));
     }
 }

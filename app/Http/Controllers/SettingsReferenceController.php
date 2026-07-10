@@ -9,25 +9,14 @@ use Illuminate\View\View;
 class SettingsReferenceController extends Controller
 {
     /**
-     * @var SettingsReferenceService
-     */
-    protected $referenceService;
-
-    /**
      * SettingsReferenceController constructor.
-     *
-     * @param SettingsReferenceService $referenceService
      */
-    public function __construct(SettingsReferenceService $referenceService)
-    {
-        $this->referenceService = $referenceService;
-    }
+    public function __construct(
+        protected SettingsReferenceService $referenceService
+    ) {}
 
     /**
      * Display the developer reference dashboard for SettingsHub.
-     *
-     * @param Request $request
-     * @return View
      */
     public function index(Request $request): View
     {
@@ -35,12 +24,14 @@ class SettingsReferenceController extends Controller
         $services = $this->referenceService->getServicesDocumentation();
         $jobs = $this->referenceService->getJobsDocumentation();
         $metrics = $this->referenceService->getSystemMetrics();
+        $stats = $this->referenceService->getStatistics();
 
         return view('hubs.settings-reference.index', compact(
             'apis',
             'services',
             'jobs',
-            'metrics'
+            'metrics',
+            'stats'
         ));
     }
 }

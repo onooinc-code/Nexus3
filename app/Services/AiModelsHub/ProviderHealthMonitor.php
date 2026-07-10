@@ -2,11 +2,11 @@
 
 namespace App\Services\AiModelsHub;
 
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\DB;
 use App\Models\AIProvider;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ProviderHealthMonitor
 {
@@ -34,8 +34,8 @@ class ProviderHealthMonitor
         $rateLimitReset = null;
 
         try {
-            $response = Http::timeout(10)->get($provider->base_url . '/' . ltrim($provider->models_fetch_endpoint, '/'));
-            
+            $response = Http::timeout(10)->get($provider->base_url.'/'.ltrim($provider->models_fetch_endpoint, '/'));
+
             $latencyMs = round((microtime(true) - $startTime) * 1000);
 
             if ($response->successful()) {
@@ -51,7 +51,7 @@ class ProviderHealthMonitor
 
         } catch (\Exception $e) {
             $latencyMs = round((microtime(true) - $startTime) * 1000);
-            Log::warning("Health check failed for provider {$provider->name}: " . $e->getMessage());
+            Log::warning("Health check failed for provider {$provider->name}: ".$e->getMessage());
         }
 
         // Save to provider_health_metrics table
@@ -68,7 +68,7 @@ class ProviderHealthMonitor
 
         return [
             'status' => $status,
-            'latency_ms' => $latencyMs
+            'latency_ms' => $latencyMs,
         ];
     }
 

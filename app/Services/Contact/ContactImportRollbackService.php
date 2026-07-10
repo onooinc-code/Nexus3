@@ -2,8 +2,8 @@
 
 namespace App\Services\Contact;
 
-use App\Models\ContactImportBatch;
 use App\Events\ContactImportCompleted;
+use App\Models\ContactImportBatch;
 use Illuminate\Support\Facades\DB;
 
 class ContactImportRollbackService
@@ -20,7 +20,7 @@ class ContactImportRollbackService
 
                 // Mark batch as rolled back
                 $batch->update(['status' => 'rolled_back']);
-                
+
                 // Dispatch event
                 event(new ContactImportCompleted($batch->contact, 0, $batch->source, 'rolled_back'));
 

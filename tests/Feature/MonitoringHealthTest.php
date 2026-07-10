@@ -2,9 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\Monitoring\HealthController;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Redis;
 use Tests\TestCase;
 
 class MonitoringHealthTest extends TestCase
@@ -33,7 +34,7 @@ class MonitoringHealthTest extends TestCase
             '*' => Http::response(['ok' => true], 200),
         ]);
 
-        $this->mock(\App\Http\Controllers\Monitoring\HealthController::class, function ($mock) {
+        $this->mock(HealthController::class, function ($mock) {
             $mock->makePartial()->shouldAllowMockingProtectedMethods();
             $mock->shouldReceive('checkReverb')->andReturn([
                 'ok' => true,

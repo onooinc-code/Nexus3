@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\Contact;
-use App\Models\ContactIdentifier;
 use App\Models\ContactAlias;
+use App\Models\ContactIdentifier;
 use Illuminate\Support\Facades\DB;
 
 class ContactIdentityResolver
@@ -12,13 +12,12 @@ class ContactIdentityResolver
     /**
      * Resolve a contact based on a set of identifiers.
      *
-     * @param array $identifiers Array of ['type' => string, 'value' => string]
-     * @return Contact|null
+     * @param  array  $identifiers  Array of ['type' => string, 'value' => string]
      */
     public function resolve(array $identifiers): ?Contact
     {
         $candidates = array_filter($identifiers, function ($identifier) {
-            return !empty($identifier['type']) && !empty($identifier['value']);
+            return ! empty($identifier['type']) && ! empty($identifier['value']);
         });
 
         if (empty($candidates)) {

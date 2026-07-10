@@ -29,7 +29,7 @@ class SyncWahaContactsJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $jobId = 'sync_contacts_' . time();
+        $jobId = 'sync_contacts_'.time();
         $totalItems = 250;
         $processed = 0;
 
@@ -40,7 +40,7 @@ class SyncWahaContactsJob implements ShouldQueue
             sleep(1);
             $processed += 50;
             $progress = round(($processed / $totalItems) * 100);
-            
+
             broadcast(new JobProgressUpdated($jobId, 'sync_contacts', $progress, $processed, $totalItems, 'running', "Fetched contacts batch $i/5..."));
             Log::info("Waha Sync Contacts batch $i processed.");
         }

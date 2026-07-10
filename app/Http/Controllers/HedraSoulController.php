@@ -12,7 +12,7 @@ class HedraSoulController extends Controller
     public function getSessions(Request $request)
     {
         return response()->json([
-            'data' => []
+            'data' => [],
         ]);
     }
 
@@ -22,7 +22,7 @@ class HedraSoulController extends Controller
     public function getApprovals(Request $request)
     {
         return response()->json([
-            'data' => []
+            'data' => [],
         ]);
     }
 
@@ -32,7 +32,7 @@ class HedraSoulController extends Controller
     public function getNotifications(Request $request)
     {
         return response()->json([
-            'data' => []
+            'data' => [],
         ]);
     }
 
@@ -47,8 +47,8 @@ class HedraSoulController extends Controller
                 'uptime' => '99.9%',
                 'active_sessions' => 0,
                 'pending_approvals' => 0,
-                'last_sync' => now()->toIso8601String()
-            ]
+                'last_sync' => now()->toIso8601String(),
+            ],
         ]);
     }
 }

@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::table('agent_tasks', function (Blueprint $table) {
-             $table->foreignId('workflow_id')->nullable()->constrained('workflows')->nullOnDelete();
-       });
+        Schema::table('agent_tasks', function (Blueprint $table) {
+            $table->foreignId('workflow_id')->nullable()->constrained('workflows')->nullOnDelete();
+        });
     }
 
     /**

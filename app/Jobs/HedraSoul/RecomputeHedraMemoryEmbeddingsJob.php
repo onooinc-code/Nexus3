@@ -13,7 +13,7 @@ use Throwable;
 
 /**
  * RecomputeHedraMemoryEmbeddingsJob: Recomputes embeddings for all hedra_profile_facts.
- * 
+ *
  * Called by HedraMemoryMaintenanceService::rebuildEmbeddings().
  * Processes all hedra_profile_facts records, recomputing embeddings and updating
  * any external vector store if configured (e.g., Pinecone, Weaviate).
@@ -23,6 +23,7 @@ class RecomputeHedraMemoryEmbeddingsJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 600; // 10 minutes for full recomputation
 
     public function __construct(public ?array $filters = null) {}
@@ -89,7 +90,7 @@ class RecomputeHedraMemoryEmbeddingsJob implements ShouldQueue
 
     /**
      * Generate embedding for fact content.
-     * 
+     *
      * This is a placeholder - integrate with actual embedding service.
      */
     private function generateEmbedding(string $content): array
@@ -102,7 +103,7 @@ class RecomputeHedraMemoryEmbeddingsJob implements ShouldQueue
 
     /**
      * Update external vector store with new embedding.
-     * 
+     *
      * This is a placeholder - integrate with actual vector store.
      */
     private function updateVectorStore(int $factId, array $embedding): void

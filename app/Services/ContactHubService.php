@@ -2,19 +2,15 @@
 
 namespace App\Services;
 
+use App\Events\ContactDeleted;
+use App\Events\ContactMerged;
 use App\Models\Contact;
-use App\Models\ContactAlias;
-use App\Models\ContactIdentifier;
-use App\Models\ContactPreference;
 use App\Models\ContactRelationship;
-use App\Models\ContactTag;
-use App\Models\ContactCustomField;
-use App\Models\ContactNote;
 use App\Models\Message;
-use App\Services\LogService;
+use App\Models\NotificationLog;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class ContactHubService
 {
@@ -39,7 +35,7 @@ class ContactHubService
     {
         $metadata = $contact->metadata ?? [];
 
-        if (!empty($metadata['changed_by'])) {
+        if (! empty($metadata['changed_by'])) {
             $contact->metadata = array_merge($metadata, [
                 'beliefs' => array_merge($metadata['beliefs'] ?? [], [
                     'last_synced_by' => $metadata['changed_by'],
@@ -48,7 +44,7 @@ class ContactHubService
             ]);
         }
 
-        if (!isset($contact->metadata['beliefs'])) {
+        if (! isset($contact->metadata['beliefs'])) {
             $contact->metadata = array_merge($contact->metadata ?? [], [
                 'beliefs' => [
                     'confidence' => 0.5,
@@ -64,7 +60,7 @@ class ContactHubService
     {
         $attributes = $contact->attributes ?? [];
 
-        if (!isset($attributes['preferences'])) {
+        if (! isset($attributes['preferences'])) {
             $attributes['preferences'] = [
                 'communication' => 'default',
                 'timezone' => $attributes['timezone'] ?? 'UTC',
@@ -79,7 +75,7 @@ class ContactHubService
     {
         $preferences = $contact->attributes['preferences'] ?? [];
 
-        if (!is_array($preferences)) {
+        if (! is_array($preferences)) {
             return;
         }
 
@@ -87,7 +83,7 @@ class ContactHubService
             $contact->preferences()->updateOrCreate(
                 ['key' => $key],   // correct match column on contact_preferences
                 [
-                    'value'      => is_scalar($value) ? (string) $value : json_encode($value),
+                    'value' => is_scalar($value) ? (string) $value : json_encode($value),
                     'confidence' => 0.5,
                     'inferred_from_count' => 1,
                 ]
@@ -101,14 +97,14 @@ class ContactHubService
             throw new \InvalidArgumentException('Source and target contacts must differ for merge.');
         }
 
-        DB::transaction(function () use ($target, $source, $strategy) {
+        DB::transaction(function () use ($target, $source) {
             $fields = ['name', 'canonical_name', 'email', 'phone', 'type', 'title', 'company', 'avatar_url'];
 
             foreach ($fields as $field) {
                 $targetValue = $target->{$field};
                 $sourceValue = $source->{$field};
 
-                if (!$targetValue && $sourceValue) {
+                if (! $targetValue && $sourceValue) {
                     $target->{$field} = $sourceValue;
                 }
             }
@@ -123,7 +119,7 @@ class ContactHubService
                     ->where('value', $identifier->value)
                     ->exists();
 
-                if (!$exists) {
+                if (! $exists) {
                     $target->identifiers()->create([
                         'type' => $identifier->type,
                         'value' => $identifier->value,
@@ -200,7 +196,7 @@ class ContactHubService
 
             foreach ($source->aliases as $alias) {
                 $exists = $target->aliases()->where('name', $alias->name)->exists();
-                if (!$exists) {
+                if (! $exists) {
                     $target->aliases()->create([
                         'name' => $alias->name,
                     ]);
@@ -219,7 +215,7 @@ class ContactHubService
             $source->notificationLogs()->update(['contact_id' => $target->id]);
             $source->delete();
 
-            \App\Models\NotificationLog::create([
+            NotificationLog::create([
                 'contact_id' => $target->id,
                 'channel' => 'system',
                 'recipient' => 'system',
@@ -230,10 +226,11 @@ class ContactHubService
         });
 
         $this->syncContactDetails($target);
-        
+
         try {
-            event(new \App\Events\ContactMerged($target, $source->id));
-        } catch (\Throwable $e) {}
+            event(new ContactMerged($target, $source->id));
+        } catch (\Throwable $e) {
+        }
 
         return $target->fresh();
     }
@@ -266,10 +263,11 @@ class ContactHubService
             ]);
 
             $contact->delete();
-            
+
             try {
-                event(new \App\Events\ContactDeleted($contact));
-            } catch (\Throwable $e) {}
+                event(new ContactDeleted($contact));
+            } catch (\Throwable $e) {
+            }
         });
     }
 

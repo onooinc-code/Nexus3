@@ -17,7 +17,7 @@ class SoulyRuntimeProfileService
     {
         $profile = SoulyRuntimeProfile::orderBy('id', 'desc')->first();
 
-        if (!$profile) {
+        if (! $profile) {
             $profile = SoulyRuntimeProfile::create([
                 'autonomy_mode' => 'copilot',
                 'tool_permissions' => ['search', 'draft', 'read_memory'],
@@ -40,6 +40,7 @@ class SoulyRuntimeProfileService
     {
         $profile = $this->getCurrent();
         $profile->update($data);
+
         return $profile;
     }
 
@@ -65,7 +66,7 @@ class SoulyRuntimeProfileService
     public function updateActiveModel(int $modelInstanceId): void
     {
         $profile = $this->getCurrent();
-        
+
         // Validate model exists in AiModelsHub (basic check)
         // $model = \App\Models\AiInstance::find($modelInstanceId);
         // if (!$model) throw new \Exception('Model not found');

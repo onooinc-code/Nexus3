@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\HedrasoulSession;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class HedrasoulSessionFactory extends Factory
@@ -12,7 +13,7 @@ class HedrasoulSessionFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => \App\Models\User::factory(),
+            'user_id' => User::factory(),
             'title' => 'Test Session',
             'status' => 'active',
             'topic' => 'general',

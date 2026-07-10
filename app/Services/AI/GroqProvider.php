@@ -2,31 +2,34 @@
 
 namespace App\Services\AI;
 
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
-use App\Models\AIProvider;
 use App\Models\AIModel;
-use App\Services\AiModelsHub\EncryptedApiKeyStorage;
+use App\Models\AIProvider;
 use App\Services\AiModelsHub\AiProviderInterface;
+use App\Services\AiModelsHub\EncryptedApiKeyStorage;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class GroqProvider implements AiProviderInterface
 {
     protected $provider;
+
     protected $apiKey;
+
     protected $baseUrl;
+
     protected $models = [];
 
     public function __construct(string $providerId, EncryptedApiKeyStorage $encryptedKeyStorage)
     {
         $this->provider = AIProvider::find($providerId);
-        
-        if (!$this->provider) {
+
+        if (! $this->provider) {
             throw new \Exception("Provider not found: {$providerId}");
         }
-        
+
         $this->apiKey = $encryptedKeyStorage->getDecryptedKey($providerId);
         $this->baseUrl = rtrim($this->provider->base_url, '/');
-        
+
         // Load models from database
         $this->loadModelsFromDatabase();
     }
@@ -35,7 +38,7 @@ class GroqProvider implements AiProviderInterface
     {
         $this->models = [];
         $dbModels = AIModel::where('provider_id', $this->provider->id)->get();
-        
+
         foreach ($dbModels as $model) {
             $this->models[$model->id] = [
                 'name' => $model->name,
@@ -44,7 +47,7 @@ class GroqProvider implements AiProviderInterface
                 'cost_per_1k_output' => $model->output_cost_per_m / 1000,
             ];
         }
-        
+
         // If no models in database, fallback to some defaults
         if (empty($this->models)) {
             $this->models = [
@@ -84,6 +87,7 @@ class GroqProvider implements AiProviderInterface
     {
         // Return first available model or fallback
         $models = $this->getAvailableModels();
+
         return $models[0] ?? 'llama3-8b-8192';
     }
 
@@ -96,7 +100,7 @@ class GroqProvider implements AiProviderInterface
             'max_tokens' => $options['max_tokens'] ?? null,
         ]);
 
-        if (!$validation['valid']) {
+        if (! $validation['valid']) {
             return [
                 'success' => false,
                 'error' => implode(', ', $validation['errors']),
@@ -115,21 +119,21 @@ class GroqProvider implements AiProviderInterface
                 'messages' => $messages,
                 'temperature' => $temperature,
             ];
-            
+
             if ($maxTokens !== null) {
                 $payload['max_tokens'] = $maxTokens;
             }
 
             $headers = [
                 'Content-Type' => 'application/json',
-                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Authorization' => 'Bearer '.$this->apiKey,
             ];
 
             $response = Http::withHeaders($headers)
                 ->timeout(30)
-                ->post($this->baseUrl . '/chat/completions', $payload);
+                ->post($this->baseUrl.'/chat/completions', $payload);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 throw new \Exception("Groq API error: HTTP {$response->status()} - {$response->body()}");
             }
 
@@ -154,7 +158,7 @@ class GroqProvider implements AiProviderInterface
                 'usage' => $usage,
             ];
         } catch (\Throwable $e) {
-            Log::error("Groq API error: " . $e->getMessage());
+            Log::error('Groq API error: '.$e->getMessage());
 
             return [
                 'success' => false,
@@ -183,7 +187,7 @@ class GroqProvider implements AiProviderInterface
             $errors[] = 'Prompt is required';
         }
 
-        if (isset($request['model']) && !isset($this->models[$request['model']])) {
+        if (isset($request['model']) && ! isset($this->models[$request['model']])) {
             $errors[] = "Unknown model: {$request['model']}";
         }
 
@@ -204,7 +208,9 @@ class GroqProvider implements AiProviderInterface
     public function estimateCost(string $model, int $inputTokens, int $outputTokens = 0): float
     {
         $modelConfig = $this->models[$model] ?? null;
-        if (!$modelConfig) return 0.0;
+        if (! $modelConfig) {
+            return 0.0;
+        }
 
         $inputCost = ($inputTokens / 1000) * $modelConfig['cost_per_1k_input'];
         $outputCost = ($outputTokens / 1000) * $modelConfig['cost_per_1k_output'];
@@ -216,8 +222,8 @@ class GroqProvider implements AiProviderInterface
     {
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
-            ])->get($this->baseUrl . '/models');
+                'Authorization' => 'Bearer '.$this->apiKey,
+            ])->get($this->baseUrl.'/models');
 
             if ($response->successful()) {
                 return [
@@ -260,7 +266,7 @@ class GroqProvider implements AiProviderInterface
         $model = $request['model'] ?? $this->getDefaultModel();
         $temperature = $request['temperature'] ?? 0.7;
         $maxTokens = $request['max_tokens'] ?? null;
-        
+
         return $this->generateText($prompt, [
             'model' => $model,
             'temperature' => $temperature,
@@ -277,7 +283,7 @@ class GroqProvider implements AiProviderInterface
             $errors[] = 'Prompt or messages are required';
         }
 
-        if (isset($request['model']) && !isset($this->models[$request['model']])) {
+        if (isset($request['model']) && ! isset($this->models[$request['model']])) {
             $errors[] = "Unknown model: {$request['model']}";
         }
 
@@ -301,6 +307,7 @@ class GroqProvider implements AiProviderInterface
     {
         try {
             $response = $this->callGroq($this->getDefaultModel(), [['role' => 'user', 'content' => 'hi']], ['max_tokens' => 5]);
+
             return [
                 'provider' => $this->getProviderName(),
                 'status' => 'healthy',
@@ -319,18 +326,18 @@ class GroqProvider implements AiProviderInterface
     public function formatRequest(array $prompt, array $options = []): array
     {
         $model = $options['model'] ?? $this->getDefaultModel();
-        
+
         if (is_string($prompt)) {
             $messages = [['role' => 'user', 'content' => $prompt]];
         } else {
             $messages = $prompt;
         }
-        
+
         $payload = [
             'model' => $model,
             'messages' => $messages,
         ];
-        
+
         if (isset($options['max_tokens'])) {
             $payload['max_tokens'] = $options['max_tokens'];
         }
@@ -343,7 +350,7 @@ class GroqProvider implements AiProviderInterface
         if (isset($options['stream'])) {
             $payload['stream'] = $options['stream'];
         }
-        
+
         return $payload;
     }
 
@@ -351,11 +358,11 @@ class GroqProvider implements AiProviderInterface
     {
         $content = '';
         $usage = [];
-        
+
         if (isset($response['choices'][0]['message']['content'])) {
             $content = $response['choices'][0]['message']['content'];
         }
-        
+
         if (isset($response['usage'])) {
             $usage = [
                 'prompt_tokens' => $response['usage']['prompt_tokens'] ?? 0,
@@ -363,7 +370,7 @@ class GroqProvider implements AiProviderInterface
                 'total_tokens' => $response['usage']['total_tokens'] ?? 0,
             ];
         }
-        
+
         return [
             'content' => $content,
             'usage' => $usage,
@@ -373,9 +380,9 @@ class GroqProvider implements AiProviderInterface
     protected function callGroq(string $model, array $messages, array $options = []): array
     {
         $url = "{$this->baseUrl}/chat/completions";
-        
+
         $payload = $this->formatRequest($messages, array_merge($options, ['model' => $model]));
-        
+
         $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
@@ -383,19 +390,19 @@ class GroqProvider implements AiProviderInterface
             CURLOPT_POSTFIELDS => json_encode($payload),
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
-                'Authorization: Bearer ' . $this->apiKey,
+                'Authorization: Bearer '.$this->apiKey,
             ],
             CURLOPT_TIMEOUT => $options['timeout'] ?? 30,
         ]);
-        
+
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        
+
         if ($httpCode >= 400) {
             throw new \RuntimeException("Groq API error: HTTP {$httpCode} - {$response}");
         }
-        
+
         return json_decode($response, true) ?: [];
     }
 }
