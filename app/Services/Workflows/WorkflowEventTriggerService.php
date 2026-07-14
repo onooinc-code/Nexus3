@@ -79,33 +79,50 @@ class WorkflowEventTriggerService
 
     public function registerWildcardListener(): void
     {
-        Event::listen('*', function (string $eventName, array $data) {
-            if (
-                str_starts_with($eventName, 'Illuminate\\') ||
-                str_starts_with($eventName, 'eloquent.') ||
-                str_starts_with($eventName, 'bootstrapping: ') ||
-                str_starts_with($eventName, 'bootstrapped: ') ||
-                str_starts_with($eventName, 'artisan.') ||
-                str_starts_with($eventName, 'console.') ||
-                str_starts_with($eventName, 'cache.') ||
-                str_starts_with($eventName, 'queue.')
-            ) {
-                return;
-            }
+        if (! Schema::hasTable('workflow_event_triggers')) {
+            return;
+        }
 
-            $payload = [];
-            if (count($data) > 0) {
-                $first = $data[0];
-                if (is_object($first) && method_exists($first, 'toArray')) {
-                    $payload = $first->toArray();
-                } elseif (is_array($first)) {
-                    $payload = $first;
-                } else {
-                    $payload = json_decode(json_encode($first), true) ?: [];
+        try {
+            $eventNames = WorkflowEventTrigger::where('is_active', true)
+                ->pluck('event_name')
+                ->unique();
+
+            foreach ($eventNames as $eventName) {
+                if (
+                    str_starts_with($eventName, 'Illuminate\\') ||
+                    str_starts_with($eventName, 'eloquent.') ||
+                    str_starts_with($eventName, 'bootstrapping: ') ||
+                    str_starts_with($eventName, 'bootstrapped: ') ||
+                    str_starts_with($eventName, 'artisan.') ||
+                    str_starts_with($eventName, 'console.') ||
+                    str_starts_with($eventName, 'cache.') ||
+                    str_starts_with($eventName, 'queue.')
+                ) {
+                    continue;
                 }
-            }
 
-            $this->handleEvent($eventName, $payload);
-        });
+                Event::listen($eventName, function ($eventObj = null) use ($eventName) {
+                    $payload = [];
+                    if ($eventObj) {
+                        if (is_object($eventObj)) {
+                            if (method_exists($eventObj, 'toArray')) {
+                                $payload = $eventObj->toArray();
+                            } else {
+                                $payload = json_decode(json_encode($eventObj), true) ?: [];
+                            }
+                        } elseif (is_array($eventObj)) {
+                            $payload = $eventObj;
+                        } else {
+                            $payload = json_decode(json_encode($eventObj), true) ?: [];
+                        }
+                    }
+
+                    $this->handleEvent($eventName, $payload);
+                });
+            }
+        } catch (\Throwable $e) {
+            // Prevent failure during service bootstrapping
+        }
     }
 }

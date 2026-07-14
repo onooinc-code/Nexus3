@@ -8,6 +8,10 @@ use App\Models\AgentTask;
 use App\Services\AgentExecutionService;
 use App\Services\LogService;
 use App\Services\TaskLogService;
+use App\Services\Tasks\TaskApiExecutionService;
+use App\Services\Tasks\TaskCodeExecutionService;
+use App\Services\Tasks\TaskTerminalExecutionService;
+use App\Services\Tasks\TaskToolExecutionService;
 use App\Services\WorkflowExecutor;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -136,6 +140,22 @@ class ExecuteAgentTaskJob implements ShouldQueue
             $workflowExecutor = app(WorkflowExecutor::class);
 
             return $workflowExecutor->execute($this->task->workflow, $this->task->payload_data ?? []);
+        } elseif ($this->task->type === 'code') {
+            $service = app(TaskCodeExecutionService::class);
+
+            return $service->execute($this->task);
+        } elseif ($this->task->type === 'api') {
+            $service = app(TaskApiExecutionService::class);
+
+            return $service->execute($this->task);
+        } elseif ($this->task->type === 'terminal') {
+            $service = app(TaskTerminalExecutionService::class);
+
+            return $service->execute($this->task);
+        } elseif ($this->task->type === 'tool') {
+            $service = app(TaskToolExecutionService::class);
+
+            return $service->execute($this->task);
         }
 
         throw new \Exception("Unsupported task type: {$this->task->type}");

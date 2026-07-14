@@ -1,0 +1,3432 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>WAHA & Proactive AI Interactive Architecture Report</title>
+        <!-- Fonts & Icons -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+        <!-- Tailwind CSS (via CDN) -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <!-- Mermaid JS for Dynamic Diagrams -->
+        <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+        <script>
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            sans: ["Outfit", "sans-serif"],
+                            mono: ["JetBrains Mono", "monospace"],
+                        },
+                        colors: {
+                            nexus: {
+                                bg: "#05070c",
+                                panel: "#0d111d",
+                                border: "#1f293d",
+                                primary: "#10b981",
+                                secondary: "#3b82f6",
+                                success: "#10b981",
+                                danger: "#ef4444",
+                                warning: "#f59e0b",
+                                text: "#f8fafc",
+                                muted: "#94a3b8",
+                            },
+                        },
+                    },
+                },
+            };
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: "dark",
+                securityLevel: "loose",
+            });
+        </script>
+        <style>
+            /* Custom scrollbars */
+            ::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+            }
+            ::-webkit-scrollbar-track {
+                background: rgba(15, 23, 42, 0.5);
+            }
+            ::-webkit-scrollbar-thumb {
+                background: rgba(16, 185, 129, 0.2);
+                border-radius: 4px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: rgba(16, 185, 129, 0.5);
+            }
+
+            .glass-panel {
+                background: rgba(13, 17, 29, 0.7);
+                backdrop-filter: blur(12px);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            [data-theme="light"] .glass-panel {
+                background: rgba(255, 255, 255, 0.85);
+                border: 1px solid rgba(0, 0, 0, 0.05);
+            }
+
+            [data-theme="light"] {
+                background-color: #f8fafc;
+                color: #0f172a;
+            }
+
+            .animated-gradient-border {
+                position: relative;
+                border-radius: 12px;
+                background: linear-gradient(
+                    90deg,
+                    #10b981,
+                    #3b82f6,
+                    #6366f1,
+                    #10b981
+                );
+                background-size: 300% 100%;
+                animation: border-dance 8s linear infinite;
+                padding: 1px;
+            }
+
+            @keyframes border-dance {
+                0% {
+                    background-position: 0% 50%;
+                }
+                100% {
+                    background-position: 300% 50%;
+                }
+            }
+
+            .node-active {
+                border-color: #10b981 !important;
+                box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+                background: rgba(16, 185, 129, 0.15) !important;
+            }
+
+            .chat-bubble {
+                border-radius: 18px;
+                padding: 10px 14px;
+                max-width: 80%;
+                font-size: 13px;
+                line-height: 1.4;
+            }
+
+            .mermaid svg {
+                background: transparent !important;
+                margin: auto;
+            }
+        </style>
+    </head>
+    <body
+        class="bg-[#05070c] text-[#f8fafc] min-h-screen transition-colors duration-300"
+    >
+        <div class="flex h-screen overflow-hidden">
+            <!-- Sidebar Navigation -->
+            <aside
+                id="sidebar-container"
+                class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0 transition-all duration-300 z-40"
+            >
+                <div>
+                    <!-- Brand Header -->
+                    <div
+                        class="p-6 border-b border-slate-800 flex items-center gap-3"
+                    >
+                        <div
+                            class="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-400 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/20"
+                        >
+                            <i
+                                class="fa-solid fa-whatsapp text-white text-lg"
+                            ></i>
+                        </div>
+                        <div class="sidebar-text-content">
+                            <h1
+                                class="font-extrabold text-lg bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent"
+                            >
+                                WAHA & ECA
+                            </h1>
+                            <p
+                                class="text-xs text-slate-400 font-semibold uppercase tracking-wider"
+                            >
+                                Proactive AI Hub
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Tabs Trigger -->
+                    <nav class="px-4 py-6 space-y-1">
+                        <button
+                            onclick="switchTab('tab-overview')"
+                            class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all font-medium text-sm"
+                            id="btn-tab-overview"
+                        >
+                            <i
+                                class="fa-solid fa-network-wired text-slate-400 w-5"
+                            ></i>
+                            System Architecture
+                        </button>
+                        <button
+                            onclick="switchTab('tab-mechanics')"
+                            class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all font-medium text-sm"
+                            id="btn-tab-mechanics"
+                        >
+                            <i class="fa-solid fa-gears text-slate-400 w-5"></i>
+                            Technical Mechanics
+                        </button>
+                        <button
+                            onclick="switchTab('tab-workflows')"
+                            class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all font-medium text-sm"
+                            id="btn-tab-workflows"
+                        >
+                            <i
+                                class="fa-solid fa-route-intersections text-slate-400 w-5"
+                            ></i>
+                            Function Workflows
+                        </button>
+                        <button
+                            onclick="switchTab('tab-nlp')"
+                            class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all font-medium text-sm"
+                            id="btn-tab-nlp"
+                        >
+                            <i class="fa-solid fa-brain text-slate-400 w-5"></i>
+                            NLP Parser Sandbox
+                        </button>
+                        <button
+                            onclick="switchTab('tab-code')"
+                            class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all font-medium text-sm"
+                            id="btn-tab-code"
+                        >
+                            <i class="fa-solid fa-code text-slate-400 w-5"></i>
+                            Class & Code Explorer
+                        </button>
+                        <button
+                            onclick="switchTab('tab-endpoints')"
+                            class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all font-medium text-sm"
+                            id="btn-tab-endpoints"
+                        >
+                            <i
+                                class="fa-solid fa-table-list text-slate-400 w-5"
+                            ></i>
+                            API Endpoint Map
+                        </button>
+                        <button
+                            onclick="switchTab('tab-mappings')"
+                            class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all font-medium text-sm"
+                            id="btn-tab-mappings"
+                        >
+                            <i
+                                class="fa-solid fa-folder-tree text-slate-400 w-5"
+                            ></i>
+                            File Mappings
+                        </button>
+                        <button
+                            onclick="switchTab('tab-agent')"
+                            class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all font-medium text-sm"
+                            id="btn-tab-agent"
+                        >
+                            <i class="fa-solid fa-robot text-slate-400 w-5"></i>
+                            Copilot AI Assistant
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Sidebar Footer -->
+                <div
+                    class="p-6 border-t border-slate-800 flex items-center justify-between"
+                >
+                    <button
+                        onclick="toggleTheme()"
+                        class="h-10 w-10 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition-all"
+                    >
+                        <i
+                            id="theme-icon"
+                            class="fa-solid fa-sun text-amber-400"
+                        ></i>
+                    </button>
+                    <span class="text-[10px] text-slate-500 font-mono"
+                        >v1.4.0</span
+                    >
+                </div>
+            </aside>
+
+            <!-- Main Workspace -->
+            <main class="flex-grow flex flex-col h-screen overflow-y-auto">
+                <!-- Top Navbar -->
+                <header
+                    class="h-16 border-b border-slate-800/50 bg-slate-900/80 backdrop-filter blur-md px-8 flex items-center justify-between shrink-0 sticky top-0 z-30"
+                >
+                    <div class="relative w-96">
+                        <i
+                            class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"
+                        ></i>
+                        <input
+                            id="global-search"
+                            type="text"
+                            oninput="runGlobalSearch()"
+                            placeholder="Search WAHA or ECA features..."
+                            class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-4 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition-all"
+                        />
+                    </div>
+                </header>
+
+                <!-- Dashboard Content Container -->
+                <div
+                    id="content-container"
+                    class="p-8 space-y-12 max-w-7xl mx-auto w-full transition-all duration-200"
+                >
+                    <!-- TAB 1: ARCHITECTURE OVERVIEW -->
+                    <div id="tab-overview" class="tab-pane space-y-8">
+                        <div class="animated-gradient-border shadow-2xl">
+                            <div class="bg-slate-950/90 rounded-[11px] p-8">
+                                <h2 class="text-3xl font-extrabold text-white">
+                                    WAHA WhatsApp API & Proactive AI (ECA)
+                                    Engine
+                                </h2>
+                                <p
+                                    class="text-slate-400 text-sm mt-2 max-w-3xl"
+                                >
+                                    This report provides an extensive,
+                                    production-grade technical breakdown of the
+                                    WAHA (WhatsApp HTTP API) Integration and the
+                                    Proactive AI Engine within the Nexus3
+                                    system. It details the runtime execution,
+                                    message lifecycle, natural language parsing,
+                                    and API endpoints for both subsystems,
+                                    supported by architectural diagrams and file
+                                    mappings.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Diagram Container -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <!-- WAHA Architecture -->
+                            <div
+                                class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 glass-panel"
+                            >
+                                <h3
+                                    class="font-bold text-emerald-400 text-lg flex items-center gap-2"
+                                >
+                                    <i class="fa-solid fa-sitemap"></i> 1. WAHA
+                                    Engine Orchestration
+                                </h3>
+                                <p class="text-xs text-slate-400">
+                                    The WAHA integration forms the
+                                    communications core of the Nexus
+                                    PeopleConnect subsystem. It manages
+                                    real-time synchronization, historical data
+                                    backfills, and AI-driven
+                                    personality/preference extraction from
+                                    WhatsApp conversations. Below is the
+                                    detailed structural mapping of how inbound
+                                    events are received from WAHA, processed
+                                    through the webhook pipeline, and how
+                                    outbound messages are sent.
+                                </p>
+
+                                <div class="mermaid py-4">
+                                    graph TD classDef waha
+                                    fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
+                                    classDef job
+                                    fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#f8fafc;
+                                    classDef service
+                                    fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#f8fafc;
+                                    classDef db
+                                    fill:#581c87,stroke:#c084fc,stroke-width:2px,color:#f8fafc;
+                                    Webhook[WAHA Webhook POST] -->|1. Ingest
+                                    Payload|
+                                    IngestService[WahaWebhookIngestionService]
+                                    IngestService -->|2. Create Raw Record|
+                                    RawTable[(PeopleConnectRawProviderEvent)]
+                                    IngestService -->|3. Dispatch|
+                                    WebhookJob[ProcessWahaWebhookJob] WebhookJob
+                                    -->|4. Resolve Contact|
+                                    ContactResolver[PeopleConnectContactResolver]
+                                    WebhookJob -->|5. Resolve/Create Session|
+                                    SessionService[PeopleConnectSessionService]
+                                    WebhookJob -->|6. Insert Message|
+                                    MsgService[PeopleConnectMessageService]
+                                    MsgService -->|7. Persist|
+                                    MsgTable[(contact_messages)] WebhookJob
+                                    -->|8. Dispatch|
+                                    AnalyzeJob[AnalyzePeopleConnectMessageJob]
+                                    WebhookJob -->|9. Broadcast|
+                                    RealtimeBroadcaster[PeopleConnectRealtimeBroadcaster]
+                                    RealtimeBroadcaster -->|10. Push Event|
+                                    WebUI[Web Dashboard / Echo Channels]
+                                    SendAPI[Web App Send Message] -->|1. Create
+                                    Outbound Model| MsgTable SendAPI -->|2.
+                                    Dispatch Job|
+                                    DispatchJob[DispatchWahaMessageJob]
+                                    DispatchJob -->|3. Invoke Send|
+                                    Dispatcher[WahaMessageDispatcher] Dispatcher
+                                    -->|4. HTTP POST /api/sendText|
+                                    WAHANode[WAHA HTTP Server] Cron[Scheduler /
+                                    Web Command] -->|Trigger Sync|
+                                    SyncContactsJob[SyncWahaContactsJob] Cron
+                                    -->|Trigger Sync|
+                                    SyncMessagesJob[SyncWahaMessagesJob]
+                                    SyncContactsJob -->|Fetch all contacts|
+                                    LiveSyncService[LiveMsgsSyncService]
+                                    SyncMessagesJob -->|Fetch chat messages|
+                                    LiveSyncService LiveSyncService -->|Process
+                                    Message Chunk|
+                                    ChunkJob[ProcessWahaMessageChunkJob]
+                                    ChunkJob -->|Bulk Insert| MsgTable class
+                                    Webhook,WAHANode waha; class
+                                    WebhookJob,AnalyzeJob,DispatchJob,SyncContactsJob,SyncMessagesJob,ChunkJob
+                                    job; class
+                                    IngestService,ContactResolver,SessionService,MsgService,RealtimeBroadcaster,Dispatcher,LiveSyncService
+                                    service; class RawTable,MsgTable db;
+                                </div>
+                            </div>
+
+                            <!-- Proactive AI Engine -->
+                            <div
+                                class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 glass-panel"
+                            >
+                                <h3
+                                    class="font-bold text-emerald-400 text-lg flex items-center gap-2"
+                                >
+                                    <i class="fa-solid fa-brain"></i> 2.
+                                    Proactive AI (ECA) Engine
+                                </h3>
+                                <p class="text-xs text-slate-400">
+                                    The Proactive AI Engine provides autonomous
+                                    behavior capabilities to the Nexus agent
+                                    ("Souly"). It implements an
+                                    Event-Condition-Action (ECA) framework
+                                    allowing the system to react to events or
+                                    execute scheduled actions. Below is the
+                                    engine architecture built around a
+                                    centralized condition evaluator and
+                                    execution loop.
+                                </p>
+
+                                <div class="mermaid py-4">
+                                    graph TD classDef route
+                                    fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
+                                    classDef service
+                                    fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#f8fafc;
+                                    classDef listener
+                                    fill:#7c2d12,stroke:#f97316,stroke-width:2px,color:#f8fafc;
+                                    classDef model
+                                    fill:#581c87,stroke:#c084fc,stroke-width:2px,color:#f8fafc;
+                                    classDef scheduler
+                                    fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#f8fafc;
+                                    UserInput[Dashboard Natural Language Rule]
+                                    -->|POST /api/v1/proactive/rules|
+                                    RuleController[ProactiveAIController]
+                                    RuleController -->|Parse Text|
+                                    NlpService[NlpParserService] NlpService
+                                    -->|Structured JSON| RuleController
+                                    RuleController -->|Save|
+                                    RuleTable[(eca_rules)] RuleController -->|If
+                                    Time-based: Create Trigger|
+                                    TriggerTable[(proactive_triggers)]
+                                    LaravelEvents[App Events / System Events]
+                                    -->|Wildcard Listener|
+                                    WildcardHook[WorkflowEventTriggerService]
+                                    WildcardHook -->|Filter Event|
+                                    MatchesRule{ECA Rule Match?} MatchesRule
+                                    -->|Yes| EvaluateConditions[Evaluate
+                                    Conditions] EvaluateConditions
+                                    -->|Conditions Met| ExecuteActions[Execute
+                                    Actions] ExecuteActions -->|Queue Alert|
+                                    NotificationLog[(notification_logs)]
+                                    ExecuteActions -->|Log Execution|
+                                    AutoLog[(autonomous_logs)]
+                                    InboundMsg[MessageReceived Event]
+                                    -->|Listen|
+                                    ContactMsgListener[ContactMessageReceivedListener]
+                                    ContactMsgListener -->|Match Conditions|
+                                    ExecuteActions CronTask[Laravel Scheduler: *
+                                    * * * *] -->|Run Command|
+                                    ConsoleCmd[proactive:run-scheduler]
+                                    ConsoleCmd -->|Query Pending NextRun <= Now|
+                                    TriggerTable ConsoleCmd -->|Execute ECA
+                                    actions| ExecuteActions ConsoleCmd
+                                    -->|Update status to completed| TriggerTable
+                                    class UserInput,RuleController route; class
+                                    NlpService,WildcardHook service; class
+                                    LaravelEvents,ContactMsgListener listener;
+                                    class
+                                    RuleTable,TriggerTable,NotificationLog,AutoLog
+                                    model; class CronTask,ConsoleCmd scheduler;
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: TECHNICAL MECHANICS -->
+                    <div id="tab-mechanics" class="tab-pane hidden space-y-8">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h3 class="text-2xl font-bold text-white">
+                                <i
+                                    class="fa-solid fa-gears text-emerald-400 me-2"
+                                ></i>
+                                Runtime Engine Mechanics
+                            </h3>
+                            <p class="text-sm text-slate-400">
+                                Deep-dive technical execution logic for
+                                bootstrapping, ingestion queues, batch sync
+                                loops, and ECA evaluation chains.
+                            </p>
+                        </div>
+
+                        <!-- Bootstrap & Running -->
+                        <div
+                            class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 glass-panel"
+                        >
+                            <h4
+                                class="font-bold text-white text-md border-b border-slate-800 pb-2"
+                            >
+                                <i
+                                    class="fa-solid fa-docker text-emerald-400 mr-2"
+                                ></i>
+                                1.2 Running & Bootstrapping WAHA
+                            </h4>
+                            <p class="text-xs text-slate-300">
+                                The WAHA WhatsApp integration requires a running
+                                instance of the WhatsApp HTTP API server
+                                (typically running in a Docker container).
+                            </p>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-300"
+                            >
+                                <div class="space-y-2">
+                                    <p>
+                                        <strong
+                                            >Default Port & Endpoint:</strong
+                                        >
+                                        The WAHA server operates on port
+                                        <code>3333</code> (as checked by the
+                                        startup scripts) or port
+                                        <code>3000</code> (development
+                                        fallback).
+                                    </p>
+                                    <p>
+                                        <strong>Startup Verification:</strong>
+                                        On Windows local deployments, the
+                                        <code>start-services.bat</code> script
+                                        verifies if WAHA is responding on port
+                                        <code>3333</code>. If not, it warns that
+                                        the Docker container must be manually
+                                        initialized.
+                                    </p>
+                                </div>
+                                <div class="space-y-2">
+                                    <p>
+                                        <strong>Engine Service Binding:</strong>
+                                        The Laravel application registers the
+                                        WAHA service in
+                                        <code>AppServiceProvider.php</code> as a
+                                        singleton:
+                                    </p>
+                                    <pre
+                                        class="bg-slate-950 p-3 rounded font-mono text-[10px] text-emerald-400 border border-slate-800"
+                                    >
+$this->app->singleton('nexus.whatsapp', function ($app) {
+    return new WAHAService($app['config']);
+});</pre
+                                    >
+                                </div>
+                            </div>
+                            <div
+                                class="bg-slate-950 p-4 rounded border border-slate-800 text-xs space-y-2"
+                            >
+                                <span
+                                    class="text-slate-300 font-semibold block mb-1"
+                                    >Configuration & Credentials:</span
+                                >
+                                <p class="text-slate-400">
+                                    WAHA settings are evaluated at runtime by
+                                    checking the <code>Setting</code> model
+                                    (cached via
+                                    <code>SettingCacheService</code>) and
+                                    credentials fallbacks:
+                                </p>
+                                <ul
+                                    class="list-disc pl-4 space-y-1 text-slate-400"
+                                >
+                                    <li>
+                                        <strong>API URL:</strong>
+                                        <code>Setting::get('waha_url')</code> ➔
+                                        Falls back to
+                                        <code
+                                            >config('services.waha.api_url')</code
+                                        >
+                                        or <code>http://localhost:3333</code>.
+                                    </li>
+                                    <li>
+                                        <strong>API Token / Key:</strong>
+                                        <code
+                                            >Setting::get('waha_api_key')</code
+                                        >
+                                        ➔ Falls back to
+                                        <code
+                                            >config('services.waha.api_token')</code
+                                        >.
+                                    </li>
+                                    <li>
+                                        <strong>Session Name:</strong> Defaults
+                                        to <code>'default'</code>.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Ingestion Mechanics -->
+                        <div
+                            class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 glass-panel"
+                        >
+                            <h4
+                                class="font-bold text-white text-md border-b border-slate-800 pb-2"
+                            >
+                                <i
+                                    class="fa-solid fa-right-to-bracket text-emerald-400 mr-2"
+                                ></i>
+                                1.3 Core Ingestion & Synchronization Mechanics
+                            </h4>
+                            <p class="text-xs text-slate-400">
+                                WAHA coordinates two distinct synchronization
+                                paradigms: Real-time Webhook Ingestion and Batch
+                                Jobs.
+                            </p>
+
+                            <div class="space-y-4 text-xs text-slate-300">
+                                <!-- Inbound -->
+                                <div
+                                    class="bg-slate-950/60 p-4 rounded border border-slate-800 space-y-2"
+                                >
+                                    <h5 class="font-semibold text-white">
+                                        A. Real-time Inbound Flow (Webhook
+                                        Ingestion)
+                                    </h5>
+                                    <p>
+                                        <strong>Ingestion Point:</strong>
+                                        <code>POST /api/webhooks/waha</code>
+                                        routes payloads to
+                                        <code
+                                            >WebhookController@handleWahaWebhook</code
+                                        >.
+                                    </p>
+                                    <p>
+                                        <strong
+                                            >Raw Persistence &
+                                            Deduplication:</strong
+                                        >
+                                        <code>WahaWebhookIngestionService</code>
+                                        checks
+                                        <code
+                                            >PeopleConnectRawProviderEvent</code
+                                        >
+                                        to prevent processing identical message
+                                        payloads twice. It creates a
+                                        <code>pending</code> raw event and
+                                        dispatches the background worker.
+                                    </p>
+                                    <p>
+                                        <strong>Entity Resolution:</strong>
+                                        <code>ProcessWahaWebhookJob</code>
+                                        executes asynchronously to:
+                                    </p>
+                                    <ul
+                                        class="list-disc pl-5 space-y-1 text-slate-400"
+                                    >
+                                        <li>
+                                            Strip phone number suffixes
+                                            (<code>@c.us</code>).
+                                        </li>
+                                        <li>
+                                            Resolve or create the
+                                            <code>Contact</code> using the phone
+                                            number and pushname.
+                                        </li>
+                                        <li>
+                                            Link the message to a
+                                            <code
+                                                >PeopleConnectConversation</code
+                                            >
+                                            and a
+                                            <code>PeopleConnectSession</code>.
+                                        </li>
+                                        <li>
+                                            Insert the record into the
+                                            <code>contact_messages</code>
+                                            database table.
+                                        </li>
+                                    </ul>
+                                    <p>
+                                        <strong
+                                            >Downstream AI & Web
+                                            Actions:</strong
+                                        >
+                                        Launches
+                                        <code
+                                            >AnalyzePeopleConnectMessageJob</code
+                                        >
+                                        to perform semantic tagging, and
+                                        triggers the
+                                        <code
+                                            >PeopleConnectRealtimeBroadcaster</code
+                                        >
+                                        to broadcast via Laravel Echo (<code
+                                            >message.received</code
+                                        >
+                                        event).
+                                    </p>
+                                </div>
+
+                                <!-- Outbound -->
+                                <div
+                                    class="bg-slate-950/60 p-4 rounded border border-slate-800 space-y-2"
+                                >
+                                    <h5 class="font-semibold text-white">
+                                        B. Outbound Delivery Flow
+                                    </h5>
+                                    <p>
+                                        When an agent or user posts a message
+                                        via the dashboard, it is stored as
+                                        <code>outbound</code> in the
+                                        <code>contact_messages</code> table.
+                                    </p>
+                                    <p>
+                                        <code>DispatchWahaMessageJob</code> is
+                                        dispatched to process delivery.
+                                        <code>WahaMessageDispatcher</code>
+                                        issues an HTTP POST to
+                                        <code>{$wahaUrl}/api/sendText</code>
+                                        with the payload:
+                                    </p>
+                                    <pre
+                                        class="bg-slate-950 p-3 rounded font-mono text-[10px] text-emerald-400 border border-slate-800"
+                                    >
+{
+  "session": "default",
+  "chatId": "123456789@c.us",
+  "text": "Message body here"
+}</pre
+                                    >
+                                    <p>
+                                        The delivery attempt status is logged in
+                                        <code
+                                            >people_connect_delivery_attempts</code
+                                        >.
+                                    </p>
+                                </div>
+
+                                <!-- Bulk Historical Sync -->
+                                <div
+                                    class="bg-slate-950/60 p-4 rounded border border-slate-800 space-y-2"
+                                >
+                                    <h5 class="font-semibold text-white">
+                                        C. Bulk Historical Synchronization
+                                    </h5>
+                                    <p>
+                                        • <strong>Sync Contacts:</strong>
+                                        <code>SyncWahaContactsJob</code> queries
+                                        <code
+                                            >GET
+                                            /api/contacts/all?session=default</code
+                                        >, identifies contacts present in WAHA
+                                        but missing in Nexus, and inserts them.
+                                    </p>
+                                    <p>
+                                        • <strong>Sync Messages:</strong>
+                                        <code>SyncWahaMessagesJob</code>
+                                        iterates through synced contacts and
+                                        requests
+                                        <code
+                                            >GET
+                                            /api/chats/{chatId}/messages?session=default&limit=100</code
+                                        >.
+                                    </p>
+                                    <p>
+                                        • <strong>Single Contact Sync:</strong>
+                                        <code
+                                            >SyncSingleContactMessagesJob</code
+                                        >
+                                        fetches the full history for a
+                                        particular contact. It chunks historical
+                                        message arrays (500 per chunk) and runs
+                                        <code>ProcessWahaMessageChunkJob</code>
+                                        in parallel for high-speed insertion.
+                                    </p>
+                                    <div
+                                        class="bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 p-2.5 rounded text-[10px]"
+                                    >
+                                        <strong>WAHA Plus Requirement:</strong>
+                                        Historical message synchronization using
+                                        <code
+                                            >/api/chats/{chatId}/messages</code
+                                        >
+                                        or
+                                        <code
+                                            >/api/default/chats/{chatId}/messages</code
+                                        >
+                                        requires the
+                                        <strong>WAHA Plus</strong> (commercial)
+                                        edition. In the core edition, these
+                                        endpoints return
+                                        <code>404 Not Found</code>, which is
+                                        caught and logged as a warning.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ECA Condition Action Loop -->
+                        <div
+                            class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 glass-panel"
+                        >
+                            <h4
+                                class="font-bold text-white text-md border-b border-slate-800 pb-2"
+                            >
+                                <i
+                                    class="fa-solid fa-arrows-spin text-emerald-400 mr-2"
+                                ></i>
+                                2.3 Condition & Action Execution Loops
+                            </h4>
+
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-300"
+                            >
+                                <!-- Event Based Loop -->
+                                <div
+                                    class="bg-slate-950 p-4 rounded border border-slate-800 space-y-2"
+                                >
+                                    <h5 class="font-semibold text-indigo-400">
+                                        A. The Event-Based Loop
+                                    </h5>
+                                    <p>
+                                        Event-based execution runs in response
+                                        to application events.
+                                    </p>
+                                    <p>
+                                        <strong>Wildcard Hook:</strong>
+                                        <code>WorkflowEventTriggerService</code>
+                                        registers a wildcard listener
+                                        <code>Event::listen('*')</code> that
+                                        intercepts all application events
+                                        (excluding framework defaults).
+                                    </p>
+                                    <p>
+                                        <strong>Explicit Listening:</strong>
+                                        <code
+                                            >ContactMessageReceivedListener</code
+                                        >
+                                        listens for message events.
+                                    </p>
+                                    <p>
+                                        <strong>Condition Matching:</strong> The
+                                        listener queries active rules matching
+                                        <code>event_type</code> and evaluates
+                                        the conditions:
+                                    </p>
+                                    <pre
+                                        class="bg-slate-950 p-3 rounded font-mono text-[10px] text-emerald-400 border border-slate-800"
+                                    >
+// Checks if the rule contact name matches the incoming message sender
+if (isset($conditions['contact_name']) && strtolower($conditions['contact_name']) !== strtolower($contactName)) {
+    $match = false;
+}
+// Checks if the incoming message text contains the target topic
+if (isset($conditions['topic']) && ! Str::contains(strtolower($topic), strtolower($conditions['topic']))) {
+    $match = false;
+}</pre
+                                    >
+                                    <p>
+                                        <strong>Action Execution:</strong> If
+                                        <code>$match</code> is true, it
+                                        initiates simulated replies, inserts
+                                        notification requests into
+                                        <code>notification_logs</code>, and
+                                        records execution metadata in the
+                                        <code>autonomous_logs</code> table.
+                                    </p>
+                                </div>
+
+                                <!-- Time Based Loop -->
+                                <div
+                                    class="bg-slate-950 p-4 rounded border border-slate-800 space-y-2"
+                                >
+                                    <h5 class="font-semibold text-emerald-400">
+                                        B. The Time-Based Loop (Scheduler
+                                        Command)
+                                    </h5>
+                                    <p>
+                                        Time-based actions run in the background
+                                        via cron.
+                                    </p>
+                                    <p>
+                                        <strong>Cron Trigger:</strong> Laravel
+                                        Scheduler runs
+                                        <code
+                                            >php artisan
+                                            proactive:run-scheduler</code
+                                        >
+                                        every minute.
+                                    </p>
+                                    <p>
+                                        <strong>Command Execution:</strong>
+                                        <code>ProactiveSchedulerCommand</code>
+                                        runs:
+                                    </p>
+                                    <pre
+                                        class="bg-slate-950 p-3 rounded font-mono text-[10px] text-emerald-400 border border-slate-800"
+                                    >
+$triggers = DB::table('proactive_triggers')
+    ->where('status', 'pending')
+    ->where('next_run_at', '<=', Carbon::now())
+    ->get();</pre
+                                    >
+                                    <p>
+                                        <strong>ECA Evaluation:</strong> For
+                                        each trigger, it fetches the
+                                        corresponding active
+                                        <code>eca_rule</code>, dispatches
+                                        pending notification logs to
+                                        <code>notification_logs</code>, inserts
+                                        execution outcomes into
+                                        <code>autonomous_logs</code>, and marks
+                                        the trigger as
+                                        <code>completed</code> (or
+                                        <code>failed</code> in case of errors).
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB: FUNCTION WORKFLOWS -->
+                    <div id="tab-workflows" class="tab-pane hidden space-y-6">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h3 class="text-2xl font-bold text-white">
+                                <i
+                                    class="fa-solid fa-route text-emerald-400 me-2"
+                                ></i>
+                                Function Workflows & Sequence Flowcharts
+                            </h3>
+                            <p class="text-sm text-slate-400">
+                                Select a critical Controller, Service or Job
+                                method to visualize its exact technical
+                                workflow, dependencies, database queries, and
+                                returned results.
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                            <!-- Sidebar list of workflows -->
+                            <div
+                                class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2 h-[550px] overflow-y-auto glass-panel"
+                            >
+                                <span
+                                    class="text-xs text-slate-500 uppercase tracking-wider block font-bold mb-2"
+                                    >Select Function Method</span
+                                >
+                                <button
+                                    onclick="selectWorkflow('waha-ingest')"
+                                    class="w-full text-left font-mono text-xs px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/50 transition-all block border border-transparent"
+                                    id="wf-btn-waha-ingest"
+                                >
+                                    WahaWebhookIngestionService@ingest
+                                </button>
+                                <button
+                                    onclick="
+                                        selectWorkflow(
+                                            'waha-process-webhook-job',
+                                        )
+                                    "
+                                    class="w-full text-left font-mono text-xs px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/50 transition-all block border border-transparent"
+                                    id="wf-btn-waha-process-webhook-job"
+                                >
+                                    ProcessWahaWebhookJob@handle
+                                </button>
+                                <button
+                                    onclick="selectWorkflow('nlp-parse')"
+                                    class="w-full text-left font-mono text-xs px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/50 transition-all block border border-transparent"
+                                    id="wf-btn-nlp-parse"
+                                >
+                                    NlpParserService@parse
+                                </button>
+                                <button
+                                    onclick="selectWorkflow('wildcard-trigger')"
+                                    class="w-full text-left font-mono text-xs px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/50 transition-all block border border-transparent"
+                                    id="wf-btn-wildcard-trigger"
+                                >
+                                    WorkflowEventTriggerService
+                                </button>
+                                <button
+                                    onclick="
+                                        selectWorkflow('msg-received-listener')
+                                    "
+                                    class="w-full text-left font-mono text-xs px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/50 transition-all block border border-transparent"
+                                    id="wf-btn-msg-received-listener"
+                                >
+                                    ContactMessageReceivedListener
+                                </button>
+                                <button
+                                    onclick="
+                                        selectWorkflow('scheduler-command')
+                                    "
+                                    class="w-full text-left font-mono text-xs px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/50 transition-all block border border-transparent"
+                                    id="wf-btn-scheduler-command"
+                                >
+                                    ProactiveSchedulerCommand@handle
+                                </button>
+                            </div>
+
+                            <!-- Workflow dynamic output panel -->
+                            <div
+                                class="lg:col-span-3 bg-slate-900 border border-slate-800 rounded-xl p-6 h-[550px] overflow-y-auto space-y-4 glass-panel"
+                            >
+                                <div
+                                    id="wf-details-container"
+                                    class="space-y-4"
+                                >
+                                    <h4
+                                        id="wf-title"
+                                        class="text-lg font-bold text-emerald-400 font-mono"
+                                    >
+                                        Select a function workflow
+                                    </h4>
+                                    <p
+                                        id="wf-desc"
+                                        class="text-xs text-slate-400"
+                                    ></p>
+
+                                    <div
+                                        class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3"
+                                    >
+                                        <span
+                                            class="text-[10px] text-slate-500 font-bold uppercase block"
+                                            >Technical Sequence Diagram</span
+                                        >
+                                        <div
+                                            id="wf-mermaid-render-box"
+                                            class="flex justify-center py-4 bg-slate-900/50 rounded-lg border border-slate-800/50 overflow-x-auto min-h-[300px]"
+                                        >
+                                            <!-- Mermaid will be placed here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: NLP PARSER SANDBOX -->
+                    <div id="tab-nlp" class="tab-pane hidden space-y-6">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h3 class="text-2xl font-bold text-white">
+                                <i
+                                    class="fa-solid fa-brain text-emerald-400 me-2"
+                                ></i>
+                                NLP Rule Parser Sandbox
+                            </h3>
+                            <p class="text-sm text-slate-400">
+                                Write custom natural language instructions to
+                                see how the NlpParserService parses them into
+                                event definitions, filters, conditions, and
+                                trigger dates.
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div
+                                class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 lg:col-span-1 glass-panel"
+                            >
+                                <h4 class="font-bold text-white text-sm">
+                                    Natural Language Input
+                                </h4>
+                                <textarea
+                                    id="nlp-input"
+                                    rows="4"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono"
+                                    placeholder="e.g. 'if Mohamed contacts me regarding invoice, reply with pay invoice and notify me'"
+                                ></textarea>
+
+                                <div class="space-y-2">
+                                    <span
+                                        class="text-[10px] text-slate-500 uppercase font-bold block"
+                                        >Quick Templates</span
+                                    >
+                                    <button
+                                        onclick="setNlpPreset('event')"
+                                        class="w-full text-left px-3 py-2 bg-slate-950 hover:bg-slate-800 rounded text-[11px] font-mono text-slate-300 border border-slate-800"
+                                    >
+                                        Event: "If Ahmed contacts me regarding
+                                        price..."
+                                    </button>
+                                    <button
+                                        onclick="setNlpPreset('time')"
+                                        class="w-full text-left px-3 py-2 bg-slate-950 hover:bg-slate-800 rounded text-[11px] font-mono text-slate-300 border border-slate-800"
+                                    >
+                                        Time: "Remind me tomorrow at 3 PM about
+                                        meeting..."
+                                    </button>
+                                </div>
+
+                                <button
+                                    onclick="parseRuleNLP()"
+                                    class="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg text-xs font-bold transition-all"
+                                >
+                                    Execute NlpParserService
+                                </button>
+                            </div>
+
+                            <!-- JSON Output & Parser Regex Details -->
+                            <div class="lg:col-span-2 space-y-6">
+                                <div
+                                    class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-2 glass-panel"
+                                >
+                                    <h4 class="font-bold text-white text-sm">
+                                        Compiled ECA JSON Schema (Parsed Output)
+                                    </h4>
+                                    <pre
+                                        id="nlp-output"
+                                        class="bg-slate-950 border border-slate-800 rounded-lg p-4 text-[11px] text-emerald-400 font-mono h-[200px] overflow-y-auto"
+                                    >
+{ "status": "idle" }</pre
+                                    >
+                                </div>
+
+                                <!-- Regex breakdown -->
+                                <div
+                                    class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-3 text-xs text-slate-300 glass-panel"
+                                >
+                                    <h4
+                                        class="font-bold text-white text-sm border-b border-slate-800 pb-2"
+                                    >
+                                        <i
+                                            class="fa-solid fa-code text-indigo-400 mr-2"
+                                        ></i>
+                                        2.2 Natural Language Parsing Logic
+                                    </h4>
+                                    <p>
+                                        At the heart of rule creation is the
+                                        <code>NlpParserService</code>. It parses
+                                        user-defined natural language rules into
+                                        JSON schemas:
+                                    </p>
+                                    <div class="space-y-2 pl-2">
+                                        <p>
+                                            <strong
+                                                >A. Time-Based Extraction (e.g.
+                                                "Remind me tomorrow at 3 PM
+                                                about X"):</strong
+                                            >
+                                        </p>
+                                        <ul
+                                            class="list-disc pl-5 space-y-1 text-slate-400"
+                                        >
+                                            <li>
+                                                Identifies trigger keywords
+                                                (<code>remind me</code>,
+                                                <code>send a message to</code>,
+                                                <code>notify me</code>).
+                                            </li>
+                                            <li>
+                                                Extracts timestamps relative to
+                                                <code>Carbon::now()</code> using
+                                                strings like
+                                                <code>tomorrow</code> or regex
+                                                queries like
+                                                <code
+                                                    >/at
+                                                    (\d+)\s*(am/pm)?/i</code
+                                                >.
+                                            </li>
+                                            <li>
+                                                Builds a
+                                                <code>time_based</code> rule
+                                                with
+                                                <code>next_run_at</code> filled.
+                                            </li>
+                                            <li>
+                                                Generates a notification message
+                                                from substrings following
+                                                <code>about</code>.
+                                            </li>
+                                        </ul>
+                                        <p class="mt-2">
+                                            <strong
+                                                >B. Event-Based Extraction (e.g.
+                                                "If Mohamed contacts me
+                                                regarding X, reply with Y, and
+                                                then notify me"):</strong
+                                            >
+                                        </p>
+                                        <ul
+                                            class="list-disc pl-5 space-y-1 text-slate-400"
+                                        >
+                                            <li>
+                                                Detects event prefixes
+                                                (<code>if</code>,
+                                                <code>when</code>).
+                                            </li>
+                                            <li>
+                                                Sets
+                                                <code
+                                                    >event_type =
+                                                    'ContactMessageReceived'</code
+                                                >.
+                                            </li>
+                                            <li>
+                                                Extracts filters:
+                                                <code>contact_name</code> from
+                                                <code
+                                                    >/if (.*?) contacts
+                                                    me/i</code
+                                                >
+                                                and <code>topic</code> from
+                                                <code
+                                                    >/regarding
+                                                    (.*?)(?:,|$)/i</code
+                                                >.
+                                            </li>
+                                            <li>
+                                                Extracts actions:
+                                                <code>reply</code> content from
+                                                <code
+                                                    >/reply with
+                                                    (.*?)(?:,|$)/i</code
+                                                >
+                                                and <code>notify</code> action
+                                                if <code>notify me</code> is
+                                                present.
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: CLASS EXPLORER -->
+                    <div id="tab-code" class="tab-pane hidden space-y-6">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h3 class="text-2xl font-bold text-white">
+                                <i
+                                    class="fa-solid fa-code text-emerald-400 me-2"
+                                ></i>
+                                Class Explorer & Source Code
+                            </h3>
+                            <p class="text-sm text-slate-400">
+                                Browse through the classes and functions defined
+                                in the codebase for both integrations.
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                            <!-- Sidebar -->
+                            <div
+                                class="bg-slate-900 border border-slate-800 rounded-xl p-4 h-[550px] overflow-y-auto space-y-1.5 glass-panel"
+                            >
+                                <span
+                                    class="text-xs text-slate-500 uppercase tracking-wider block font-bold mb-2"
+                                    >Class Catalog</span
+                                >
+                                <div id="class-sidebar-list" class="space-y-1">
+                                    <!-- JS Populated -->
+                                </div>
+                            </div>
+
+                            <!-- Class Details Panel -->
+                            <div
+                                class="lg:col-span-3 bg-slate-900 border border-slate-800 rounded-xl p-6 h-[550px] flex flex-col justify-between glass-panel"
+                            >
+                                <div class="overflow-y-auto">
+                                    <div
+                                        class="flex justify-between items-start border-b border-slate-800 pb-3 mb-4"
+                                    >
+                                        <div>
+                                            <h4
+                                                id="exp-class-name"
+                                                class="text-lg font-bold text-emerald-400 font-mono"
+                                            >
+                                                Select a Class
+                                            </h4>
+                                            <p
+                                                id="exp-class-desc"
+                                                class="text-xs text-slate-400 mt-1"
+                                            ></p>
+                                        </div>
+                                        <span
+                                            id="exp-class-badge"
+                                            class="px-2.5 py-1 text-[10px] bg-slate-950 border border-slate-800 rounded font-bold uppercase text-slate-400"
+                                        ></span>
+                                    </div>
+
+                                    <div class="space-y-4">
+                                        <div>
+                                            <span
+                                                class="text-[10px] text-slate-500 uppercase font-bold block mb-1"
+                                                >Key Methods & Parameters</span
+                                            >
+                                            <div
+                                                id="exp-class-methods"
+                                                class="space-y-2 text-xs"
+                                            ></div>
+                                        </div>
+                                        <div>
+                                            <span
+                                                class="text-[10px] text-slate-500 uppercase font-bold block mb-1"
+                                                >PHP Code Snippet</span
+                                            >
+                                            <pre
+                                                class="bg-slate-950 rounded-lg p-3 font-mono text-[10px] text-emerald-400 border border-slate-900 whitespace-pre overflow-x-auto"
+                                                id="exp-class-code"
+                                            ></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 5: API ENDPOINTS -->
+                    <div id="tab-endpoints" class="tab-pane hidden space-y-6">
+                        <div
+                            class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 glass-panel"
+                        >
+                            <h3
+                                class="font-bold text-white text-lg border-b border-slate-800 pb-3"
+                            >
+                                <i
+                                    class="fa-solid fa-code text-emerald-400 mr-2"
+                                ></i>
+                                1.4 & 2.4 REST API Route Reference
+                            </h3>
+                            <div class="overflow-x-auto">
+                                <table
+                                    class="w-full text-left text-xs font-mono"
+                                >
+                                    <thead>
+                                        <tr
+                                            class="border-b border-slate-800 text-slate-500"
+                                        >
+                                            <th class="pb-2 font-semibold">
+                                                Method
+                                            </th>
+                                            <th class="pb-2 font-semibold">
+                                                Route Endpoint
+                                            </th>
+                                            <th class="pb-2 font-semibold">
+                                                Controller Action
+                                            </th>
+                                            <th class="pb-2 font-semibold">
+                                                Description
+                                            </th>
+                                            <th class="pb-2 font-semibold">
+                                                Parameters / Payload
+                                            </th>
+                                            <th
+                                                class="pb-2 font-semibold text-right"
+                                            >
+                                                Response JSON
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-800/50">
+                                        <!-- WAHA Endpoints -->
+                                        <tr>
+                                            <td
+                                                class="py-3 text-emerald-400 font-bold"
+                                            >
+                                                POST
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/webhooks/waha
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                WebhookController@handleWahaWebhook
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Ingests real-time events from
+                                                the WAHA service
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                JSON Webhook body containing
+                                                event, session, and message
+                                                payload
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"success": true}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                class="py-3 text-emerald-400 font-bold"
+                                            >
+                                                POST
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/contacts/import/whatsapp/waha
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                ContactImportController@importWaha
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Imports contacts directly from
+                                                WAHA list
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Query parameters or upload
+                                                settings
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"success": true, "imported":
+                                                42}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                class="py-3 text-sky-400 font-bold"
+                                            >
+                                                GET
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/settings/waha/webhook-url
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                SettingController@getWahaWebhookUrl
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Resolves the external endpoint
+                                                URL of the application webhook
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                None (uses URL generation
+                                                service)
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"url": "http://..."}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                class="py-3 text-emerald-400 font-bold"
+                                            >
+                                                POST
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/settings/waha/test-connection
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                SettingController@testWahaConnection
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Pings the WAHA API server to
+                                                check status and latency
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                None
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"success": true, "ms": 14}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                class="py-3 text-emerald-400 font-bold"
+                                            >
+                                                POST
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/settings/waha/test-webhook
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                SettingController@testWahaWebhook
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Simulates a webhook delivery to
+                                                verify handling chain
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Mock webhook payload structure
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"success": true}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                class="py-3 text-sky-400 font-bold"
+                                            >
+                                                GET
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/settings/waha-manage/status
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                WahaManageController@status
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Returns metrics about synced
+                                                records and active
+                                                synchronization jobs
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                None
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"synced_contacts": 120,
+                                                "syncing": false}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                class="py-3 text-sky-400 font-bold"
+                                            >
+                                                GET
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/settings/waha-manage/contacts
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                WahaManageController@contacts
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Retrieves a paginated list of
+                                                contacts synced from WAHA
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                <code>limit</code> (default 50),
+                                                <code>offset</code> (default 0)
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"data": [...]}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                class="py-3 text-emerald-400 font-bold"
+                                            >
+                                                POST
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/settings/waha-manage/sync/start
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                WahaManageController@startSync
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Launches a background job to
+                                                synchronize contacts or messages
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                <code>type</code> (string:
+                                                <code>sync_contacts</code> or
+                                                <code>sync_messages</code>)
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"success": true}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                class="py-3 text-emerald-400 font-bold"
+                                            >
+                                                POST
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/settings/waha-manage/sync/contact/{id}
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                WahaManageController@startContactMessageSync
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Triggers single-contact message
+                                                synchronization
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                <code>id</code> (integer,
+                                                Contact ID)
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"success": true}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                class="py-3 text-emerald-400 font-bold"
+                                            >
+                                                POST
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/settings/waha-manage/sync/{id}/pause
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                WahaManageController@pauseSync
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Pauses an active, running sync
+                                                process
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                <code>id</code> (integer,
+                                                Process ID)
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"success": true}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                class="py-3 text-emerald-400 font-bold"
+                                            >
+                                                POST
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/settings/waha-manage/analyze/start
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                WahaManageController@startAnalysis
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Initiates an AI batch profile
+                                                analysis on selected contacts
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                <code>agent_id</code>,
+                                                <code>model_id</code>,
+                                                <code>message_limit</code>,
+                                                <code>contact_ids</code>,
+                                                <code>extract_preferences</code>
+                                                (boolean)
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"success": true}
+                                            </td>
+                                        </tr>
+
+                                        <!-- Proactive AI Endpoints -->
+                                        <tr>
+                                            <td
+                                                class="py-3 text-sky-400 font-bold"
+                                            >
+                                                GET
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/proactive/rules
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                ProactiveAIController@indexRules
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Lists all active and inactive
+                                                ECA rules
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                None
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"success": true, "data": [...]}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                class="py-3 text-emerald-400 font-bold"
+                                            >
+                                                POST
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/proactive/rules
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                ProactiveAIController@storeRule
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Compiles a natural language rule
+                                                and deploys it
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                <code
+                                                    >{"natural_language_rule":
+                                                    "text", "name":
+                                                    "name"}</code
+                                                >
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"success": true, "data": {...}}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                class="py-3 text-emerald-400 font-bold"
+                                            >
+                                                PATCH
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/proactive/rules/{id}/toggle
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                ProactiveAIController@toggleRule
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Toggles the active status of an
+                                                ECA rule
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                None
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"success": true, "is_active":
+                                                true}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                class="py-3 text-red-400 font-bold"
+                                            >
+                                                DELETE
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/proactive/rules/{id}
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                ProactiveAIController@destroyRule
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Deletes a rule and cancels any
+                                                pending triggers
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                None
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"success": true}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                class="py-3 text-sky-400 font-bold"
+                                            >
+                                                GET
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/proactive/triggers
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                ProactiveAIController@indexTriggers
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Fetches the list of pending,
+                                                completed, or failed triggers
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                None
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"success": true, "data": [...]}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                class="py-3 text-sky-400 font-bold"
+                                            >
+                                                GET
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/proactive/logs
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                ProactiveAIController@indexLogs
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Returns a history of all
+                                                executed autonomous actions
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                None
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"success": true, "data": [...]}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                class="py-3 text-emerald-400 font-bold"
+                                            >
+                                                POST
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/proactive-ai/suggestions/{id}/approve
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                (Closure in routes/api.php)
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Approves an AI-generated
+                                                optimization suggestion
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                None
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"message": "Suggestion
+                                                approved."}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                class="py-3 text-emerald-400 font-bold"
+                                            >
+                                                POST
+                                            </td>
+                                            <td class="py-3 text-slate-200">
+                                                /api/v1/proactive-ai/suggestions/{id}/dismiss
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                (Closure in routes/api.php)
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                Dismisses an AI-generated
+                                                optimization suggestion
+                                            </td>
+                                            <td class="py-3 text-slate-400">
+                                                None
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                {"message": "Suggestion
+                                                dismissed."}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 6: FILE MAPPINGS -->
+                    <div id="tab-mappings" class="tab-pane hidden space-y-6">
+                        <!-- File Mappings Grid -->
+                        <div
+                            class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 glass-panel"
+                        >
+                            <h3 class="font-bold text-white text-lg">
+                                <i
+                                    class="fa-solid fa-folder-tree text-emerald-400 mr-2"
+                                ></i>
+                                1.5 & 2.5 File Mappings Directory
+                            </h3>
+                            <p class="text-xs text-slate-400">
+                                The table below maps every file in the codebase
+                                dedicated to the WAHA WhatsApp integration and
+                                the Proactive AI engine.
+                            </p>
+
+                            <div class="overflow-x-auto">
+                                <table
+                                    class="w-full text-left text-xs font-mono"
+                                >
+                                    <thead>
+                                        <tr
+                                            class="border-b border-slate-800 text-slate-500"
+                                        >
+                                            <th class="pb-2">File Path</th>
+                                            <th class="pb-2">
+                                                Component Category
+                                            </th>
+                                            <th class="pb-2 text-right">
+                                                Technical Description
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-800/40">
+                                        <!-- WAHA Files -->
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                config/services.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Configuration
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Defines default WAHA config keys
+                                                (url, api_key, api_token,
+                                                webhook_secret).
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Services/WhatsApp/WAHAService.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Core Service
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Main client wrapper using
+                                                Laravel Http client. Holds basic
+                                                interaction methods.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Services/PeopleConnect/LiveMsgsSyncService.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Synchronization
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Coordinates batch API calls,
+                                                loops over datasets, handles
+                                                paused jobs, and dispatches
+                                                insertion processes.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Services/PeopleConnect/WahaWebhookIngestionService.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Ingestion
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Receives raw webhook payloads,
+                                                logs them for audit trails,
+                                                handles duplicates, and queues
+                                                the job.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Services/PeopleConnect/WahaMessageDispatcher.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Delivery
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Invokes WAHA POST /api/sendText
+                                                to send chat responses and
+                                                updates delivery logs.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Services/PeopleConnect/WahaAnalysisService.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                AI Analysis
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Iterates over contact histories,
+                                                feeds messages to models, and
+                                                extracts traits.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Http/Controllers/WahaManageController.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                API Controller
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Interfaces the dashboard
+                                                settings tab with the background
+                                                synchronization operations.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Http/Controllers/WebhookController.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Webhook Gateway
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Route endpoint that handles
+                                                incoming POST webhook requests.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Jobs/PeopleConnect/SyncWahaContactsJob.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Queue Job
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Job wrapper that executes the
+                                                contact list synchronization.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Jobs/PeopleConnect/SyncWahaMessagesJob.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Queue Job
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Job wrapper that executes
+                                                historical message downloads.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Jobs/PeopleConnect/SyncSingleContactMessagesJob.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Queue Job
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Job wrapper that synchronizes
+                                                history for one specific
+                                                contact.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Jobs/ProcessWahaMessageChunkJob.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Queue Job
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Bulk inserts 500-message arrays
+                                                to databases, handles metadata
+                                                extraction, and triggers Laravel
+                                                Echo progress indicators.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Jobs/ProcessWahaWebhookJob.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Queue Job
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Dissect webhook payload,
+                                                resolves models, links records,
+                                                and triggers the AI analysis
+                                                worker.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Jobs/PeopleConnect/DispatchWahaMessageJob.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Queue Job
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Dispatcher wrapper executing
+                                                outbound message delivery
+                                                attempts.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Jobs/PeopleConnect/WahaBatchAnalyzeJob.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Queue Job
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Trigger for batch AI parsing on
+                                                user records.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Jobs/PeopleConnect/SyncWahaConversationsJob.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Queue Job
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Staged job for chat thread
+                                                synchronization.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Jobs/PeopleConnect/ReconcileWahaDeliveryStatusJob.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Queue Job
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Staged job for tracking message
+                                                delivery statuses.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                resources/views/hubs/waha.blade.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                User Interface
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Control panel interface showing
+                                                sync status, terminal logger
+                                                output, and paginated contact
+                                                views.
+                                            </td>
+                                        </tr>
+
+                                        <!-- Proactive AI Files -->
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Services/Proactive/NlpParserService.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Core Engine
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Contains the semantic
+                                                translation logic that extracts
+                                                triggers, conditions, and
+                                                actions from natural language
+                                                input.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Console/Commands/ProactiveSchedulerCommand.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Artisan Console
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Evaluates time-based rules,
+                                                fires notification payloads, and
+                                                records logs.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Http/Controllers/ProactiveAIController.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                API Controller
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Exposes endpoints to manage
+                                                rules, inspect triggers, and
+                                                view logs.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Listeners/ContactMessageReceivedListener.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Event Listener
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Listens for messages, matches
+                                                sender/topic filters, and
+                                                executes the rule actions.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Services/Workflows/WorkflowEventTriggerService.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Event Hook
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Uses a wildcard listener to
+                                                inspect all application events
+                                                and trigger matching rules.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Models/EcaRule.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Eloquent Model
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Represents an ECA rule
+                                                (eca_rules table), casting JSON
+                                                fields.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Models/ProactiveTrigger.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Eloquent Model
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Tracks triggers
+                                                (proactive_triggers table) for
+                                                time-based scheduling.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                app/Models/AutonomousLog.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Eloquent Model
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Stores the history of autonomous
+                                                executions.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                database/migrations/2026_05_24_233351_create_proactive_ai_tables.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                Database
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                Defines the tables for
+                                                eca_rules, proactive_triggers,
+                                                and autonomous_logs.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3 text-slate-200">
+                                                resources/views/hubs/proactive-ai.blade.php
+                                            </td>
+                                            <td class="py-3 text-indigo-400">
+                                                User Interface
+                                            </td>
+                                            <td
+                                                class="py-3 text-slate-400 text-right"
+                                            >
+                                                UI dashboard to view rules,
+                                                pending triggers, action logs,
+                                                and add new rules.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 7: AI COPILOT CHAT -->
+                    <div id="tab-agent" class="tab-pane hidden space-y-6">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h3 class="text-2xl font-bold text-white">
+                                <i
+                                    class="fa-solid fa-robot text-emerald-400 me-2"
+                                ></i>
+                                Nexus Copilot AI Architect
+                            </h3>
+                            <p class="text-sm text-slate-400">
+                                Ask structural questions regarding the
+                                Event-Condition-Action schemas, triggers, or
+                                WhatsApp message synchronization details.
+                            </p>
+                        </div>
+
+                        <div
+                            class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col h-[500px] glass-panel"
+                        >
+                            <!-- Chat Timeline -->
+                            <div
+                                id="agent-chat-timeline"
+                                class="flex-grow p-6 overflow-y-auto space-y-4 bg-slate-950/40"
+                            >
+                                <div class="flex items-start gap-3">
+                                    <div
+                                        class="h-8 w-8 rounded bg-gradient-to-tr from-emerald-400 to-teal-500 flex items-center justify-center font-bold text-xs text-white shrink-0"
+                                    >
+                                        AI
+                                    </div>
+                                    <div
+                                        class="bg-slate-900 text-slate-200 chat-bubble"
+                                    >
+                                        <p
+                                            class="font-semibold text-xs text-emerald-400 mb-1"
+                                        >
+                                            Nexus Copilot
+                                        </p>
+                                        Hello! I am your AI assistant for the
+                                        WAHA & Proactive AI integration. You can
+                                        ask me how rule filters operate, request
+                                        DB schema layouts, or create test
+                                        webhook payloads.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Prompt Buttons -->
+                            <div
+                                class="p-4 border-t border-slate-800 bg-slate-900/50 flex flex-wrap gap-2"
+                            >
+                                <button
+                                    onclick="sendQuickPrompt('rule')"
+                                    class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-lg text-xs font-semibold transition-all"
+                                >
+                                    <i class="fa-solid fa-code me-1"></i>
+                                    Explain Wildcard Hook
+                                </button>
+                                <button
+                                    onclick="sendQuickPrompt('schema')"
+                                    class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-lg text-xs font-semibold transition-all"
+                                >
+                                    <i class="fa-solid fa-database me-1"></i>
+                                    Show ECA Database Tables
+                                </button>
+                            </div>
+
+                            <!-- Chat Input -->
+                            <div
+                                class="p-4 border-t border-slate-800 bg-slate-950 flex gap-2"
+                            >
+                                <input
+                                    id="agent-chat-input"
+                                    type="text"
+                                    onkeydown="handleChatSubmit(event)"
+                                    placeholder="Ask about ECA listeners, scheduler rules, or WAHA webhook parameters..."
+                                    class="flex-grow bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                                />
+                                <button
+                                    onclick="submitAgentChat()"
+                                    class="px-4 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg text-xs font-bold transition-all"
+                                >
+                                    Send
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Floating Accessibility Toolbar -->
+        <div
+            class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 items-end"
+        >
+            <!-- Expanded Accessibility controls (hidden by default) -->
+            <div
+                id="accessibility-menu"
+                class="hidden flex flex-col gap-2 p-3 bg-slate-950/95 border border-slate-800 rounded-xl shadow-2xl backdrop-blur-md w-56 text-slate-200"
+            >
+                <span
+                    class="text-[9px] text-slate-500 font-bold uppercase tracking-wider text-center block mb-1"
+                    >Accessibility Controls</span
+                >
+
+                <!-- Font controls -->
+                <div
+                    class="flex items-center justify-between gap-2 border-b border-slate-800 pb-2"
+                >
+                    <span class="text-[10px] text-slate-400 font-semibold"
+                        >Font Size:</span
+                    >
+                    <div class="flex gap-1">
+                        <button
+                            onclick="changeFontSize(1)"
+                            class="h-6 w-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs"
+                            title="Increase Font"
+                        >
+                            +
+                        </button>
+                        <button
+                            onclick="changeFontSize(-1)"
+                            class="h-6 w-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs"
+                            title="Decrease Font"
+                        >
+                            -
+                        </button>
+                        <button
+                            onclick="resetFontSize()"
+                            class="h-6 px-2 rounded bg-slate-800 hover:bg-slate-700 text-white text-[9px]"
+                            title="Reset Font"
+                        >
+                            Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Scroll controls -->
+                <div
+                    class="flex items-center justify-between gap-2 border-b border-slate-800 pb-2"
+                >
+                    <span class="text-[10px] text-slate-400 font-semibold"
+                        >Scroll Page:</span
+                    >
+                    <div class="flex gap-1">
+                        <button
+                            onclick="scrollToTop()"
+                            class="h-6 w-8 rounded bg-slate-800 hover:bg-slate-700 text-white text-xs"
+                            title="Scroll to Top"
+                        >
+                            <i class="fa-solid fa-arrow-up"></i>
+                        </button>
+                        <button
+                            onclick="scrollToBottom()"
+                            class="h-6 w-8 rounded bg-slate-800 hover:bg-slate-700 text-white text-xs"
+                            title="Scroll to Bottom"
+                        >
+                            <i class="fa-solid fa-arrow-down"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Layout controls -->
+                <div
+                    class="flex items-center justify-between gap-2 border-b border-slate-800 pb-2"
+                >
+                    <span class="text-[10px] text-slate-400 font-semibold"
+                        >Sidebar:</span
+                    >
+                    <button
+                        id="sidebar-toggle-btn"
+                        onclick="toggleSidebar()"
+                        class="h-6 px-2 rounded bg-slate-800 hover:bg-slate-700 text-white text-[10px]"
+                        title="Toggle Sidebar"
+                    >
+                        Collapse
+                    </button>
+                </div>
+
+                <!-- Focus Element Zoom -->
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-[10px] text-slate-400 font-semibold"
+                        >Focus Zoom:</span
+                    >
+                    <button
+                        id="focus-zoom-btn"
+                        onclick="toggleFocusMode()"
+                        class="h-6 px-2 rounded bg-slate-800 hover:bg-slate-700 text-white text-[10px]"
+                        title="Focus element zoom"
+                    >
+                        Activate
+                    </button>
+                </div>
+            </div>
+            <!-- Floating Actions Toggle Button -->
+            <button
+                onclick="toggleAccessibilityMenu()"
+                class="h-12 w-12 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white flex items-center justify-center shadow-lg transition-all"
+                title="Accessibility Options"
+            >
+                <i class="fa-solid fa-universal-access text-lg"></i>
+            </button>
+        </div>
+
+        <!-- JS Logic Scripts -->
+        <script>
+            function switchTab(tabId) {
+                document
+                    .querySelectorAll(".tab-pane")
+                    .forEach((el) => el.classList.add("hidden"));
+                document.querySelectorAll(".tab-btn").forEach((el) => {
+                    el.classList.remove("bg-slate-800/50", "text-white");
+                    el.classList.add("text-slate-300");
+                });
+
+                document.getElementById(tabId).classList.remove("hidden");
+                const btn = document.getElementById(`btn-${tabId}`);
+                if (btn) btn.classList.add("bg-slate-800/50", "text-white");
+
+                // If workflows tab is selected, auto-select first workflow
+                if (tabId === "tab-workflows") {
+                    selectWorkflow("waha-ingest");
+                }
+            }
+
+            const classesCatalog = {
+                WAHAService: {
+                    cat: "Core Service",
+                    desc: "Main client wrapper using Laravel Http client. Holds basic interaction methods like connection tests and outbound payload formatting.",
+                    code: `class WAHAService {\n    public function testConnection(): bool {\n        // Pings the configured WAHA URL\n    }\n}`,
+                    methods: [
+                        {
+                            name: "testConnection()",
+                            desc: "Pings WAHA API server to check status and latency.",
+                        },
+                    ],
+                },
+                LiveMsgsSyncService: {
+                    cat: "Synchronization",
+                    desc: "Coordinates batch API calls to WAHA, loops over datasets, handles paused jobs, and dispatches insertion processes.",
+                    code: `class LiveMsgsSyncService {\n    public function syncAll(): void {\n        // Iterates and dispatches ProcessWahaMessageChunkJob\n    }\n}`,
+                    methods: [
+                        {
+                            name: "syncAll()",
+                            desc: "Initiates batch synchronizations for contacts and historical messages.",
+                        },
+                    ],
+                },
+                WahaWebhookIngestionService: {
+                    cat: "Ingestion Service",
+                    desc: "Ingests webhook events from WAHA, checks duplicate logs using message payload IDs, and dispatches processing jobs.",
+                    code: `class WahaWebhookIngestionService {\n    public function ingest(array $payload): void {\n        $session = $payload['session'];\n        $messageId = $payload['payload']['id'];\n        $existing = PeopleConnectRawProviderEvent::where('session_name', $session)\n            ->where('payload->payload->id', $messageId)\n            ->exists();\n        if ($existing) return;\n        ProcessWahaWebhookJob::dispatch($payload);\n    }\n}`,
+                    methods: [
+                        {
+                            name: "ingest(array $payload)",
+                            desc: "Validates payloads and schedules queue worker.",
+                        },
+                    ],
+                },
+                WahaMessageDispatcher: {
+                    cat: "Delivery",
+                    desc: "Invokes WAHA POST /api/sendText to send chat responses and updates delivery logs.",
+                    code: `class WahaMessageDispatcher {\n    public function send(string $chatId, string $text): void {\n        Http::post($url . '/api/sendText', ['chatId' => $chatId, 'text' => $text]);\n    }\n}`,
+                    methods: [
+                        {
+                            name: "send(chatId, text)",
+                            desc: "Posts raw outbound messages to WAHA server.",
+                        },
+                    ],
+                },
+                WahaAnalysisService: {
+                    cat: "AI Analysis",
+                    desc: "Iterates over contact histories, feeds messages to models, and extracts traits.",
+                    code: `class WahaAnalysisService {\n    public function analyzeProfile(Contact $contact): void {\n        // Extracts traits from chat history via AI Models Hub\n    }\n}`,
+                    methods: [
+                        {
+                            name: "analyzeProfile(contact)",
+                            desc: "Runs LLM prompts to extract personality traits.",
+                        },
+                    ],
+                },
+                WahaManageController: {
+                    cat: "API Controller",
+                    desc: "Interfaces the dashboard settings tab with the background synchronization operations.",
+                    code: `class WahaManageController extends Controller {\n    public function status(): JsonResponse {\n        // Returns metrics about synced records\n    }\n}`,
+                    methods: [
+                        { name: "status()", desc: "Returns sync metrics." },
+                        { name: "startSync()", desc: "Dispatches sync jobs." },
+                    ],
+                },
+                WebhookController: {
+                    cat: "Webhook Gateway",
+                    desc: "Route endpoint that handles incoming POST webhook requests.",
+                    code: `class WebhookController extends Controller {\n    public function handleWahaWebhook(Request $request) {\n        app(WahaWebhookIngestionService::class)->ingest($request->all());\n    }\n}`,
+                    methods: [
+                        {
+                            name: "handleWahaWebhook(Request)",
+                            desc: "Receives POST and forwards to ingestion service.",
+                        },
+                    ],
+                },
+                SyncWahaContactsJob: {
+                    cat: "Queue Job",
+                    desc: "Job wrapper that executes the contact list synchronization.",
+                    code: `class SyncWahaContactsJob implements ShouldQueue {\n    public function handle(LiveMsgsSyncService $service) {\n        $service->syncContacts();\n    }\n}`,
+                    methods: [
+                        {
+                            name: "handle()",
+                            desc: "Calls LiveMsgsSyncService to fetch all contacts.",
+                        },
+                    ],
+                },
+                SyncWahaMessagesJob: {
+                    cat: "Queue Job",
+                    desc: "Job wrapper that executes historical message downloads.",
+                    code: `class SyncWahaMessagesJob implements ShouldQueue {\n    public function handle(LiveMsgsSyncService $service) {\n        $service->syncMessages();\n    }\n}`,
+                    methods: [
+                        {
+                            name: "handle()",
+                            desc: "Calls LiveMsgsSyncService to fetch messages.",
+                        },
+                    ],
+                },
+                ProcessWahaMessageChunkJob: {
+                    cat: "Queue Job",
+                    desc: "Bulk inserts 500-message arrays to databases, handles metadata extraction, and triggers Laravel Echo progress indicators.",
+                    code: `class ProcessWahaMessageChunkJob implements ShouldQueue {\n    public function handle() {\n        // DB::table('contact_messages')->insert($this->chunk);\n    }\n}`,
+                    methods: [
+                        {
+                            name: "handle()",
+                            desc: "Bulk inserts message arrays to database.",
+                        },
+                    ],
+                },
+                ProcessWahaWebhookJob: {
+                    cat: "Queue Job",
+                    desc: "Dissects webhook payload, resolves models, links records, and triggers the AI analysis worker.",
+                    code: `class ProcessWahaWebhookJob implements ShouldQueue {\n    public function handle() {\n        // Resolve contact, session, and message.\n    }\n}`,
+                    methods: [
+                        {
+                            name: "handle()",
+                            desc: "Executes primary message resolution pipeline.",
+                        },
+                    ],
+                },
+                WorkflowEventTriggerService: {
+                    cat: "Event Hook",
+                    desc: "Uses a wildcard listener to inspect all application events and trigger matching rules.",
+                    code: `class WorkflowEventTriggerService {\n    public function register() {\n        Event::listen('*', function ($eventName, array $data) {\n            // Check active rules\n        });\n    }\n}`,
+                    methods: [
+                        {
+                            name: "register()",
+                            desc: "Registers Event::listen('*') hook.",
+                        },
+                    ],
+                },
+                ContactMessageReceivedListener: {
+                    cat: "Event Listener",
+                    desc: "Listens for messages, matches sender/topic filters, and executes the rule actions.",
+                    code: `class ContactMessageReceivedListener {\n    public function handle(MessageReceived $event) {\n        // Match conditions and fire actions\n    }\n}`,
+                    methods: [
+                        {
+                            name: "handle(MessageReceived)",
+                            desc: "Fires actions if conditions are met.",
+                        },
+                    ],
+                },
+                ProactiveAIController: {
+                    cat: "API Controller",
+                    desc: "Exposes endpoints to manage rules, inspect triggers, and view logs.",
+                    code: `class ProactiveAIController extends Controller {\n    public function storeRule(Request $request) {\n        // Compiles NLP rule and stores\n    }\n}`,
+                    methods: [
+                        {
+                            name: "storeRule(Request)",
+                            desc: "Translates NLP text and creates ECA Rule.",
+                        },
+                    ],
+                },
+                NlpParserService: {
+                    cat: "NLP Engine",
+                    desc: "Translates unstructured natural language strings into condition arrays.",
+                    code: `class NlpParserService {\n    public function parse(string $text): array {\n        // Uses regex matching to capture trigger timestamps and intents\n        ...\n    }\n}`,
+                    methods: [
+                        {
+                            name: "parse(string $text)",
+                            desc: "Regex based compilation.",
+                        },
+                    ],
+                },
+                ProactiveSchedulerCommand: {
+                    cat: "Console Scheduler",
+                    desc: "Executed via Cron checks. Evaluates proactive triggers, checks deadlines, and fires actions.",
+                    code: `class ProactiveSchedulerCommand extends Command {\n    protected $signature = 'proactive:run-scheduler';\n    public function handle() {\n        $triggers = DB::table('proactive_triggers')->where('status', 'pending')->where('next_run_at', '<=', now())->get();\n        ...\n    }\n}`,
+                    methods: [
+                        {
+                            name: "handle()",
+                            desc: "Fetches pending triggers where next_run_at <= now().",
+                        },
+                    ],
+                },
+            };
+
+            const workflowsData = {
+                "waha-ingest": {
+                    title: "WahaWebhookIngestionService@ingest",
+                    desc: "Triggered when WAHA POSTs webhook updates to /api/webhooks/waha. Enforces raw deduplication of message IDs.",
+                    mermaid: `sequenceDiagram
+    autonumber
+    actor WAHA as WAHA Server
+    participant Gateway as WebhookController
+    participant Ingest as WahaWebhookIngestionService
+    participant DB as MySQL DB
+    participant Queue as Laravel Queue
+
+    WAHA->>Gateway: POST /api/webhooks/waha [Payload]
+    Gateway->>Ingest: ingest(payload)
+    Note over Ingest: Extract session & messageId
+    Ingest->>DB: Check if message ID exists in raw events table
+    alt Message Already Synced
+        DB-->>Ingest: Record exists
+        Ingest-->>Gateway: Return (Ignore duplicate)
+    else New Message
+        DB-->>Ingest: No record
+        Ingest->>DB: Insert raw event record (Status: pending)
+        Ingest->>Queue: Dispatch ProcessWahaWebhookJob(rawEventId)
+        Ingest-->>Gateway: Return success response
+    end
+    Gateway-->>WAHA: 200 OK`,
+                },
+                "waha-process-webhook-job": {
+                    title: "ProcessWahaWebhookJob@handle",
+                    desc: "Executes asynchronously. Cleans the phone number suffix, resolves/creates contacts, resolves conversations and sessions, persists messages, and triggers AI classification and frontend broadcasts.",
+                    mermaid: `sequenceDiagram
+    autonumber
+    participant Queue as Queue Worker
+    participant Job as ProcessWahaWebhookJob
+    participant Resolver as PeopleConnectContactResolver
+    participant Session as PeopleConnectSessionService
+    participant Msg as PeopleConnectMessageService
+    participant DB as Database
+    participant Echo as Laravel Echo / Broadcaster
+
+    Queue->>Job: handle()
+    Job->>Resolver: resolveContact(phone, pushname)
+    Note over Resolver: Strip @c.us suffix
+    Resolver->>DB: Find contact by phone number
+    alt Contact not found
+        Resolver->>DB: Create Contact model
+    end
+    Resolver-->>Job: Return Contact
+
+    Job->>Session: resolveOrCreateSession(contact)
+    Note over Session: Checks last message timestamp (2 hour limit)
+    Session-->>Job: Return Active Session
+
+    Job->>Msg: createMessage(session, payload)
+    Msg->>DB: Insert message to contact_messages (inbound)
+    Msg-->>Job: Return Message
+
+    Job->>DB: Dispatch AnalyzePeopleConnectMessageJob(messageId)
+    Job->>Echo: Broadcast message.received event
+    Echo-->>Job: Broadcast completed
+    Job-->>Queue: Process job completed`,
+                },
+                "nlp-parse": {
+                    title: "NlpParserService@parse",
+                    desc: "Compiles custom unstructured sentences into structured event-condition-action arrays.",
+                    mermaid: `graph TD
+    Text[Rule text: 'If Mohamed contacts me...'] --> Parse[NlpParserService@parse]
+    Parse --> TimeRegex{Matches time format?}
+    TimeRegex -->|Yes| TimeExtraction[Extract trigger time & Carbon timestamp]
+    TimeExtraction --> TimeJSON[Type: time_based, next_run_at, actions: notify]
+
+    TimeRegex -->|No| EventRegex{Matches contact/regarding prefix?}
+    EventRegex -->|Yes| EventExtraction[Extract contact name & filter topic]
+    EventExtraction --> EventJSON[Type: event_based, event_type: ContactMessageReceived, conditions: contact_name, topic]
+
+    EventRegex -->|No| UnknownRule[Default rule type]
+
+    TimeJSON --> Output[Return JSON Array]
+    EventJSON --> Output`,
+                },
+                "wildcard-trigger": {
+                    title: "WorkflowEventTriggerService (Wildcard Listener)",
+                    desc: "Wildcard listener class registering a Laravel event hook to intercept application notifications and check for matching active ECA rules.",
+                    mermaid: `sequenceDiagram
+    autonumber
+    actor System as Laravel Event
+    participant Hook as WorkflowEventTriggerService
+    participant DB as MySQL DB
+    participant Worker as Rule Action Executor
+
+    System->>Hook: Event::listen('*', eventPayload)
+    Note over Hook: Intercept Event Name (e.g. MessageReceived)
+    Hook->>DB: Fetch active rules where event_type = eventName
+    alt No active rules
+        Hook-->>System: Return (Exit early)
+    else Rules found
+        loop For each rule
+            Hook->>Hook: evaluateConditions(rule->conditions, eventPayload)
+            alt Conditions met (True)
+                Hook->>Worker: executeActions(rule->actions, eventPayload)
+                Worker->>DB: Insert logs in autonomous_logs & notification_logs
+            else Conditions mismatch (False)
+                Note over Hook: Skip action execution
+            end
+        end
+        Hook-->>System: Completed
+    end`,
+                },
+                "msg-received-listener": {
+                    title: "ContactMessageReceivedListener@handle",
+                    desc: "Explicit listener responding to incoming WhatsApp message reception. Verifies topic matching and fires replies.",
+                    mermaid: `sequenceDiagram
+    autonumber
+    participant Laravel as Laravel Event Dispatcher
+    participant Listener as ContactMessageReceivedListener
+    participant DB as Database
+    participant Dispatcher as WahaMessageDispatcher
+
+    Laravel->>Listener: handle(MessageReceived)
+    Listener->>DB: Query active ECA rules where event_type = ContactMessageReceived
+    loop Each Rule
+        Listener->>Listener: checkConditions(conditions, MessageReceived)
+        Note over Listener: Compare sender name & check if text contains topic keyword
+        alt Match Found
+            Listener->>DB: Log execution to autonomous_logs
+            alt Action is reply
+                Listener->>Dispatcher: send(chatId, replyText)
+                Dispatcher->>DB: Log delivery attempt
+            end
+            alt Action is notify
+                Listener->>DB: Write notification log request
+            end
+        end
+    end
+    Listener-->>Laravel: Done`,
+                },
+                "scheduler-command": {
+                    title: "ProactiveSchedulerCommand@handle",
+                    desc: "Console Artisan scheduler command. Executed minutely by Laravel scheduler to check and fire time-based triggers.",
+                    mermaid: `sequenceDiagram
+    autonumber
+    participant Cron as Cron daemon
+    participant Command as ProactiveSchedulerCommand
+    participant DB as MySQL Database
+    participant Exec as Rule Action Executor
+
+    Cron->>Command: php artisan proactive:run-scheduler
+    Command->>DB: Query pending proactive_triggers where next_run_at <= now()
+    alt No overdue triggers
+        Command-->>Cron: Finished (Idle)
+    else Triggers found
+        loop Each Trigger
+            Command->>DB: Fetch corresponding ECA rule
+            Command->>Exec: execute(rule->actions)
+            Exec->>DB: Write autonomous logs & notification logs
+            Command->>DB: Update trigger status to 'completed'
+        end
+        Command-->>Cron: Finished (Success)
+    end`,
+                },
+            };
+
+            // Keep track of diagram transform states
+            const diagramStates = {};
+
+            function setupDynamicDiagramControls() {
+                // Inject styles dynamically if not already added
+                if (!document.getElementById("diagram-styles")) {
+                    const style = document.createElement("style");
+                    style.id = "diagram-styles";
+                    style.innerHTML = `
+                    .diagram-container {
+                        position: relative;
+                        overflow: hidden;
+                        background: rgba(15, 23, 42, 0.4);
+                        border: 1px solid rgba(255, 255, 255, 0.05);
+                        border-radius: 12px;
+                        padding: 12px;
+                        margin-top: 1rem;
+                        margin-bottom: 1rem;
+                        transition: border-color 0.3s ease;
+                    }
+                    [data-theme="light"] .diagram-container {
+                        background: rgba(255, 255, 255, 0.6);
+                        border: 1px solid rgba(0, 0, 0, 0.05);
+                    }
+                    .diagram-viewport {
+                        overflow: hidden;
+                        width: 100%;
+                        height: 480px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        position: relative;
+                        touch-action: none;
+                    }
+                    .diagram-wrapper {
+                        transform-origin: center center;
+                        transition: transform 0.1s ease-out;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 100%;
+                        height: 100%;
+                    }
+                    .diagram-wrapper svg {
+                        max-width: 100% !important;
+                        max-height: 100% !important;
+                        height: auto !important;
+                        cursor: grab;
+                    }
+                    .diagram-wrapper svg:active {
+                        cursor: grabbing;
+                    }
+                    .diagram-fullscreen {
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        z-index: 99999 !important;
+                        background: #090a16 !important;
+                        border: none !important;
+                        border-radius: 0 !important;
+                        padding: 24px !important;
+                    }
+                    [data-theme="light"] .diagram-fullscreen {
+                        background: #f8fafc !important;
+                    }
+                    .diagram-fullscreen .diagram-viewport {
+                        height: calc(100vh - 100px) !important;
+                    }
+                `;
+                    document.head.appendChild(style);
+                }
+
+                // Wrap all .mermaid elements
+                document
+                    .querySelectorAll(".mermaid")
+                    .forEach((mermaidDiv, index) => {
+                        if (mermaidDiv.closest(".diagram-viewport")) return;
+                        // Ignore internal template strings or boxes that don't have mermaid content loaded yet
+                        if (mermaidDiv.id === "wf-mermaid-render-box") return;
+
+                        const diagramId = "diag-auto-" + index;
+
+                        // Create wrapper container
+                        const container = document.createElement("div");
+                        container.className = "diagram-container group";
+                        container.setAttribute("data-diagram-id", diagramId);
+
+                        // Create Toolbar
+                        const toolbar = document.createElement("div");
+                        toolbar.className =
+                            "absolute right-4 top-4 flex items-center gap-1.5 bg-slate-950/90 backdrop-blur border border-slate-800 p-1.5 rounded-lg z-10 opacity-60 group-hover:opacity-100 transition-opacity";
+                        toolbar.innerHTML = `
+                    <button onclick="zoomDiagram('${diagramId}', 1.25)" class="h-7 w-7 hover:bg-slate-800 text-slate-300 rounded flex items-center justify-center text-xs animate-none" style="padding: 0;" title="Zoom In">
+                        <i class="fa-solid fa-magnifying-glass-plus"></i>
+                    </button>
+                    <button onclick="zoomDiagram('${diagramId}', 0.8)" class="h-7 w-7 hover:bg-slate-800 text-slate-300 rounded flex items-center justify-center text-xs animate-none" style="padding: 0;" title="Zoom Out">
+                        <i class="fa-solid fa-magnifying-glass-minus"></i>
+                    </button>
+                    <button onclick="resetDiagram('${diagramId}')" class="h-7 w-7 hover:bg-slate-800 text-slate-300 rounded flex items-center justify-center text-xs animate-none" style="padding: 0;" title="Reset View">
+                        <i class="fa-solid fa-arrows-to-dot"></i>
+                    </button>
+                    <button onclick="toggleFullscreenDiagram('${diagramId}')" class="h-7 w-7 hover:bg-slate-800 text-slate-300 rounded flex items-center justify-center text-xs animate-none" style="padding: 0;" title="Toggle Fullscreen">
+                        <i class="fa-solid fa-expand"></i>
+                    </button>
+                    <span class="text-[9px] text-slate-500 font-mono pl-1 select-none hidden md:inline border-l border-slate-800 ml-1">Drag to Pan / Wheel to Zoom</span>
+                `;
+
+                        const viewport = document.createElement("div");
+                        viewport.className = "diagram-viewport";
+
+                        const wrapper = document.createElement("div");
+                        wrapper.className = "diagram-wrapper";
+
+                        // Re-arrange DOM
+                        mermaidDiv.parentNode.insertBefore(
+                            container,
+                            mermaidDiv,
+                        );
+                        container.appendChild(toolbar);
+                        container.appendChild(viewport);
+                        viewport.appendChild(wrapper);
+                        wrapper.appendChild(mermaidDiv);
+
+                        // Initialize state
+                        diagramStates[diagramId] = {
+                            scale: 1.0,
+                            x: 0,
+                            y: 0,
+                            isDragging: false,
+                            startX: 0,
+                            startY: 0,
+                        };
+
+                        // Add mouse events for pan & zoom
+                        viewport.addEventListener("mousedown", (e) => {
+                            if (e.target.closest("button")) return;
+                            const state = diagramStates[diagramId];
+                            state.isDragging = true;
+                            state.startX = e.clientX - state.x;
+                            state.startY = e.clientY - state.y;
+                        });
+
+                        window.addEventListener("mousemove", (e) => {
+                            const state = diagramStates[diagramId];
+                            if (!state || !state.isDragging) return;
+                            state.x = e.clientX - state.startX;
+                            state.y = e.clientY - state.startY;
+                            updateDiagramTransform(diagramId);
+                        });
+
+                        window.addEventListener("mouseup", () => {
+                            const state = diagramStates[diagramId];
+                            if (state && state.isDragging) {
+                                state.isDragging = false;
+                            }
+                        });
+
+                        viewport.addEventListener(
+                            "wheel",
+                            (e) => {
+                                e.preventDefault();
+                                const state = diagramStates[diagramId];
+                                const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
+                                state.scale = Math.min(
+                                    6.0,
+                                    Math.max(0.15, state.scale * zoomFactor),
+                                );
+                                updateDiagramTransform(diagramId);
+                            },
+                            { passive: false },
+                        );
+                    });
+            }
+
+            function updateDiagramTransform(id) {
+                const container = document.querySelector(
+                    `[data-diagram-id="${id}"]`,
+                );
+                if (!container) return;
+                const wrapper = container.querySelector(".diagram-wrapper");
+                const state = diagramStates[id];
+                wrapper.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+            }
+
+            function zoomDiagram(id, factor) {
+                const state = diagramStates[id];
+                if (!state) return;
+                state.scale = Math.min(
+                    6.0,
+                    Math.max(0.15, state.scale * factor),
+                );
+                updateDiagramTransform(id);
+            }
+
+            function resetDiagram(id) {
+                const state = diagramStates[id];
+                if (!state) return;
+                state.scale = 1.0;
+                state.x = 0;
+                state.y = 0;
+                updateDiagramTransform(id);
+            }
+
+            function toggleFullscreenDiagram(id) {
+                const container = document.querySelector(
+                    `[data-diagram-id="${id}"]`,
+                );
+                if (!container) return;
+
+                container.classList.toggle("diagram-fullscreen");
+
+                // Adjust body scrolling
+                if (container.classList.contains("diagram-fullscreen")) {
+                    document.body.style.overflow = "hidden";
+                } else {
+                    document.body.style.overflow = "";
+                }
+
+                resetDiagram(id);
+            }
+
+            window.onload = function () {
+                switchTab("tab-overview");
+                renderClassSidebar();
+                selectClass("WahaWebhookIngestionService");
+                setupDynamicDiagramControls();
+            };
+
+            function renderClassSidebar() {
+                const list = document.getElementById("class-sidebar-list");
+                list.innerHTML = "";
+                Object.keys(classesCatalog).forEach((name) => {
+                    list.innerHTML += `
+                    <button onclick="selectClass('${name}')" class="w-full text-left font-mono text-xs px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/30 transition-all block">
+                        ${name}
+                    </button>
+                `;
+                });
+            }
+
+            function selectClass(name) {
+                const data = classesCatalog[name];
+                document.getElementById("exp-class-name").innerText = name;
+                document.getElementById("exp-class-desc").innerText = data.desc;
+                document.getElementById("exp-class-badge").innerText = data.cat;
+                document.getElementById("exp-class-code").innerText = data.code;
+
+                const methodsBox = document.getElementById("exp-class-methods");
+                methodsBox.innerHTML = "";
+                if (data.methods) {
+                    data.methods.forEach((m) => {
+                        methodsBox.innerHTML += `
+                        <div class="bg-slate-950/40 p-2.5 rounded border border-slate-800 font-mono">
+                            <strong class="text-emerald-400">${m.name}</strong>
+                            <p class="text-[10px] text-slate-400 mt-0.5">${m.desc}</p>
+                        </div>
+                    `;
+                    });
+                }
+            }
+
+            function selectWorkflow(key) {
+                const data = workflowsData[key];
+                if (!data) return;
+
+                // Set buttons styling
+                document.querySelectorAll('[id^="wf-btn-"]').forEach((btn) => {
+                    btn.classList.remove(
+                        "bg-emerald-500/20",
+                        "border-emerald-500/40",
+                    );
+                    btn.classList.add("text-slate-300", "border-transparent");
+                });
+                const activeBtn = document.getElementById(`wf-btn-${key}`);
+                if (activeBtn) {
+                    activeBtn.classList.remove(
+                        "text-slate-300",
+                        "border-transparent",
+                    );
+                    activeBtn.classList.add(
+                        "bg-emerald-500/20",
+                        "border-emerald-500/40",
+                    );
+                }
+
+                document.getElementById("wf-title").innerText = data.title;
+                document.getElementById("wf-desc").innerText = data.desc;
+
+                const renderBox = document.getElementById(
+                    "wf-mermaid-render-box",
+                );
+                renderBox.innerHTML = `<div class="mermaid">${data.mermaid}</div>`;
+
+                // Re-render mermaid
+                mermaid.run({
+                    nodes: renderBox.querySelectorAll(".mermaid"),
+                });
+
+                // Re-apply diagram controls
+                setTimeout(() => {
+                    setupDynamicDiagramControls();
+                }, 50);
+            }
+
+            function setNlpPreset(type) {
+                const textarea = document.getElementById("nlp-input");
+                if (type === "event") {
+                    textarea.value =
+                        "if Mohamed contacts me regarding billing, reply with check invoice and notify me";
+                } else {
+                    textarea.value =
+                        "remind me tomorrow at 3 PM about customer follow up update";
+                }
+            }
+
+            function parseRuleNLP() {
+                const val = document
+                    .getElementById("nlp-input")
+                    .value.toLowerCase();
+                const output = document.getElementById("nlp-output");
+
+                let json = {
+                    type: "event_based",
+                    event_type: "ContactMessageReceived",
+                    conditions: {},
+                    actions: {},
+                };
+
+                if (val.includes("remind") || val.includes("tomorrow")) {
+                    json.type = "time_based";
+                    json.event_type = "SchedulerDeadline";
+                    json.conditions.run_at = "2026-07-13T15:00:00Z";
+                    const aboutMatch = val.match(/about (.*)/);
+                    json.actions.notify = {
+                        message: aboutMatch ? aboutMatch[1] : "Reminder active",
+                    };
+                } else {
+                    const contactMatch = val.match(/if (.*?) contacts/);
+                    if (contactMatch)
+                        json.conditions.contact_name = contactMatch[1].trim();
+
+                    const topicMatch = val.match(/regarding (.*?),/);
+                    if (topicMatch)
+                        json.conditions.topic = topicMatch[1].trim();
+
+                    const replyMatch = val.match(/reply with (.*?)(?: and|$)/);
+                    if (replyMatch)
+                        json.actions.reply = { message: replyMatch[1].trim() };
+
+                    if (val.includes("notify"))
+                        json.actions.notify = {
+                            message:
+                                "Autonomous action completed based on rule.",
+                        };
+                }
+
+                output.innerText = JSON.stringify(json, null, 2);
+            }
+
+            function sendQuickPrompt(type) {
+                const input = document.getElementById("agent-chat-input");
+                if (type === "rule") {
+                    input.value =
+                        "Explain how WorkflowEventTriggerService hooks into wildcard events";
+                } else {
+                    input.value =
+                        "Show database schema columns for proactive_triggers and eca_rules tables";
+                }
+                submitAgentChat();
+            }
+
+            function handleChatSubmit(e) {
+                if (e.key === "Enter") submitAgentChat();
+            }
+
+            function submitAgentChat() {
+                const input = document.getElementById("agent-chat-input");
+                const val = input.value.trim();
+                if (!val) return;
+
+                const timeline = document.getElementById("agent-chat-timeline");
+                timeline.innerHTML += `
+                <div class="flex items-start gap-3 justify-end">
+                    <div class="bg-sky-600 text-white chat-bubble">${val}</div>
+                </div>
+            `;
+                input.value = "";
+                timeline.scrollTop = timeline.scrollHeight;
+
+                setTimeout(() => {
+                    let response =
+                        "Let me look up that configuration schema details.";
+                    if (
+                        val.toLowerCase().includes("wildcard") ||
+                        val.toLowerCase().includes("event")
+                    ) {
+                        response =
+                            "The `WorkflowEventTriggerService` uses Laravel's `Event::listen('*')` wildcard handler. When an event fires, it filters against the registered ECA rules' `event_type` and validates corresponding condition schemas.";
+                    } else if (
+                        val.toLowerCase().includes("schema") ||
+                        val.toLowerCase().includes("table")
+                    ) {
+                        response =
+                            "ECA Tables:\n- `eca_rules` (id, name, type, event_type, conditions json, actions json, is_active)\n- `proactive_triggers` (id, eca_rule_id, status, next_run_at, completed_at)";
+                    }
+
+                    timeline.innerHTML += `
+                    <div class="flex items-start gap-3">
+                        <div class="h-8 w-8 rounded bg-gradient-to-tr from-emerald-400 to-teal-500 flex items-center justify-center font-bold text-xs text-white shrink-0">AI</div>
+                        <div class="bg-slate-900 text-slate-200 chat-bubble">
+                            <p class="font-semibold text-xs text-emerald-400 mb-1">Nexus Copilot</p>
+                            ${response.replace(/\n/g, "<br>")}
+                        </div>
+                    </div>
+                `;
+                    timeline.scrollTop = timeline.scrollHeight;
+                }, 1000);
+            }
+
+            function toggleTheme() {
+                const body = document.body;
+                if (body.classList.contains("bg-[#05070c]")) {
+                    body.classList.remove("bg-[#05070c]");
+                    document.documentElement.setAttribute(
+                        "data-theme",
+                        "light",
+                    );
+                } else {
+                    body.classList.add("bg-[#05070c]");
+                    document.documentElement.setAttribute("data-theme", "dark");
+                }
+            }
+
+            function runGlobalSearch() {
+                const q = document
+                    .getElementById("global-search")
+                    .value.toLowerCase();
+                if (!q) return;
+                switchTab("tab-code");
+                const matchedClass = Object.keys(classesCatalog).find((c) =>
+                    c.toLowerCase().includes(q),
+                );
+                if (matchedClass) {
+                    selectClass(matchedClass);
+                }
+            }
+
+            // Accessibility Logic
+            let currentZoom = 100;
+            function changeFontSize(direction) {
+                currentZoom += direction * 10;
+                if (currentZoom < 70) currentZoom = 70;
+                if (currentZoom > 150) currentZoom = 150;
+                document.getElementById("content-container").style.fontSize =
+                    `${currentZoom}%`;
+            }
+            function resetFontSize() {
+                currentZoom = 100;
+                document.getElementById("content-container").style.fontSize =
+                    "100%";
+            }
+
+            function scrollToTop() {
+                document
+                    .querySelector("main")
+                    .scrollTo({ top: 0, behavior: "smooth" });
+            }
+            function scrollToBottom() {
+                const main = document.querySelector("main");
+                main.scrollTo({ top: main.scrollHeight, behavior: "smooth" });
+            }
+
+            function toggleSidebar() {
+                const sidebar = document.getElementById("sidebar-container");
+                const toggleBtn = document.getElementById("sidebar-toggle-btn");
+                if (sidebar.classList.contains("w-72")) {
+                    sidebar.classList.replace("w-72", "w-0");
+                    sidebar.classList.add("overflow-hidden", "border-r-0");
+                    if (toggleBtn) toggleBtn.innerText = "Expand";
+                } else {
+                    sidebar.classList.replace("w-0", "w-72");
+                    sidebar.classList.remove("overflow-hidden", "border-r-0");
+                    if (toggleBtn) toggleBtn.innerText = "Collapse";
+                }
+            }
+
+            function toggleAccessibilityMenu() {
+                const menu = document.getElementById("accessibility-menu");
+                menu.classList.toggle("hidden");
+            }
+
+            // Focus Zoom Element Mode
+            let focusModeActive = false;
+            function toggleFocusMode() {
+                focusModeActive = !focusModeActive;
+                const btn = document.getElementById("focus-zoom-btn");
+                if (focusModeActive) {
+                    btn.innerText = "Deactivate";
+                    btn.classList.replace("bg-slate-800", "bg-emerald-500");
+                    document.body.style.cursor = "crosshair";
+                    document.addEventListener("click", handleFocusClick, true);
+                } else {
+                    btn.innerText = "Activate";
+                    btn.classList.replace("bg-emerald-500", "bg-slate-800");
+                    document.body.style.cursor = "default";
+                    document.removeEventListener(
+                        "click",
+                        handleFocusClick,
+                        true,
+                    );
+                }
+            }
+
+            function handleFocusClick(e) {
+                if (!focusModeActive) return;
+                e.preventDefault();
+                e.stopPropagation();
+
+                const target = e.target.closest(
+                    ".glass-panel, .bg-slate-900, table, pre",
+                );
+                if (target) {
+                    showZoomModal(target.innerHTML);
+                }
+                toggleFocusMode();
+            }
+
+            function showZoomModal(htmlContent) {
+                const modal = document.createElement("div");
+                modal.id = "zoom-modal";
+                modal.className =
+                    "fixed inset-0 z-[10000] flex items-center justify-center bg-black/85 backdrop-blur-md p-6";
+                modal.innerHTML = `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-5xl w-full max-h-[85vh] overflow-y-auto relative shadow-2xl">
+                    <button onclick="closeZoomModal()" class="absolute top-4 right-4 h-10 w-10 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center transition-all">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                    <div class="text-slate-200">
+                        ${htmlContent}
+                    </div>
+                </div>
+            `;
+                document.body.appendChild(modal);
+            }
+
+            function closeZoomModal() {
+                const modal = document.getElementById("zoom-modal");
+                if (modal) modal.remove();
+            }
+        </script>
+    </body>
+</html>

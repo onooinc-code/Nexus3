@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus Platform API Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3.52.0/swagger-ui.css">
+    <link rel="icon" type="image/png" href="https://fastapi.tiangolo.com/img/favicon.png" sizes="32x32" />
+    <style>
+        html {
+            box-sizing: border-box;
+            overflow: -moz-scrollbars-vertical;
+            overflow-y: scroll;
+        }
+        *,
+        *:before,
+        *:after {
+            box-sizing: inherit;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .topbar {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .topbar h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .topbar p {
+            margin: 5px 0 0 0;
+            opacity: 0.95;
+            font-size: 14px;
+        }
+        .swagger-ui .swagger-container {
+            max-width: 1460px;
+            margin: 0 auto;
+        }
+        .swagger-ui {
+            background: white;
+            border-radius: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1>🚀 Nexus Platform API</h1>
+        <p>Comprehensive REST API Documentation for Multi-Channel Communication & AI-Powered Contact Management</p>
+    </div>
+    <div id="swagger-ui"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3.52.0/swagger-ui-bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3.52.0/swagger-ui-standalone-preset.js"></script>
+    <script>
+        const ui = SwaggerUIBundle({
+            url: "/openapi.json",
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            presets: [
+                SwaggerUIBundle.presets.apis,
+                SwaggerUIStandalonePreset
+            ],
+            plugins: [
+                SwaggerUIBundle.plugins.DownloadUrl
+            ],
+            layout: "StandaloneLayout",
+            defaultModelsExpandDepth: 1,
+            defaultModelExpandDepth: 1,
+            onComplete: function() {
+                console.log("Swagger UI loaded successfully!");
+            }
+        });
+
+        window.onload = function() {
+            // Customize UI after loading
+            const style = document.createElement('style');
+            style.textContent = `
+                .swagger-ui .topbar {
+                    display: none;
+                }
+                .swagger-ui .info .title {
+                    color: #667eea;
+                    font-weight: 600;
+                }
+                .swagger-ui .scheme-container {
+                    background: #f8f9fa;
+                }
+                .swagger-ui .btn {
+                    border-radius: 4px;
+                    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+                    border-color: #667eea;
+                }
+                .swagger-ui .btn:hover {
+                    background: linear-gradient(90deg, #5568d3 0%, #6a4095 100%);
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    </script>
+</body>
+</html>

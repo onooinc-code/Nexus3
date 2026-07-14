@@ -717,4 +717,105 @@ class HubController extends Controller
 
         return response()->json($service->getActivityFeed($limit));
     }
+
+    /**
+     * Nexus Dev — Antigravity Control dashboard (Blade hub page).
+     * No auth (per Hedra 2026-07-14). Renders the glassmorphism/3D/mobile UI.
+     */
+    public function dev()
+    {
+        return view('hubs.dev');
+    }
+
+    /**
+     * Live status for the Nexus Dev dashboard.
+     * Tries the headless Antigravity Automation server (localhost:5000) first;
+     * if that is not running (Google locks headless CLI outside VS Code), it falls
+     * back to real project telemetry (git, Horizon queue, file tree) so the
+     * dashboard is useful immediately. Hedra 2026-07-14.
+     */
+    public function devStatus()
+    {
+        $status = [
+            'server_up'   => false,
+            'agent'       => 'idle',
+            'current_task'=> null,
+            'model'       => 'Gemini 3.5 Flash',
+            'thinking'    => 'medium',
+            'uptime'      => 0,
+            'active_key'  => 1,
+            'project'     => '/www/wwwroot/Nexus/core/Nexus3',
+        ];
+
+        // 1) Try the Antigravity Automation REST feed (only live when Hedra opens Antigravity)
+        try {
+            $ch = curl_init('http://localhost:5000/status');
+            curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 2, CURLOPT_CONNECTTIMEOUT => 2]);
+            $raw = curl_exec($ch);
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            if ($code === 200 && $raw) {
+                $decoded = json_decode($raw, true);
+                if (is_array($decoded)) {
+                    $status = array_merge($status, $decoded);
+                    $status['server_up'] = true;
+                }
+            }
+        } catch (\Exception $e) {
+            // agent server not running — fall through to project telemetry
+        }
+
+        // 2) Real project telemetry (always available)
+        $root = base_path();
+        $status['git'] = [
+            'branch' => trim(shell_exec("cd $root && git rev-parse --abbrev-ref HEAD 2>/dev/null") ?: 'unknown'),
+            'last'   => trim(shell_exec("cd $root && git log -1 --format=%h%d %s 2>/dev/null") ?: ''),
+        ];
+        $status['horizon'] = trim(shell_exec('pgrep -f "horizon" >/dev/null 2>&1 && echo running || echo stopped')) ?: 'stopped';
+        $status['queue'][] = trim(shell_exec('pgrep -f "queue:work" >/dev/null 2>&1 && echo running || echo stopped')) ?: 'stopped';
+        $status['composer'] = trim(shell_exec("cd $root && composer -V 2>/dev/null | head -1") ?: '');
+        $status['php'] = PHP_VERSION;
+        $status['files_count'] = (int) trim(shell_exec("cd $root && find app -name '*.php' 2>/dev/null | wc -l") ?: 0);
+
+        return response()->json($status);
+    }
+
+    /**
+     * Send a command/prompt to the headless Antigravity agent via the Automation API.
+     * Human-in-loop: Souly reviews before any deploy (UI shows "queued").
+     * If the agent server is not running, returns a clear "agent offline" so Hedra knows
+     * to open Antigravity (Google locks headless CLI outside VS Code).
+     */
+    public function devCommand(Request $request)
+    {
+        $command = trim((string) $request->input('command', ''));
+        if ($command === '') {
+            return response()->json(['success' => false, 'message' => 'Empty command'], 422);
+        }
+
+        try {
+            $ch = curl_init('http://localhost:5000/send_command');
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT        => 5,
+                CURLOPT_CONNECTTIMEOUT => 3,
+                CURLOPT_POST           => true,
+                CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+                CURLOPT_POSTFIELDS     => json_encode(['command' => $command]),
+            ]);
+            $raw  = curl_exec($ch);
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($code === 200) {
+                return response()->json(['success' => true, 'message' => 'Queued to agent', 'echo' => $raw]);
+            }
+            return response()->json([
+                'success' => false,
+                'message' => 'Agent server offline. Open Antigravity 2.0 to start the headless agent (Google locks the CLI to VS Code terminal).',
+            ], 502);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Agent server unreachable: ' . $e->getMessage()], 502);
+        }
+    }
 }

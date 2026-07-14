@@ -1,0 +1,1177 @@
+openapi: 3.0.0
+info:
+  title: Nexus Platform API
+  description: >
+    Complete API for the Nexus Platform including Contacts, HedraSoul, Tasks, 
+    Workflows, Agents, AI Models, and more. All endpoints are versioned under /api/v1
+  version: 1.0.0
+  contact:
+    name: Nexus Support
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost/api
+    description: Local Development
+  - url: https://api.nexus.local/api
+    description: Production
+
+tags:
+  - name: Authentication
+    description: User authentication and token management
+  - name: Contacts
+    description: Contact management and intelligence
+  - name: Notifications
+    description: Notification templates and sending
+  - name: HedraSoul
+    description: AI-powered soul/personality management
+  - name: Tasks
+    description: Task management and execution
+  - name: Workflows
+    description: Workflow creation and execution
+  - name: Agents
+    description: Autonomous agent management
+  - name: AI Models
+    description: AI model and provider management
+  - name: Settings
+    description: System and application settings
+  - name: Dashboard
+    description: Dashboard and monitoring endpoints
+  - name: Memory
+    description: Memory management and search
+  - name: Monitoring
+    description: System health and metrics
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Bearer token authentication using Laravel Sanctum
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error details
+        timestamp:
+          type: string
+          format: date-time
+        request_id:
+          type: string
+
+    PaginationMeta:
+      type: object
+      properties:
+        total:
+          type: integer
+        per_page:
+          type: integer
+        current_page:
+          type: integer
+        last_page:
+          type: integer
+        from:
+          type: integer
+        to:
+          type: integer
+
+    Contact:
+      type: object
+      required:
+        - name
+        - email
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        whatsapp_number:
+          type: string
+        facebook_id:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, archived]
+        preferred_channel:
+          type: string
+          enum: [whatsapp, facebook, email, sms]
+        last_message_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+
+    ContactList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contact'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    Task:
+      type: object
+      required:
+        - title
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [pending, in_progress, completed, failed, cancelled]
+        priority:
+          type: string
+          enum: [high, medium, low]
+        type:
+          type: string
+          enum: [manual, agent, system]
+        assigned_to:
+          type: integer
+        due_date:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Agent:
+      type: object
+      required:
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        model:
+          type: string
+        system_prompt:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, quarantined]
+        autonomy_level:
+          type: string
+          enum: [guided, autonomous, supervised]
+        tools:
+          type: array
+          items:
+            type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    Workflow:
+      type: object
+      required:
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [draft, published, archived]
+        trigger:
+          type: object
+        steps:
+          type: array
+          items:
+            type: object
+        created_at:
+          type: string
+          format: date-time
+
+    AIProvider:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [gpt, claude, palm, cohere, local]
+        status:
+          type: string
+          enum: [active, inactive]
+        priority:
+          type: integer
+        api_base:
+          type: string
+        rate_limit:
+          type: integer
+        monthly_budget:
+          type: number
+        models:
+          type: array
+          items:
+            type: object
+
+    NotificationTemplate:
+      type: object
+      required:
+        - name
+        - type
+        - content
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [sms, email, whatsapp, push]
+        content:
+          type: string
+        subject:
+          type: string
+        variables:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [active, inactive, archived]
+
+    HedraSoulSession:
+      type: object
+      required:
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+          enum: [active, archived, paused]
+        contact_id:
+          type: integer
+        model:
+          type: string
+        autonomy_level:
+          type: string
+          enum: [guided, autonomous, supervised]
+        message_count:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+paths:
+  /v1/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login user
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                  token:
+                    type: string
+                  expires_in:
+                    type: integer
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register new user
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                password_confirmation:
+                  type: string
+                  format: password
+      responses:
+        '201':
+          description: User created
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout user
+      operationId: logoutUser
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logged out successfully
+        '401':
+          description: Unauthorized
+
+  /v1/health:
+    get:
+      tags:
+        - Monitoring
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: System healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+                  app:
+                    type: string
+
+  /v1/contacts:
+    get:
+      tags:
+        - Contacts
+      summary: List contacts
+      operationId: listContacts
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+            maximum: 100
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive, archived]
+      responses:
+        '200':
+          description: List of contacts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactList'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags:
+        - Contacts
+      summary: Create contact
+      operationId: createContact
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Contact'
+      responses:
+        '201':
+          description: Contact created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Contact'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/contacts/{id}:
+    get:
+      tags:
+        - Contacts
+      summary: Get contact details
+      operationId: getContact
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Contact details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Contact'
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - Contacts
+      summary: Update contact
+      operationId: updateContact
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Contact'
+      responses:
+        '200':
+          description: Contact updated
+
+    delete:
+      tags:
+        - Contacts
+      summary: Delete contact
+      operationId: deleteContact
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Contact deleted
+
+  /v1/contacts/{id}/intelligence:
+    get:
+      tags:
+        - Contacts
+      summary: Get contact intelligence
+      operationId: getContactIntelligence
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Contact intelligence
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  persona:
+                    type: object
+                  interests:
+                    type: array
+                    items:
+                      type: string
+                  engagement_level:
+                    type: string
+
+  /v1/tasks:
+    get:
+      tags:
+        - Tasks
+      summary: List tasks
+      operationId: listTasks
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, in_progress, completed, failed]
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [manual, agent, system]
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+
+    post:
+      tags:
+        - Tasks
+      summary: Create task
+      operationId: createTask
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      responses:
+        '201':
+          description: Task created
+
+  /v1/tasks/stats:
+    get:
+      tags:
+        - Tasks
+      summary: Get task statistics
+      operationId: getTaskStats
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Task statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  pending:
+                    type: integer
+                  in_progress:
+                    type: integer
+                  completed:
+                    type: integer
+                  failed:
+                    type: integer
+
+  /v1/tasks/{task}/execute:
+    post:
+      tags:
+        - Tasks
+      summary: Execute task
+      operationId: executeTask
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: task
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                force:
+                  type: boolean
+      responses:
+        '200':
+          description: Task execution started
+
+  /v1/workflows:
+    get:
+      tags:
+        - Workflows
+      summary: List workflows
+      operationId: listWorkflows
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of workflows
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Workflow'
+
+    post:
+      tags:
+        - Workflows
+      summary: Create workflow
+      operationId: createWorkflow
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workflow'
+      responses:
+        '201':
+          description: Workflow created
+
+  /v1/workflows/{workflow}/execute:
+    post:
+      tags:
+        - Workflows
+      summary: Execute workflow
+      operationId: executeWorkflow
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: workflow
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                trigger_data:
+                  type: object
+      responses:
+        '200':
+          description: Workflow execution started
+
+  /v1/agents:
+    get:
+      tags:
+        - Agents
+      summary: List agents
+      operationId: listAgents
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Agent'
+
+    post:
+      tags:
+        - Agents
+      summary: Create agent
+      operationId: createAgent
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agent'
+      responses:
+        '201':
+          description: Agent created
+
+  /v1/agents/{agent}/run:
+    post:
+      tags:
+        - Agents
+      summary: Run agent
+      operationId: runAgent
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: agent
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - input
+              properties:
+                input:
+                  type: string
+                context:
+                  type: object
+      responses:
+        '200':
+          description: Agent execution started
+
+  /v1/ai/providers:
+    get:
+      tags:
+        - AI Models
+      summary: List AI providers
+      operationId: listAIProviders
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of AI providers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AIProvider'
+
+    post:
+      tags:
+        - AI Models
+      summary: Create AI provider
+      operationId: createAIProvider
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIProvider'
+      responses:
+        '201':
+          description: AI provider created
+
+  /v1/ai/providers/{id}/health:
+    get:
+      tags:
+        - AI Models
+      summary: Get provider health
+      operationId: getProviderHealth
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider health status
+
+  /v1/ai/request:
+    post:
+      tags:
+        - AI Models
+      summary: Submit AI request
+      operationId: submitAIRequest
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - intent
+                - prompt
+              properties:
+                intent:
+                  type: string
+                prompt:
+                  type: string
+                context:
+                  type: object
+                temperature:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                max_tokens:
+                  type: integer
+      responses:
+        '200':
+          description: AI response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request_id:
+                    type: string
+                  response:
+                    type: string
+                  tokens_used:
+                    type: integer
+                  cost:
+                    type: number
+
+  /v1/notifications/send:
+    post:
+      tags:
+        - Notifications
+      summary: Send notification
+      operationId: sendNotification
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - template_id
+                - recipients
+                - channel
+              properties:
+                template_id:
+                  type: integer
+                recipients:
+                  type: array
+                  items:
+                    type: integer
+                channel:
+                  type: string
+                  enum: [whatsapp, email, sms, push]
+                variables:
+                  type: object
+                schedule_at:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Notification sent
+
+  /v1/hedrasoul/sessions:
+    get:
+      tags:
+        - HedraSoul
+      summary: List HedraSoul sessions
+      operationId: listHedraSoulSessions
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of sessions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/HedraSoulSession'
+
+    post:
+      tags:
+        - HedraSoul
+      summary: Create HedraSoul session
+      operationId: createHedraSoulSession
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HedraSoulSession'
+      responses:
+        '201':
+          description: Session created
+
+  /v1/hedrasoul/sessions/{session}/messages:
+    post:
+      tags:
+        - HedraSoul
+      summary: Send HedraSoul message
+      operationId: sendHedraSoulMessage
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: session
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+                role:
+                  type: string
+                  enum: [user, assistant]
+      responses:
+        '201':
+          description: Message sent
+
+  /v1/dashboard/stats:
+    get:
+      tags:
+        - Dashboard
+      summary: Get dashboard statistics
+      operationId: getDashboardStats
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  contacts:
+                    type: object
+                  messages:
+                    type: object
+                  agents:
+                    type: object
+                  ai:
+                    type: object
+
+  /v1/settings:
+    get:
+      tags:
+        - Settings
+      summary: Get all settings
+      operationId: getSettings
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Settings list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  settings:
+                    type: object
+
+    post:
+      tags:
+        - Settings
+      summary: Create setting
+      operationId: createSetting
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - key
+                - value
+              properties:
+                key:
+                  type: string
+                value:
+                  type: string
+      responses:
+        '201':
+          description: Setting created
+
+  /v1/monitoring/health:
+    get:
+      tags:
+        - Monitoring
+      summary: Get system health
+      operationId: getSystemHealth
+      responses:
+        '200':
+          description: System health status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  checks:
+                    type: object
+
+  /v1/monitoring/metrics:
+    get:
+      tags:
+        - Monitoring
+      summary: Get system metrics
+      operationId: getSystemMetrics
+      responses:
+        '200':
+          description: System metrics
+
+  /v1/memories/search:
+    get:
+      tags:
+        - Memory
+      summary: Search memories
+      operationId: searchMemories
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [contact, hedra, system]
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+
+security:
+  - BearerAuth: []

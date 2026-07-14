@@ -3,8 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Jobs\ExecuteScheduledTask;
-use App\Models\ScheduledTask;
+use App\Models\SchedulerJob;
+use Carbon\Carbon;
+use Cron\CronExpression;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class RunScheduledTasks extends Command
 {
@@ -28,34 +31,51 @@ class RunScheduledTasks extends Command
     public function handle()
     {
         $this->info('Checking for due scheduled tasks...');
+        $now = Carbon::now();
 
-        // In a real implementation, you'd parse cron expressions or check next_run_at
-        $dueTasks = ScheduledTask::where('is_active', true)
-            ->where(function ($query) {
-                $query->whereNull('next_run_at')
-                    ->orWhere('next_run_at', '<=', now());
-            })
-            ->get();
+        DB::transaction(function () use ($now) {
+            // Atomic claim using SELECT FOR UPDATE
+            $jobs = SchedulerJob::where('status', 'active')
+                ->where('is_running', false)
+                ->where(function ($q) use ($now) {
+                    $q->whereNull('next_run_at')
+                        ->orWhere('next_run_at', '<=', $now);
+                })
+                ->lockForUpdate()
+                ->get();
 
-        if ($dueTasks->isEmpty()) {
-            $this->info('No tasks due at this time.');
+            if ($jobs->isEmpty()) {
+                $this->info('No tasks due at this time.');
 
-            return;
-        }
+                return;
+            }
 
-        foreach ($dueTasks as $task) {
-            $this->info("Dispatching task: {$task->name}");
+            foreach ($jobs as $job) {
+                try {
+                    $this->info("Dispatching scheduled job: {$job->name}");
 
-            // Dispatch to the queue
-            ExecuteScheduledTask::dispatch($task);
+                    $cron = new CronExpression($job->cron_expression);
 
-            // Update next run time based on cron expression
-            // This is a naive implementation placeholder
-            $task->update([
-                'last_run_at' => now(),
-                // 'next_run_at' => (new CronExpression($task->cron_expression))->getNextRunDate()
-            ]);
-        }
+                    // Mark as running (claimed)
+                    $job->is_running = true;
+                    $job->save();
+
+                    // Dispatch execution job
+                    ExecuteScheduledTask::dispatch($job);
+
+                    // Update next run time and mark as not running (since it is successfully dispatched)
+                    $job->last_run_at = $now;
+                    $job->next_run_at = Carbon::instance($cron->getNextRunDate($now));
+                    $job->is_running = false;
+                    $job->save();
+                } catch (\Exception $e) {
+                    $this->error("Error processing job {$job->id}: {$e->getMessage()}");
+                    $job->is_running = false;
+                    $job->status = 'failing';
+                    $job->save();
+                }
+            }
+        });
 
         $this->info('Finished dispatching tasks.');
     }

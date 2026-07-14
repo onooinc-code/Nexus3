@@ -1,7 +1,13 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SwaggerController;
 use Illuminate\Support\Facades\Route;
+
+// Swagger/OpenAPI Documentation Routes
+Route::get('/swagger-ui', [SwaggerController::class, 'ui'])->name('swagger.ui');
+Route::get('/openapi.json', [SwaggerController::class, 'spec'])->name('swagger.spec');
+Route::get('/redoc', [SwaggerController::class, 'redoc'])->name('swagger.redoc');
 
 // Dashboard routes
 // Dashboard routes (Legacy - kept for backwards compatibility)
@@ -22,6 +28,9 @@ use App\Http\Controllers\Web\TasksHubController;
 
 Route::prefix('hub')->group(function () {
     Route::get('/dashboard', [HubController::class, 'dashboard'])->name('hub.dashboard');
+    Route::get('/dev', [HubController::class, 'dev'])->name('hub.dev');
+    Route::get('/dev/status', [HubController::class, 'devStatus'])->name('hub.dev.status');
+    Route::post('/dev/command', [HubController::class, 'devCommand'])->name('hub.dev.command');
 
     // Contacts
     Route::get('/contacts', [HubController::class, 'contacts'])->name('hub.contacts');

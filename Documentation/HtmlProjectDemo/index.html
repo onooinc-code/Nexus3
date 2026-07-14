@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[INSERT_SYSTEM_NAME] Interactive Documentation Template</title>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS (via CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(56, 189, 248, 0.2);
+            border-radius: 4px;
+        }
+        
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        [data-theme="light"] .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        [data-theme="light"] {
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .node-active {
+            border-color: #38bdf8 !important;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+            background: rgba(56, 189, 248, 0.15) !important;
+        }
+
+        .chat-bubble {
+            border-radius: 18px;
+            padding: 10px 14px;
+            max-width: 80%;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body class="bg-[#090d16] text-[#f8fafc] min-h-screen transition-colors duration-300">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col justify-between hidden md:flex shrink-0">
+            <div>
+                <!-- Brand Header -->
+                <div class="p-6 border-b border-slate-800 flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-sky-400 to-indigo-500 flex items-center justify-center shadow-lg">
+                        <i class="fa-solid fa-layer-group text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-extrabold text-lg bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">[SYSTEM_NAME]</h1>
+                        <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Subsystem Guide</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs Trigger -->
+                <nav class="px-4 py-6 space-y-1">
+                    <button onclick="switchTab('tab-overview')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-white bg-slate-800/50 transition-all font-medium text-sm" id="btn-tab-overview">
+                        <i class="fa-solid fa-compass text-slate-400 w-5"></i> Architecture Overview
+                    </button>
+                    <button onclick="switchTab('tab-code')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all font-medium text-sm" id="btn-tab-code">
+                        <i class="fa-solid fa-code text-slate-400 w-5"></i> Class & Code Explorer
+                    </button>
+                    <button onclick="switchTab('tab-business')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all font-medium text-sm" id="btn-tab-business">
+                        <i class="fa-solid fa-briefcase text-slate-400 w-5"></i> Business Feature Flows
+                    </button>
+                    <button onclick="switchTab('tab-ui')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all font-medium text-sm" id="btn-tab-ui">
+                        <i class="fa-solid fa-display text-slate-400 w-5"></i> UI & WebSocket Echo
+                    </button>
+                    <button onclick="switchTab('tab-agent')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all font-medium text-sm" id="btn-tab-agent">
+                        <i class="fa-solid fa-robot text-slate-400 w-5"></i> Copilot AI Agent
+                    </button>
+                </nav>
+            </div>
+            
+            <!-- Sidebar Footer -->
+            <div class="p-6 border-t border-slate-800 flex items-center justify-between">
+                <button onclick="toggleTheme()" class="h-10 w-10 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition-all">
+                    <i id="theme-icon" class="fa-solid fa-sun text-amber-400"></i>
+                </button>
+                <button onclick="exportMarkdown()" class="h-10 px-4 rounded-lg bg-sky-500 hover:bg-sky-400 text-white font-semibold text-xs flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-download"></i> Export Markdown
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="flex-grow flex flex-col h-screen overflow-y-auto">
+            
+            <!-- Top Navbar -->
+            <header class="h-16 border-b border-slate-800/50 bg-slate-900/80 backdrop-filter blur-md px-8 flex items-center justify-between shrink-0 sticky top-0 z-50">
+                <div class="relative w-96">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input id="global-search" type="text" oninput="runGlobalSearch()" placeholder="Type to search..." class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-4 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-sky-500 transition-all">
+                </div>
+            </header>
+            
+            <!-- Dashboard Content Container -->
+            <div id="content-container" class="p-8 space-y-12 max-w-7xl mx-auto w-full">
+                
+                <!-- TAB 1: OVERVIEW -->
+                <div id="tab-overview" class="tab-pane space-y-8">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-8">
+                        <h2 class="text-3xl font-extrabold text-white">[INSERT_SYSTEM_NAME] Overview</h2>
+                        <p class="text-slate-400 text-sm mt-1">Provide a general description of the subsystem components and runtime execution details here.</p>
+                    </div>
+
+                    <!-- Workflow stepper blueprint -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                        <h3 class="font-bold text-sky-400 mb-4"><i class="fa-solid fa-circle-nodes"></i> System Execution Steps</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div onclick="selectStep(1)" id="step-card-1" class="p-4 bg-slate-950 rounded-lg border border-slate-800 cursor-pointer hover:border-sky-500/50 transition-all">
+                                <span class="text-[10px] font-bold text-sky-400">Step 1</span>
+                                <h4 class="font-bold text-xs text-white mt-1">Start Event</h4>
+                                <p class="text-[10px] text-slate-500 mt-1">Click to view details of the first step workflow.</p>
+                            </div>
+                            <div onclick="selectStep(2)" id="step-card-2" class="p-4 bg-slate-950 rounded-lg border border-slate-800 cursor-pointer hover:border-sky-500/50 transition-all">
+                                <span class="text-[10px] font-bold text-sky-400">Step 2</span>
+                                <h4 class="font-bold text-xs text-white mt-1">Execution phase</h4>
+                                <p class="text-[10px] text-slate-500 mt-1">Click to view details of the second step workflow.</p>
+                            </div>
+                            <div onclick="selectStep(3)" id="step-card-3" class="p-4 bg-slate-950 rounded-lg border border-slate-800 cursor-pointer hover:border-sky-500/50 transition-all">
+                                <span class="text-[10px] font-bold text-sky-400">Step 3</span>
+                                <h4 class="font-bold text-xs text-white mt-1">End Result</h4>
+                                <p class="text-[10px] text-slate-500 mt-1">Click to view details of the third step workflow.</p>
+                            </div>
+                        </div>
+                        
+                        <div id="step-details-box" class="bg-slate-950 rounded-lg p-5 border border-slate-800 mt-4 font-mono text-xs">
+                            <span class="text-slate-500">// Select a step above to display details...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: CLASS EXPLORER -->
+                <div id="tab-code" class="tab-pane hidden space-y-6">
+                    <div class="border-b border-slate-800 pb-2">
+                        <h3 class="text-2xl font-bold text-white">Class & Method Explorer</h3>
+                        <p class="text-sm text-slate-400">Navigate class implementations, methods, and PHP code blocks.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                        <!-- Sidebar -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 h-[400px] overflow-y-auto space-y-1">
+                            <div id="class-list" class="space-y-1">
+                                <!-- JS Populated -->
+                            </div>
+                        </div>
+
+                        <!-- Details Panel -->
+                        <div class="lg:col-span-3 bg-slate-900 border border-slate-800 rounded-xl p-6 h-[400px] flex flex-col justify-between">
+                            <div class="overflow-y-auto">
+                                <h4 id="class-title" class="text-lg font-bold text-sky-400 font-mono">Select a class</h4>
+                                <p id="class-desc" class="text-xs text-slate-400 mt-2"></p>
+                                <pre id="class-code" class="bg-slate-950 rounded-lg p-3 font-mono text-[10px] text-sky-400 mt-4 border border-slate-900 overflow-x-auto"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: BUSINESS FEATURES -->
+                <div id="tab-business" class="tab-pane hidden space-y-6">
+                    <div class="border-b border-slate-800 pb-2">
+                        <h3 class="text-2xl font-bold text-white">Business Features Map</h3>
+                        <p class="text-sm text-slate-400">Correlation mapping between functional requirements and technical implementations.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="features-container">
+                        <!-- JS populated with template cards -->
+                    </div>
+                </div>
+
+                <!-- TAB 4: UI & WEBSOCKETS -->
+                <div id="tab-ui" class="tab-pane hidden space-y-6">
+                    <div class="border-b border-slate-800 pb-2">
+                        <h3 class="text-2xl font-bold text-white">UI & WebSocket Broadcaster Channels</h3>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                        <p class="text-xs text-slate-400">Describe Livewire templates, Vue subscriptions, and Pusher Echo parameters here.</p>
+                    </div>
+                </div>
+
+                <!-- TAB 5: AI COPILOT CHAT -->
+                <div id="tab-agent" class="tab-pane hidden space-y-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col h-[400px]">
+                        <div id="chat-timeline" class="flex-grow p-4 overflow-y-auto bg-slate-950/50 space-y-4">
+                            <!-- Timeline messages -->
+                        </div>
+                        <div class="p-3 bg-slate-950 border-t border-slate-800 flex gap-2">
+                            <input id="chat-input" type="text" placeholder="Ask questions about this system..." class="flex-grow bg-slate-900 border border-slate-800 rounded px-3 py-1.5 text-xs focus:outline-none">
+                            <button onclick="sendChatMessage()" class="px-4 py-1.5 bg-sky-500 text-white rounded text-xs font-bold">Send</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Tab switching logic
+        function switchTab(id) {
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('bg-slate-800/50', 'text-white'));
+            document.getElementById(id).classList.remove('hidden');
+            document.getElementById(`btn-${id}`).classList.add('bg-slate-800/50', 'text-white');
+        }
+
+        // Dummy data for class catalog template
+        const catalog = {
+            'ExampleService': {
+                desc: 'Describe functionality of this service class here.',
+                code: 'class ExampleService {\n    // Code snippet here\n}'
+            }
+        };
+
+        // Populate sidebar
+        window.onload = function() {
+            const list = document.getElementById('class-list');
+            list.innerHTML = '';
+            Object.keys(catalog).forEach(name => {
+                list.innerHTML += `
+                    <button onclick="selectClass('${name}')" class="w-full text-left font-mono text-xs p-2 rounded hover:bg-slate-800/30 text-slate-400 block">${name}</button>
+                `;
+            });
+            switchTab('tab-overview');
+        };
+
+        function selectClass(name) {
+            const data = catalog[name];
+            document.getElementById('class-title').innerText = name;
+            document.getElementById('class-desc').innerText = data.desc;
+            document.getElementById('class-code').innerText = data.code;
+        }
+
+        // Stepper selections
+        function selectStep(id) {
+            document.querySelectorAll('[id^="step-card-"]').forEach(el => el.classList.remove('node-active'));
+            document.getElementById(`step-card-${id}`).classList.add('node-active');
+            document.getElementById('step-details-box').innerText = `Details for step ${id}: Edit this section within step-details-box.`;
+        }
+
+        // Chat submission
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const val = input.value.trim();
+            if (!val) return;
+
+            const timeline = document.getElementById('chat-timeline');
+            timeline.innerHTML += `<div class="text-right text-xs text-sky-400 bg-slate-900 p-2 rounded">${val}</div>`;
+            input.value = '';
+            
+            setTimeout(() => {
+                timeline.innerHTML += `<div class="text-left text-xs text-emerald-400 bg-slate-950 p-2 rounded">Response template for query: ${val}</div>`;
+                timeline.scrollTop = timeline.scrollHeight;
+            }, 800);
+        }
+
+        // Theme selector
+        function toggleTheme() {
+            const body = document.body;
+            if (body.classList.contains('bg-[#090d16]')) {
+                body.classList.remove('bg-[#090d16]', 'text-[#f8fafc]');
+                document.documentElement.setAttribute('data-theme', 'light');
+            } else {
+                body.classList.add('bg-[#090d16]', 'text-[#f8fafc]');
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        }
+    </script>
+</body>
+</html>

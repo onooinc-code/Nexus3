@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacts Hub CRM & AI Intelligence Deep Dive Report</title>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS (via CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Mermaid JS for Dynamic Diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        nexus: {
+                            bg: '#04050d',
+                            panel: '#090a16',
+                            border: '#15172b',
+                            primary: '#9333ea', /* Violet Primary for CRM */
+                            secondary: '#6366f1',
+                            success: '#10b981',
+                            danger: '#ef4444',
+                            warning: '#f59e0b',
+                            text: '#f8fafc',
+                            muted: '#94a3b8'
+                        }
+                    }
+                }
+            }
+        };
+        mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+    </script>
+    <style>
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(147, 51, 234, 0.2);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(147, 51, 234, 0.5);
+        }
+        
+        .glass-panel {
+            background: rgba(9, 10, 22, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        [data-theme="light"] .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+        }
+        
+        [data-theme="light"] {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        
+        .animated-gradient-border {
+            position: relative;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #9333ea, #6366f1, #3b82f6, #9333ea);
+            background-size: 300% 100%;
+            animation: border-dance 8s linear infinite;
+            padding: 1px;
+        }
+        
+        @keyframes border-dance {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
+
+        .mermaid svg {
+            background: transparent !important;
+            margin: auto;
+        }
+
+        /* Card Zoom Effect */
+        .zoom-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(4, 5, 13, 0.9);
+            backdrop-filter: blur(12px);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .zoom-content {
+            background: #090a16;
+            border: 1px solid #15172b;
+            border-radius: 20px;
+            max-width: 95%;
+            max-height: 95%;
+            overflow-y: auto;
+            padding: 3rem;
+            position: relative;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+        }
+
+        [data-theme="light"] .zoom-content {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            color: #0f172a;
+        }
+
+        /* Font Scaling Utilities */
+        :root {
+            --base-font-size: 100%;
+        }
+        body {
+            font-size: var(--base-font-size);
+        }
+
+        /* Custom Accordion Animations */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .accordion-open .accordion-content {
+            max-height: 2000px;
+            transition: max-height 0.5s ease-in;
+        }
+    </style>
+</head>
+<body class="bg-[#030409] text-[#f8fafc] min-h-screen transition-colors duration-300 font-sans">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar-container" class="w-80 bg-[#060711] border-r border-[#15172b] flex flex-col justify-between shrink-0 transition-all duration-300 z-40">
+            <div class="overflow-y-auto flex-grow">
+                <!-- Brand Header -->
+                <div class="p-6 border-b border-[#15172b] flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                        <i class="fa-solid fa-address-book text-white text-lg"></i>
+                    </div>
+                    <div class="sidebar-text-content">
+                        <h1 class="font-extrabold text-lg bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">Contacts Hub</h1>
+                        <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Enterprise CRM & AI Analyzer</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs Trigger -->
+                <nav class="px-4 py-6 space-y-1">
+                    <button onclick="switchTab('tab-overview')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-purple-950/20 hover:text-purple-400 border border-transparent hover:border-purple-500/30 transition-all font-medium text-sm" id="btn-tab-overview">
+                        <i class="fa-solid fa-chart-line text-slate-400 w-5"></i> Dashboard Overview
+                    </button>
+                    <button onclick="switchTab('tab-features')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-purple-950/20 hover:text-purple-400 border border-transparent hover:border-purple-500/30 transition-all font-medium text-sm" id="btn-tab-features">
+                        <i class="fa-solid fa-list-check text-slate-400 w-5"></i> Features Matrix
+                    </button>
+                    <button onclick="switchTab('tab-workflows')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-purple-950/20 hover:text-purple-400 border border-transparent hover:border-purple-500/30 transition-all font-medium text-sm" id="btn-tab-workflows">
+                        <i class="fa-solid fa-diagram-project text-slate-400 w-5"></i> System Workflows
+                    </button>
+                    <button onclick="switchTab('tab-database')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-purple-950/20 hover:text-purple-400 border border-transparent hover:border-purple-500/30 transition-all font-medium text-sm" id="btn-tab-database">
+                        <i class="fa-solid fa-database text-slate-400 w-5"></i> Database Schema Map
+                    </button>
+                    <button onclick="switchTab('tab-classes')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-purple-950/20 hover:text-purple-400 border border-transparent hover:border-purple-500/30 transition-all font-medium text-sm" id="btn-tab-classes">
+                        <i class="fa-solid fa-code text-slate-400 w-5"></i> Class & Code Explorer
+                    </button>
+                    <button onclick="switchTab('tab-endpoints')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-purple-950/20 hover:text-purple-400 border border-transparent hover:border-purple-500/30 transition-all font-medium text-sm" id="btn-tab-endpoints">
+                        <i class="fa-solid fa-link text-slate-400 w-5"></i> REST API Routes
+                    </button>
+                    <button onclick="switchTab('tab-jobs')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-purple-950/20 hover:text-purple-400 border border-transparent hover:border-purple-500/30 transition-all font-medium text-sm" id="btn-tab-jobs">
+                        <i class="fa-solid fa-gears text-slate-400 w-5"></i> Queue Jobs & Commands
+                    </button>
+                    <button onclick="switchTab('tab-bugs')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-purple-950/20 hover:text-purple-400 border border-transparent hover:border-purple-500/30 transition-all font-medium text-sm" id="btn-tab-bugs">
+                        <i class="fa-solid fa-bug text-slate-400 w-5"></i> Audit Bugs & Patches
+                    </button>
+                    <button onclick="switchTab('tab-sandbox')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-purple-950/20 hover:text-purple-400 border border-transparent hover:border-purple-500/30 transition-all font-medium text-sm" id="btn-tab-sandbox">
+                        <i class="fa-solid fa-terminal text-slate-400 w-5"></i> Advanced Sandbox
+                    </button>
+                    <button onclick="switchTab('tab-copilot')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300 hover:text-white hover:bg-purple-950/20 hover:text-purple-400 border border-transparent hover:border-purple-500/30 transition-all font-medium text-sm" id="btn-tab-copilot">
+                        <i class="fa-solid fa-comments text-slate-400 w-5"></i> Copilot AI Assistant
+                    </button>
+                </nav>
+            </div>
+            
+            <!-- Sidebar Footer -->
+            <div class="p-6 border-t border-[#15172b] flex items-center justify-between shrink-0">
+                <button onclick="toggleTheme()" class="h-10 w-10 rounded-lg bg-[#0e101f] hover:bg-[#15172e] text-slate-300 flex items-center justify-center transition-all">
+                    <i id="theme-icon" class="fa-solid fa-sun text-amber-400"></i>
+                </button>
+                <span class="text-[10px] text-slate-500 font-mono">Contacts Hub v2.5</span>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="flex-grow flex flex-col h-screen overflow-hidden bg-[#030409] dark:bg-[#030409] light:bg-[#f8fafc]">
+            
+            <!-- Top Navbar -->
+            <header class="h-16 border-b border-[#15172b] bg-[#060711]/90 backdrop-filter blur-md px-8 flex items-center justify-between shrink-0 z-30">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="h-10 w-10 rounded-lg hover:bg-slate-800/40 flex items-center justify-center text-slate-400" title="Toggle Sidebar">
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </button>
+                    <div class="relative w-96">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input id="global-search" type="text" oninput="runGlobalSearch()" placeholder="Search CRM components, attributes, methods, bugs..." class="w-full bg-[#0a0b16] border border-[#15172b] rounded-lg pl-9 pr-4 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500 transition-all">
+                    </div>
+                </div>
+                
+                <!-- Accessibility Controls & Stats Quickstrip -->
+                <div class="flex items-center gap-6">
+                    <div class="hidden xl:flex items-center gap-4 border-r border-[#15172b] pr-6 text-xs text-slate-400 font-medium">
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-heart-pulse text-emerald-400"></i> Service Status: <strong class="text-emerald-400 font-bold">Online</strong></span>
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-database text-purple-400"></i> Entities: <strong class="text-slate-200">14 Tables</strong></span>
+                    </div>
+                    <div class="flex items-center gap-1 bg-[#0b0c16] border border-[#15172b] rounded-lg p-1">
+                        <button onclick="changeFontSize(-5)" class="h-7 w-7 rounded hover:bg-slate-800 text-xs text-slate-400 font-bold" title="Decrease font size">A-</button>
+                        <button onclick="changeFontSize(0)" class="h-7 w-7 rounded hover:bg-slate-800 text-xs text-slate-400 font-bold" title="Reset font size">Reset</button>
+                        <button onclick="changeFontSize(5)" class="h-7 w-7 rounded hover:bg-slate-800 text-xs text-slate-400 font-bold" title="Increase font size">A+</button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Dashboard Content Container (Scrollable) -->
+            <div id="content-scroller" class="flex-grow overflow-y-auto p-8">
+                <div id="content-container" class="space-y-12 max-w-7xl mx-auto w-full transition-all duration-200">
+                    
+                    <!-- TAB 1: DASHBOARD OVERVIEW -->
+                    <div id="tab-overview" class="tab-pane space-y-8">
+                        <div class="animated-gradient-border shadow-2xl">
+                            <div class="bg-[#060711]/95 rounded-[11px] p-8">
+                                <span class="bg-purple-500/10 text-purple-400 text-xs font-semibold px-3 py-1 rounded-full border border-purple-500/20">Technical CRM Audit & Architecture Specification</span>
+                                <h2 class="text-3xl font-extrabold text-white mt-3">Contacts Hub CRM System Audit</h2>
+                                <p class="text-slate-400 text-sm mt-2 max-w-4xl">
+                                    The Contacts Hub consolidates multiple third-party communication channels (WhatsApp, WAHA Live Sync, and Facebook Messenger) under a single identity graph. This deep-dive report maps out the entire system structure, detailing all database schemas, backend PHP classes, background queue jobs, and event listeners, alongside critical design bugs found in memory and social relationship algorithms.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Metric Counters Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-5 glass-panel cursor-pointer" onclick="zoomElement(this)">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-slate-400 uppercase font-semibold">Total Unified Profiles</span>
+                                    <div class="h-8 w-8 rounded-lg bg-purple-500/15 flex items-center justify-center text-purple-400">
+                                        <i class="fa-solid fa-address-book"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <h3 class="text-2xl font-bold text-white font-mono">1,482</h3>
+                                    <p class="text-xs text-emerald-400 mt-1 flex items-center gap-1"><i class="fa-solid fa-arrow-trend-up"></i> +12% this month</p>
+                                </div>
+                            </div>
+                            <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-5 glass-panel cursor-pointer" onclick="zoomElement(this)">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-slate-400 uppercase font-semibold">Stale Memory Clusters</span>
+                                    <div class="h-8 w-8 rounded-lg bg-amber-500/15 flex items-center justify-center text-amber-400">
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <h3 class="text-2xl font-bold text-white font-mono">87</h3>
+                                    <p class="text-xs text-amber-400 mt-1">Confidence below 0.3 threshold</p>
+                                </div>
+                            </div>
+                            <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-5 glass-panel cursor-pointer" onclick="zoomElement(this)">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-slate-400 uppercase font-semibold">Flagged Conflicts</span>
+                                    <div class="h-8 w-8 rounded-lg bg-red-500/15 flex items-center justify-center text-red-400">
+                                        <i class="fa-solid fa-circle-xmark"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <h3 class="text-2xl font-bold text-white font-mono">14</h3>
+                                    <p class="text-xs text-slate-400 mt-1">Cross-linked phone/email identifier matches</p>
+                                </div>
+                            </div>
+                            <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-5 glass-panel cursor-pointer" onclick="zoomElement(this)">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-slate-400 uppercase font-semibold">AI Analysis Operations</span>
+                                    <div class="h-8 w-8 rounded-lg bg-indigo-500/15 flex items-center justify-center text-indigo-400">
+                                        <i class="fa-solid fa-brain"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <h3 class="text-2xl font-bold text-white font-mono">412</h3>
+                                    <p class="text-xs text-emerald-400 mt-1 flex items-center gap-1"><i class="fa-solid fa-dollar-sign"></i> Profiler Token Cost: $82.40</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Core Architectural Components Accordion -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2"><i class="fa-solid fa-cubes"></i> Core Architectural Layers</h3>
+                            
+                            <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-5 glass-panel cursor-pointer" onclick="zoomElement(this)">
+                                <h4 class="font-bold text-purple-400 text-sm flex items-center gap-2"><i class="fa-solid fa-network-wired"></i> 1. Contact Unification & Multi-channel Inbox</h4>
+                                <p class="text-xs text-slate-300 mt-2">
+                                    The Contacts Hub resolves inbound webhooks or data uploads from WhatsApp and Facebook Messenger to a single Contact ID.
+                                    When an inbound message is received via `ProcessWahaWebhookJob` or Facebook pipelines:
+                                </p>
+                                <ul class="list-disc pl-5 mt-2 space-y-1 text-xs text-slate-400">
+                                    <li>The system checks the `contact_identifiers` table using normalized identifiers (phones stripped to numeric values, emails lowercased).</li>
+                                    <li>If a match is found, the message is linked to that profile.</li>
+                                    <li>If a match is not found, the `ContactMessageNormalizer` performs name similarity matching using Levenshtein distance computations in memory. If similarity is less than 80%, a new individual contact profile is created dynamically.</li>
+                                </ul>
+                            </div>
+
+                            <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-5 glass-panel cursor-pointer" onclick="zoomElement(this)">
+                                <h4 class="font-bold text-purple-400 text-sm flex items-center gap-2"><i class="fa-solid fa-brain"></i> 2. Asynchronous AI Intelligence Extraction</h4>
+                                <p class="text-xs text-slate-300 mt-2">
+                                    Triggered via `POST /contacts/{id}/analysis-runs`, this layer executes NLP analysis to generate rich contact context:
+                                </p>
+                                <ul class="list-disc pl-5 mt-2 space-y-1 text-xs text-slate-400">
+                                    <li>Gathers up to 100 historical messages in reverse chronological order.</li>
+                                    <li>Submits payload instructions to the `UniversalAiGatewayService` using an AI model profiler.</li>
+                                    <li>Extracts key profiling categories: discussion topics, character persona summaries, emotional baselines, and recommended autopilot response guidance.</li>
+                                    <li>Saves results as `ContactAnalysisFinding` logs with evidence links and updates the contact's metadata for immediate AI reply contextualization.</li>
+                                </ul>
+                            </div>
+
+                            <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-5 glass-panel cursor-pointer" onclick="zoomElement(this)">
+                                <h4 class="font-bold text-purple-400 text-sm flex items-center gap-2"><i class="fa-solid fa-shield-halved"></i> 3. GDPR Compliance, Auditing, and Transactional Rollbacks</h4>
+                                <p class="text-xs text-slate-300 mt-2">
+                                    Contains secure privacy protection features and batch management controls:
+                                </p>
+                                <ul class="list-disc pl-5 mt-2 space-y-1 text-xs text-slate-400">
+                                    <li><strong>Erasure Pipeline:</strong> Dispatches `EraseContactDataJob` to securely clean MySQL records and calls `ContactPrivacyService` to wipe vectorized memory indexes from Pinecone.</li>
+                                    <li><strong>Audit Logs:</strong> Registers all user operations (including identity conflicts and failed runs) into the `contact_audit_events` log database.</li>
+                                    <li><strong>Transaction Rollback:</strong> `ContactImportRollbackService` runs a DB Transaction deleting imported message records and dispatching rollback broadcasts.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: FEATURES MATRIX -->
+                    <div id="tab-features" class="tab-pane hidden space-y-6">
+                        <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-6 glass-panel">
+                            <h3 class="font-bold text-white text-xl mb-2 flex items-center gap-2"><i class="fa-solid fa-list-check"></i> System Requirements & Features Matrix</h3>
+                            <p class="text-xs text-slate-400 mb-6">Complete audit of CRM capabilities mapped from system specifications and active codebase files.</p>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-slate-950 border-b border-slate-800 text-slate-300 font-semibold">
+                                        <tr>
+                                            <th class="p-4">Feature Area</th>
+                                            <th class="p-4">Business Specification Requirements</th>
+                                            <th class="p-4">Technical Implementation Files</th>
+                                            <th class="p-4">Status & Quality Rating</th>
+                                            <th class="p-4">Detailed Code Findings / Discrepancies</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-[#15172b] text-slate-300">
+                                        <tr>
+                                            <td class="p-4 font-bold text-slate-100">Contact CRUD & Idempotency</td>
+                                            <td class="p-4">Standard CRUD. Support type differentiation (client, partner, individual). Prevent double creation with idempotency keys.</td>
+                                            <td class="p-4 font-mono text-[10px]">[ContactController](file:///www/wwwroot/Nexus/core/Nexus3/app/Http/Controllers/ContactController.php)<br>[Contact](file:///www/wwwroot/Nexus/core/Nexus3/app/Models/Contact.php)</td>
+                                            <td class="p-4"><span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold">100% Implemented</span></td>
+                                            <td class="p-4 text-slate-400">Stores idempotency keys in Redis cache for 5 minutes. Successfully prevents duplicate POST creation.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-4 font-bold text-slate-100">Multi-channel Identity Mapping</td>
+                                            <td class="p-4">Normalise phone and email tags to prevent cross-contact duplicates. Primary identity validation.</td>
+                                            <td class="p-4 font-mono text-[10px]">[ContactIdentifier](file:///www/wwwroot/Nexus/core/Nexus3/app/Models/ContactIdentifier.php)<br>[ContactIdentifierController](file:///www/wwwroot/Nexus/core/Nexus3/app/Http/Controllers/ContactIdentifierController.php)</td>
+                                            <td class="p-4"><span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold">100% Implemented</span></td>
+                                            <td class="p-4 text-slate-400">Includes `ContactIdentifier::normalize()` which strips non-numeric characters for phone numbers and converts email values to lowercase.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-4 font-bold text-slate-100">AI Profiling Pipeline</td>
+                                            <td class="p-4">Queue job to analyze recent 100 messages. Extract topics, emotion metrics, persona, and suggest reply rules.</td>
+                                            <td class="p-4 font-mono text-[10px]">[ContactIntelligenceExtractionPipeline](file:///www/wwwroot/Nexus/core/Nexus3/app/Services/Contact/ContactIntelligenceExtractionPipeline.php)<br>[AnalyzeContactMessagesJob](file:///www/wwwroot/Nexus/core/Nexus3/app/Jobs/AnalyzeContactMessagesJob.php)</td>
+                                            <td class="p-4"><span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold">100% Implemented</span></td>
+                                            <td class="p-4 text-slate-400">Communicates with `UniversalAiGatewayService` via LLM profiler agents. Saves excerpts in the `contact_analysis_findings` table. Eagerly updates contact metadata.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-4 font-bold text-slate-100">Memory Maintenance</td>
+                                            <td class="p-4">Prune stale memories (older than 1 year), rebuild index vectors, clear duplicated blocks, and consolidate.</td>
+                                            <td class="p-4 font-mono text-[10px]">[ContactMemoryMaintenancePipeline](file:///www/wwwroot/Nexus/core/Nexus3/app/Services/Contact/ContactMemoryMaintenancePipeline.php)</td>
+                                            <td class="p-4"><span class="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold">Incorrectly Implemented</span></td>
+                                            <td class="p-4 text-red-400 font-semibold bg-red-950/10">Critical bug: The service runs all maintenance queries on `$contact->memories()` which targets the general platform memories instead of contact CRM memories (`contact_memories` table). Actual customer memories are bypassed.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-4 font-bold text-slate-100">Confidence Decay Over Time</td>
+                                            <td class="p-4">Gradually reduce confidence of stale memories that aren't reinforced over 30 days.</td>
+                                            <td class="p-4 font-mono text-[10px]">No active code on CRM tables</td>
+                                            <td class="p-4"><span class="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold">Missing</span></td>
+                                            <td class="p-4 text-red-400 font-semibold bg-red-950/10">While decay is supported in the platform-wide `MemoryMaintenanceService` class, it is completely absent for the new contact CRM memories table (`contact_memories`).</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-4 font-bold text-slate-100">Social Graph Trees</td>
+                                            <td class="p-4">Maintain source-to-target relationship records (manager, colleague, etc.) with custom confidence scores to draw graphs.</td>
+                                            <td class="p-4 font-mono text-[10px]">[RelationshipGraphService](file:///www/wwwroot/Nexus/core/Nexus3/app/Services/RelationshipGraphService.php)<br>[ContactRelationship](file:///www/wwwroot/Nexus/core/Nexus3/app/Models/ContactRelationship.php)</td>
+                                            <td class="p-4"><span class="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold">Incorrectly Implemented</span></td>
+                                            <td class="p-4 text-red-400 font-semibold bg-red-950/10">Critical bug: `RelationshipGraphService` constructs graph nodes and edges by parsing `$contact->rules` reply rule configurations instead of querying database records in the `contact_relationships` table.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-4 font-bold text-slate-100">GDPR Erasure & Audit Logs</td>
+                                            <td class="p-4">Safely erase all contact attributes, chats, and Pinecone vectors. Compile audit logs for all security actions.</td>
+                                            <td class="p-4 font-mono text-[10px]">[EraseContactDataJob](file:///www/wwwroot/Nexus/core/Nexus3/app/Jobs/EraseContactDataJob.php)<br>[ContactPrivacyService](file:///www/wwwroot/Nexus/core/Nexus3/app/Services/ContactPrivacyService.php)</td>
+                                            <td class="p-4"><span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold">100% Implemented</span></td>
+                                            <td class="p-4 text-slate-400">Successfully wipes contact database rows and uses the Pinecone gateway to clean vectors. Logs all audit entries in the `contact_audit_events` table.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-4 font-bold text-slate-100">Staleness & Duplicate Auditing</td>
+                                            <td class="p-4">Identify and surface contacts with identity conflicts or stale memory profiles.</td>
+                                            <td class="p-4 font-mono text-[10px]">[ContactController@conflicts](file:///www/wwwroot/Nexus/core/Nexus3/app/Http/Controllers/ContactController.php#L693)<br>[ContactController@staleMemory](file:///www/wwwroot/Nexus/core/Nexus3/app/Http/Controllers/ContactController.php#L705)</td>
+                                            <td class="p-4"><span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold">100% Implemented</span></td>
+                                            <td class="p-4 text-slate-400">Provides paginated conflict lists and flags profile indices needing AI profiling updates.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-4 font-bold text-slate-100">Import Batch rollback</td>
+                                            <td class="p-4">Import files in batches, preview results, track batch sizes, and allow users to roll back bad imports.</td>
+                                            <td class="p-4 font-mono text-[10px]">[ContactImportRollbackService](file:///www/wwwroot/Nexus/core/Nexus3/app/Services/Contact/ContactImportRollbackService.php)<br>[ContactImportController](file:///www/wwwroot/Nexus/core/Nexus3/app/Http/Controllers/ContactImportController.php)</td>
+                                            <td class="p-4"><span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold">Partial / Gaps</span></td>
+                                            <td class="p-4 text-amber-400 font-semibold bg-amber-950/10">Message imports leverage the pipeline with full transaction rollback support. However, profile CSV uploads bypass the pipeline, are imported directly in `ContactController@import`, and do not support rollbacks.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: WORKFLOW DIAGRAMS -->
+                    <div id="tab-workflows" class="tab-pane hidden space-y-8">
+                        
+                        <!-- Create Contact Workflow -->
+                        <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-6 glass-panel cursor-pointer" onclick="zoomElement(this)">
+                            <h3 class="font-bold text-purple-400 text-lg mb-4 flex items-center gap-2"><i class="fa-solid fa-user-plus"></i> Contact Creation & Idempotency Pipeline</h3>
+                            <div class="mermaid py-2">
+                                sequenceDiagram
+                                    autonumber
+                                    Client->>ContactController: POST /api/v1/contacts with X-Idempotency-Key
+                                    alt Key Found in Cache
+                                        ContactController-->>Client: Return Cached Contact Data (200 OK)
+                                    else Key Missing
+                                        ContactController->>ContactController: Validate Request Body
+                                        ContactController->>Contact: findByIdentifiers(email/phone candidates)
+                                        alt Contact Exists
+                                            ContactController->>Contact: Update Profile Attributes
+                                        else Contact is New
+                                            ContactController->>Contact: Create (Assign UUID)
+                                        end
+                                        ContactController->>ContactIdentifier: Create/Normalize Identifiers (phone, email)
+                                        ContactController->>ContactHubService: syncContactDetails()
+                                        ContactController->>NotificationLog: Create 'Contact Registered' Log
+                                        ContactController->>Cache: Save Idempotency Key (expires in 5 mins)
+                                        ContactController->>Event: Dispatch ContactCreated
+                                        ContactController-->>Client: Return Contact Resource (201 Created)
+                                    end
+                            </div>
+                        </div>
+
+                        <!-- WhatsApp TXT Parser Flow -->
+                        <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-6 glass-panel cursor-pointer" onclick="zoomElement(this)">
+                            <h3 class="font-bold text-purple-400 text-lg mb-4 flex items-center gap-2"><i class="fa-solid fa-file-lines"></i> WhatsApp TXT Export Parser Algorithm Flow</h3>
+                            <div class="mermaid py-2">
+                                graph TD
+                                    A[Start: Read Raw WhatsApp TXT File] --> B[Explode file contents by newline]
+                                    B --> C[Loop through lines]
+                                    C --> D{Is line empty?}
+                                    D -- Yes --> C
+                                    D -- No --> E{Matches [YYYY-MM-DD, HH:MM:SS] format?}
+                                    E -- Yes --> F[Build new Message array & set direction]
+                                    E -- No --> G{Matches DD/MM/YYYY, H:MM AM/PM - format?}
+                                    G -- Yes --> H[Build new Message array & parse custom timestamp]
+                                    G -- No --> I{Is active message object current?}
+                                    I -- Yes --> J[Append text as multi-line continuation]
+                                    I -- No --> C
+                                    F --> K[Filter system messages: encryption warnings, call logs, exits]
+                                    H --> K
+                                    J --> C
+                                    K -- Clean --> L[Push message to parse stack]
+                                    K -- System Msg --> C
+                                    L --> C
+                                    C --> M[End loop: Return parse stack array]
+                            </div>
+                        </div>
+
+                        <!-- AI Analysis Run Workflow -->
+                        <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-6 glass-panel cursor-pointer" onclick="zoomElement(this)">
+                            <h3 class="font-bold text-purple-400 text-lg mb-4 flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Analysis & Intelligence Processing Pipeline</h3>
+                            <div class="mermaid py-2">
+                                sequenceDiagram
+                                    autonumber
+                                    User->>ContactController: POST /contacts/{id}/analysis-runs
+                                    ContactController->>ContactAnalysisRun: Create(status: queued, trace_id)
+                                    ContactController->>AnalyzeContactMessagesJob: Dispatch(run)
+                                    ContactController-->>User: 202 Accepted (Run ID & Status)
+                                    
+                                    Note over AnalyzeContactMessagesJob: Runs asynchronously in Horizon queue
+                                    AnalyzeContactMessagesJob->>ContactMessage: Fetch message history (Limit 100)
+                                    AnalyzeContactMessagesJob->>LLM Service: Request profile extraction (sentiment, topics, tone)
+                                    LLM Service-->>AnalyzeContactMessagesJob: Returns Structured Findings JSON
+                                    AnalyzeContactMessagesJob->>ContactAnalysisFinding: Create findings (finding_type: persona, talk_specs, emotional_baseline)
+                                    AnalyzeContactMessagesJob->>ContactAnalysisRun: Update(status: completed)
+                                    
+                                    Note over User: User reviews results, then applies changes
+                                    User->>ContactController: POST /analysis-runs/{run}/apply
+                                    ContactController->>Contact: Update metadata with findings
+                                    ContactController->>ContactTopic: Update or create parsed discussion topics
+                                    ContactController->>ContactReplyRule: Generate automated reply rules suggestions
+                                    ContactController-->>User: 200 OK (Run Applied, confidence increased)
+                            </div>
+                        </div>
+                        
+                        <!-- Memory Maintenance Pipeline -->
+                        <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-6 glass-panel cursor-pointer" onclick="zoomElement(this)">
+                            <div class="border-l-4 border-red-500 pl-4 py-1 mb-4">
+                                <h3 class="font-bold text-purple-400 text-lg flex items-center gap-2">
+                                    <i class="fa-solid fa-recycle"></i> Memory Maintenance Pipeline (Discrepancy Highlighted)
+                                </h3>
+                                <p class="text-xs text-red-400 mt-1">This diagram maps the current code path, exposing how it mistakenly connects to the legacy platform memories instead of contact CRM memories.</p>
+                            </div>
+                            <div class="mermaid py-2">
+                                sequenceDiagram
+                                    autonumber
+                                    User->>ContactController: POST /contacts/memory-maintenance (scope, operation)
+                                    ContactController->>ContactMemoryMaintenanceRun: Create (status: queued)
+                                    alt Dry Run Requested
+                                        ContactController->>ContactMemoryMaintenancePipeline: process() (Synchronous)
+                                        ContactMemoryMaintenancePipeline-->>ContactController: Returns simulation results
+                                    else Execution Run
+                                        ContactController->>RunContactMemoryMaintenanceJob: Dispatch(run)
+                                        ContactController-->>User: 201 Created (queued)
+                                    end
+                                    
+                                    Note over ContactMemoryMaintenancePipeline: process() operation execution
+                                    alt operation: prune_stale
+                                        ContactMemoryMaintenancePipeline->>LegacyMemory: Query contact->memories() older than 1 year (NOT contact_memories!)
+                                        ContactMemoryMaintenancePipeline->>SemanticMemoryService: delete() vectors from Pinecone
+                                        ContactMemoryMaintenancePipeline->>LegacyMemory: delete() from database
+                                    else operation: resolve_duplicates
+                                        ContactMemoryMaintenancePipeline->>LegacyMemory: Query contact->memories (NOT contact_memories!)
+                                        ContactMemoryMaintenancePipeline->>VectorizeMemoryJob: Dispatch for empty vectors
+                                        ContactMemoryMaintenancePipeline->>SaveToPineconeJob: Dispatch to reindex Pinecone
+                                    else operation: erase_data
+                                        ContactMemoryMaintenancePipeline->>SemanticMemoryService: Clear all Pinecone vectors for Contact
+                                        ContactMemoryMaintenancePipeline->>Database: delete() messages, legacy memories, logs, findings
+                                    end
+                            </div>
+                        </div>
+
+                        <!-- GDPR Erasure Flow -->
+                        <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-6 glass-panel cursor-pointer" onclick="zoomElement(this)">
+                            <h3 class="font-bold text-purple-400 text-lg mb-4 flex items-center gap-2"><i class="fa-solid fa-shield-halved"></i> Contact GDPR Deletion & Privacy Pipeline</h3>
+                            <div class="mermaid py-2">
+                                sequenceDiagram
+                                    autonumber
+                                    Client->>ContactController: POST /api/v1/contacts/{id}/erase
+                                    ContactController->>EraseContactDataJob: Dispatch(contact_id, actor_id)
+                                    ContactController-->>Client: 202 Accepted (Erasure queued)
+
+                                    Note over EraseContactDataJob: Runs on Horizon Queue
+                                    EraseContactDataJob->>ContactPrivacyService: wipeContactPrivacy(contact_id)
+                                    ContactPrivacyService->>ContactMemory: Fetch all contact memories IDs
+                                    ContactPrivacyService->>ContactMemoryVersion: Delete memory version records
+                                    ContactPrivacyService->>ContactMemory: Delete contact memory records
+                                    ContactPrivacyService->>Pinecone: Send DELETE request for memory vectors
+                                    EraseContactDataJob->>ContactMessage: Delete conversation messages
+                                    EraseContactDataJob->>ContactAnalysisFinding: Delete analysis records
+                                    EraseContactDataJob->>Contact: Delete unified contact record (SoftDeletes bypassed)
+                                    EraseContactDataJob->>ContactAuditEvent: Create 'gdpr_erased' audit row
+                                    EraseContactDataJob->>Event: Dispatch ContactDeleted
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: DATABASE SCHEMA MAP -->
+                    <div id="tab-database" class="tab-pane hidden space-y-8">
+                        <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-6 glass-panel">
+                            <h3 class="font-bold text-white text-xl mb-4 flex items-center gap-2"><i class="fa-solid fa-database"></i> Database Blueprints & Table Relations</h3>
+                            <p class="text-xs text-slate-400 mb-6">Inventory of all 14 database tables used to power the Contacts Hub subsystem, detailing primary keys, types, and constraints.</p>
+                            
+                            <div class="space-y-6">
+                                <!-- Table 1 -->
+                                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5">
+                                    <h4 class="font-mono text-xs text-purple-400 font-bold">1. Table: `contacts`</h4>
+                                    <p class="text-xs text-slate-400 mt-1">Stores core contact profile records.</p>
+                                    <div class="overflow-x-auto mt-3">
+                                        <table class="w-full text-left text-xs">
+                                            <thead class="bg-slate-900 border-b border-slate-800 text-slate-400 font-bold">
+                                                <tr>
+                                                    <th class="p-2">Column Name</th>
+                                                    <th class="p-2">Data Type</th>
+                                                    <th class="p-2">Index Type</th>
+                                                    <th class="p-2">Description</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-800 text-slate-300 font-mono text-[11px]">
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`id`</td>
+                                                    <td class="p-2">BIGINT UNSIGNED</td>
+                                                    <td class="p-2 text-amber-500">PRIMARY KEY</td>
+                                                    <td class="p-2 font-sans text-xs">Unique auto-incrementing key.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`uuid`</td>
+                                                    <td class="p-2">CHAR(36)</td>
+                                                    <td class="p-2 text-indigo-400">UNIQUE</td>
+                                                    <td class="p-2 font-sans text-xs">Platform identifier.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`name`</td>
+                                                    <td class="p-2">VARCHAR(255)</td>
+                                                    <td class="p-2 text-slate-500">None</td>
+                                                    <td class="p-2 font-sans text-xs">Full name of the contact.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`phone`</td>
+                                                    <td class="p-2">VARCHAR(50)</td>
+                                                    <td class="p-2 text-indigo-400">INDEX</td>
+                                                    <td class="p-2 font-sans text-xs">Normalized phone number.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`whatsapp_number`</td>
+                                                    <td class="p-2">VARCHAR(50)</td>
+                                                    <td class="p-2 text-slate-500">None</td>
+                                                    <td class="p-2 font-sans text-xs">WhatsApp identifier string.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`email`</td>
+                                                    <td class="p-2">VARCHAR(255)</td>
+                                                    <td class="p-2 text-indigo-400">INDEX</td>
+                                                    <td class="p-2 font-sans text-xs">Primary contact email.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`type`</td>
+                                                    <td class="p-2">VARCHAR(50)</td>
+                                                    <td class="p-2 text-slate-500">None</td>
+                                                    <td class="p-2 font-sans text-xs">Individual, client, partner, prospect, etc.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`metadata`</td>
+                                                    <td class="p-2">JSON</td>
+                                                    <td class="p-2 text-slate-500">None</td>
+                                                    <td class="p-2 font-sans text-xs">Holds AI extracted persona and emotions.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`deleted_at`</td>
+                                                    <td class="p-2">TIMESTAMP</td>
+                                                    <td class="p-2 text-indigo-400">INDEX</td>
+                                                    <td class="p-2 font-sans text-xs">Soft delete timestamp.</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Table 2 -->
+                                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5">
+                                    <h4 class="font-mono text-xs text-purple-400 font-bold">2. Table: `contact_identifiers`</h4>
+                                    <p class="text-xs text-slate-400 mt-1">Resolves multiple identities to one contact record.</p>
+                                    <div class="overflow-x-auto mt-3">
+                                        <table class="w-full text-left text-xs">
+                                            <thead class="bg-slate-900 border-b border-slate-800 text-slate-400 font-bold">
+                                                <tr>
+                                                    <th class="p-2">Column Name</th>
+                                                    <th class="p-2">Data Type</th>
+                                                    <th class="p-2">Index Type</th>
+                                                    <th class="p-2">Description</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-800 text-slate-300 font-mono text-[11px]">
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`id`</td>
+                                                    <td class="p-2">BIGINT UNSIGNED</td>
+                                                    <td class="p-2 text-amber-500">PRIMARY KEY</td>
+                                                    <td class="p-2 font-sans text-xs">Unique index.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`contact_id`</td>
+                                                    <td class="p-2">BIGINT UNSIGNED</td>
+                                                    <td class="p-2 text-indigo-400">FOREIGN KEY</td>
+                                                    <td class="p-2 font-sans text-xs">References `contacts.id` with CASCADE deletion.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`type`</td>
+                                                    <td class="p-2">VARCHAR(50)</td>
+                                                    <td class="p-2 text-slate-500">None</td>
+                                                    <td class="p-2 font-sans text-xs">email, phone, whatsapp, facebook, external_id.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`value`</td>
+                                                    <td class="p-2">VARCHAR(255)</td>
+                                                    <td class="p-2 text-indigo-400">UNIQUE INDEX</td>
+                                                    <td class="p-2 font-sans text-xs">Normalized unique identifier tag.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`is_primary`</td>
+                                                    <td class="p-2">TINYINT(1)</td>
+                                                    <td class="p-2 text-slate-500">None</td>
+                                                    <td class="p-2 font-sans text-xs">Primary mapping marker.</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Table 3 -->
+                                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5">
+                                    <h4 class="font-mono text-xs text-purple-400 font-bold">3. Table: `contact_relationships`</h4>
+                                    <p class="text-xs text-slate-400 mt-1">Stores relational graph connections between contact profiles.</p>
+                                    <div class="overflow-x-auto mt-3">
+                                        <table class="w-full text-left text-xs">
+                                            <thead class="bg-slate-900 border-b border-slate-800 text-slate-400 font-bold">
+                                                <tr>
+                                                    <th class="p-2">Column Name</th>
+                                                    <th class="p-2">Data Type</th>
+                                                    <th class="p-2">Index Type</th>
+                                                    <th class="p-2">Description</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-800 text-slate-300 font-mono text-[11px]">
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`id`</td>
+                                                    <td class="p-2">BIGINT UNSIGNED</td>
+                                                    <td class="p-2 text-amber-500">PRIMARY KEY</td>
+                                                    <td class="p-2 font-sans text-xs">Auto index.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`source_contact_id`</td>
+                                                    <td class="p-2">BIGINT UNSIGNED</td>
+                                                    <td class="p-2 text-indigo-400">FOREIGN KEY</td>
+                                                    <td class="p-2 font-sans text-xs">References `contacts.id` (source node).</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`target_contact_id`</td>
+                                                    <td class="p-2">BIGINT UNSIGNED</td>
+                                                    <td class="p-2 text-indigo-400">FOREIGN KEY</td>
+                                                    <td class="p-2 font-sans text-xs">References `contacts.id` (target node).</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`type`</td>
+                                                    <td class="p-2">VARCHAR(100)</td>
+                                                    <td class="p-2 text-slate-500">None</td>
+                                                    <td class="p-2 font-sans text-xs">colleague, spouse, manager, friend, etc.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`strength`</td>
+                                                    <td class="p-2">DECIMAL(3,2)</td>
+                                                    <td class="p-2 text-slate-500">None</td>
+                                                    <td class="p-2 font-sans text-xs">Decimal rating of association strength (0.00 to 1.00).</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`confidence`</td>
+                                                    <td class="p-2">DECIMAL(3,2)</td>
+                                                    <td class="p-2 text-slate-500">None</td>
+                                                    <td class="p-2 font-sans text-xs">AI confidence rating (0.00 to 1.00).</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Table 4 -->
+                                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5">
+                                    <h4 class="font-mono text-xs text-purple-400 font-bold">4. Table: `contact_memories`</h4>
+                                    <p class="text-xs text-slate-400 mt-1">Stores long-term contextual memories parsed by AI from conversation history.</p>
+                                    <div class="overflow-x-auto mt-3">
+                                        <table class="w-full text-left text-xs">
+                                            <thead class="bg-slate-900 border-b border-slate-800 text-slate-400 font-bold">
+                                                <tr>
+                                                    <th class="p-2">Column Name</th>
+                                                    <th class="p-2">Data Type</th>
+                                                    <th class="p-2">Index Type</th>
+                                                    <th class="p-2">Description</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-800 text-slate-300 font-mono text-[11px]">
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`id`</td>
+                                                    <td class="p-2">BIGINT UNSIGNED</td>
+                                                    <td class="p-2 text-amber-500">PRIMARY KEY</td>
+                                                    <td class="p-2 font-sans text-xs">Unique ID.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`contact_id`</td>
+                                                    <td class="p-2">BIGINT UNSIGNED</td>
+                                                    <td class="p-2 text-indigo-400">FOREIGN KEY</td>
+                                                    <td class="p-2 font-sans text-xs">References `contacts.id` with soft-deletes.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`content`</td>
+                                                    <td class="p-2">TEXT</td>
+                                                    <td class="p-2 text-slate-500">None</td>
+                                                    <td class="p-2 font-sans text-xs">Factual text context.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`confidence`</td>
+                                                    <td class="p-2">DECIMAL(3,2)</td>
+                                                    <td class="p-2 text-slate-500">None</td>
+                                                    <td class="p-2 font-sans text-xs">Confidence weight (decreases during decay passes).</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 text-slate-100">`last_validated_at`</td>
+                                                    <td class="p-2">TIMESTAMP</td>
+                                                    <td class="p-2 text-slate-500">None</td>
+                                                    <td class="p-2 font-sans text-xs">Date of reinforcement check.</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 5: CLASS & CODE EXPLORER -->
+                    <div id="tab-classes" class="tab-pane hidden space-y-6">
+                        <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-6 glass-panel">
+                            <h3 class="font-bold text-white text-xl mb-2 flex items-center gap-2"><i class="fa-solid fa-code"></i> Contacts Hub Codebase Explorer</h3>
+                            <p class="text-xs text-slate-400 mb-6">Inspect code architectures, variables, scopes, and inner logical steps of the core Contacts Hub PHP classes.</p>
+                            
+                            <div class="space-y-4">
+                                <!-- Accordion 1 -->
+                                <div class="border border-[#15172b] rounded-xl overflow-hidden bg-slate-950/40" id="acc-normalizer">
+                                    <button onclick="toggleAccordion('acc-normalizer')" class="w-full flex items-center justify-between p-4 bg-slate-900/60 hover:bg-slate-900 transition-all font-bold text-xs text-purple-400">
+                                        <span><i class="fa-solid fa-file-shield mr-2"></i> Class: `App\Services\Contact\ContactMessageNormalizer`</span>
+                                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                    </button>
+                                    <div class="accordion-content p-5 border-t border-[#15172b] space-y-4 text-xs">
+                                        <p class="text-slate-300">
+                                            Responsible for taking message packages parsed by WAHA or Facebook and generating unified records in `contact_messages`.
+                                        </p>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-[11px] bg-slate-950/60 p-4 rounded-lg border border-slate-800">
+                                            <div>
+                                                <h5 class="text-slate-400 font-sans font-bold text-xs">Key Properties & Scopes</h5>
+                                                <ul class="list-disc pl-4 mt-2 space-y-1">
+                                                    <li>`private array $existingHashes`: Stores dedupe key indices.</li>
+                                                    <li>`private array $resolvedContactsCache`: Cache of names for fast O(1) loop lookups.</li>
+                                                </ul>
+                                            </div>
+                                            <div>
+                                                <h5 class="text-slate-400 font-sans font-bold text-xs">Primary Methods</h5>
+                                                <ul class="list-disc pl-4 mt-2 space-y-1">
+                                                    <li>`normalizeAndCreate(parsedMsgs, contact, source)`: Main pipeline processor.</li>
+                                                    <li>`resolveSenderContact(parsedMsg, mainContact)`: Resolves name/phone match.</li>
+                                                    <li>`isSameContact(name1, name2)`: Computes Levenshtein similarity rating.</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h5 class="font-bold text-slate-200">Inner Code Workflow:</h5>
+                                            <ol class="list-decimal pl-5 mt-2 space-y-1 text-slate-400">
+                                                <li>Fetches existing SHA-256 hashes of contact's messages: `array_flip(ContactMessage::pluck('dedupe_hash'))`</li>
+                                                <li>Loops through inbound parsed arrays: Computes hash = `hash('sha256', timestamp | sender | body)`.</li>
+                                                <li>If hash matches existing, skips message (per-contact duplicate protection).</li>
+                                                <li>If direction is inbound, parses sender name. If Levenshtein distance similarity > 80% matches main contact, routes to contact record. Else, creates a new individual contact profile.</li>
+                                                <li>Detects message language (matches Arabic regex range `\x{0600}-\x{06FF}` or Cyrillic, defaults to English).</li>
+                                                <li>Inserts into `contact_messages` table and updates contact's `last_interaction_at`.</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Accordion 2 -->
+                                <div class="border border-[#15172b] rounded-xl overflow-hidden bg-slate-950/40" id="acc-pipeline">
+                                    <button onclick="toggleAccordion('acc-pipeline')" class="w-full flex items-center justify-between p-4 bg-slate-900/60 hover:bg-slate-900 transition-all font-bold text-xs text-purple-400">
+                                        <span><i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Class: `App\Services\Contact\ContactIntelligenceExtractionPipeline`</span>
+                                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                    </button>
+                                    <div class="accordion-content p-5 border-t border-[#15172b] space-y-4 text-xs">
+                                        <p class="text-slate-300">
+                                            Parses dialogue logs to build context parameters and enrich contact metadata properties.
+                                        </p>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-[11px] bg-slate-950/60 p-4 rounded-lg border border-slate-800">
+                                            <div>
+                                                <h5 class="text-slate-400 font-sans font-bold text-xs">Key Dependencies</h5>
+                                                <ul class="list-disc pl-4 mt-2 space-y-1">
+                                                    <li>`UniversalAiGatewayService $aiGateway`</li>
+                                                    <li>`LogService $logService`</li>
+                                                </ul>
+                                            </div>
+                                            <div>
+                                                <h5 class="text-slate-400 font-sans font-bold text-xs">Primary Methods</h5>
+                                                <ul class="list-disc pl-4 mt-2 space-y-1">
+                                                    <li>`process(ContactAnalysisRun $run)`: Main intelligence pipeline handler.</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h5 class="font-bold text-slate-200">Inner Code Workflow:</h5>
+                                            <ol class="list-decimal pl-5 mt-2 space-y-1 text-slate-400">
+                                                <li>Queries the contact's historical messages, ordered by timestamp, limiting to 100 context items.</li>
+                                                <li>Formats dialogue context string into: `[direction] body \n`.</li>
+                                                <li>Formulates system and user LLM prompts instructing JSON extraction for topics, persona summaries, emotional baselines, and suggeted response rules.</li>
+                                                <li>Submits payload to the gateway via LLM Profiler agent.</li>
+                                                <li>Parses LLM response (removes markdown formatting and decodes JSON).</li>
+                                                <li>Loops through topics, persona, and emotional baselines to create `ContactAnalysisFinding` records with source message IDs as evidence links.</li>
+                                                <li>Directly updates contact's metadata JSON attributes for immediate profile enrichment.</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Accordion 3 -->
+                                <div class="border border-[#15172b] rounded-xl overflow-hidden bg-slate-950/40" id="acc-waparser">
+                                    <button onclick="toggleAccordion('acc-waparser')" class="w-full flex items-center justify-between p-4 bg-slate-900/60 hover:bg-slate-900 transition-all font-bold text-xs text-purple-400">
+                                        <span><i class="fa-solid fa-file-lines mr-2"></i> Class: `App\Services\Contact\WhatsAppImportParser`</span>
+                                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                    </button>
+                                    <div class="accordion-content p-5 border-t border-[#15172b] space-y-4 text-xs">
+                                        <p class="text-slate-300">
+                                            Parses WhatsApp chat histories exported in TXT or JSON format.
+                                        </p>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-[11px] bg-slate-950/60 p-4 rounded-lg border border-slate-800">
+                                            <div>
+                                                <h5 class="text-slate-400 font-sans font-bold text-xs">Supported Formats</h5>
+                                                <ul class="list-disc pl-4 mt-2 space-y-1">
+                                                    <li>TXT exports (iOS and Android dialects).</li>
+                                                    <li>JSON formats (raw message arrays).</li>
+                                                </ul>
+                                            </div>
+                                            <div>
+                                                <h5 class="text-slate-400 font-sans font-bold text-xs">Primary Methods</h5>
+                                                <ul class="list-disc pl-4 mt-2 space-y-1">
+                                                    <li>`parseTxt(content, phone, timezone)`</li>
+                                                    <li>`parseJson(json, phone, timezone)`</li>
+                                                    <li>`isSystemMessage(body)`</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h5 class="font-bold text-slate-200">Inner Code Workflow:</h5>
+                                            <ol class="list-decimal pl-5 mt-2 space-y-1 text-slate-400">
+                                                <li>Explodes text payload by newline characters to loop through lines.</li>
+                                                <li>Evaluates regex: `^\[(\d{4}-\d{2}-\d{2}),\s*(\d{2}:\d{2})\]\s+(.*?):\s+(.*)$` to match date, time, sender name, and message content.</li>
+                                                <li>If matched, initiates new message object. Strips system entries like "messages and calls are encrypted" or call timestamps.</li>
+                                                <li>If a line does not match the date prefix, appends the text to the active message as a multi-line continuation.</li>
+                                                <li>Parses timestamps using Carbon and normalizes all records to UTC timezone.</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 6: REST API MAP -->
+                    <div id="tab-endpoints" class="tab-pane hidden space-y-6">
+                        <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-6 glass-panel">
+                            <h3 class="font-bold text-white text-xl mb-2 flex items-center gap-2"><i class="fa-solid fa-plug"></i> REST API Routes Inventory</h3>
+                            <p class="text-xs text-slate-400 mb-6">Unified table containing all CRUD, analytics, import, memory, and proposed API endpoints.</p>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-slate-950 border-b border-slate-800 text-slate-300 font-semibold">
+                                        <tr>
+                                            <th class="p-3">Method</th>
+                                            <th class="p-3">Route Endpoint URL</th>
+                                            <th class="p-3">Controller Action Method</th>
+                                            <th class="p-3">Request Parameters (JSON/Query)</th>
+                                            <th class="p-3">Success Response Structure (200 OK)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-[#15172b] text-slate-300 font-mono text-[11px]">
+                                        <tr>
+                                            <td class="p-3 text-emerald-400 font-bold">GET</td>
+                                            <td class="p-3 text-slate-200">`/api/v1/contacts`</td>
+                                            <td class="p-3">`ContactController@index`</td>
+                                            <td class="p-3 font-sans text-[10px]">`page` (int), `search` (string)</td>
+                                            <td class="p-3">`{"data": [...], "links": {...}}`</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-3 text-purple-400 font-bold">POST</td>
+                                            <td class="p-3 text-slate-200">`/api/v1/contacts`</td>
+                                            <td class="p-3">`ContactController@store`</td>
+                                            <td class="p-3 font-sans text-[10px]">`name` (req), `phone`, `email`</td>
+                                            <td class="p-3">`{"success": true, "id": 14}`</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-3 text-emerald-400 font-bold">GET</td>
+                                            <td class="p-3 text-slate-200">`/api/v1/contacts/stats`</td>
+                                            <td class="p-3">`ContactStatsController@stats`</td>
+                                            <td class="p-3 font-sans text-[10px]">None</td>
+                                            <td class="p-3">`{"total": 1482, "autopilot": true}`</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-3 text-purple-400 font-bold">POST</td>
+                                            <td class="p-3 text-slate-200">`/api/v1/contacts/import`</td>
+                                            <td class="p-3">`ContactController@import`</td>
+                                            <td class="p-3 font-sans text-[10px]">`file` (CSV), `type`</td>
+                                            <td class="p-3">`{"imported": 150, "errors": []}`</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-3 text-purple-400 font-bold">POST</td>
+                                            <td class="p-3 text-slate-200">`/api/v1/contacts/import/preview`</td>
+                                            <td class="p-3">`ContactImportController@preview`</td>
+                                            <td class="p-3 font-sans text-[10px]">`content` (string), `format`, `source`</td>
+                                            <td class="p-3">`{"total_messages": 12, "sample": []}`</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-3 text-purple-400 font-bold">POST</td>
+                                            <td class="p-3 text-slate-200">`/api/v1/contacts/{id}/analysis-runs`</td>
+                                            <td class="p-3">`ContactController@createAnalysisRun`</td>
+                                            <td class="p-3 font-sans text-[10px]">`extract_topics` (bool), `detect_emotion`</td>
+                                            <td class="p-3">`{"run_id": 4, "status": "queued"}`</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-3 text-purple-400 font-bold">POST</td>
+                                            <td class="p-3 text-slate-200">`/api/v1/contacts/{id}/erase`</td>
+                                            <td class="p-3">`ContactController@erase`</td>
+                                            <td class="p-3 font-sans text-[10px]">None</td>
+                                            <td class="p-3">`{"message": "GDPR erasure queued"}`</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 7: QUEUE JOBS & COMMANDS -->
+                    <div id="tab-jobs" class="tab-pane hidden space-y-6">
+                        <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-6 glass-panel">
+                            <h3 class="font-bold text-white text-xl mb-2 flex items-center gap-2"><i class="fa-solid fa-gears"></i> Background Jobs & CLI Command Registry</h3>
+                            <p class="text-xs text-slate-400 mb-6">Inventory of queue jobs executing on the `contacts` Horizon pipeline and CLI Artisan commands.</p>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-slate-950 border-b border-slate-800 text-slate-300 font-semibold">
+                                        <tr>
+                                            <th class="p-3">Queue Job / Command</th>
+                                            <th class="p-3">Queue / Scheduler</th>
+                                            <th class="p-3">File Path</th>
+                                            <th class="p-3">Detailed Job Execution Steps</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-[#15172b] text-slate-300 font-mono text-[11px]">
+                                        <tr>
+                                            <td class="p-3 font-bold text-purple-400">`SyncWahaContactsJob`</td>
+                                            <td class="p-3">`peopleconnect` queue / Hourly</td>
+                                            <td class="p-3">[SyncWahaContactsJob](file:///www/wwwroot/Nexus/core/Nexus3/app/Jobs/SyncWahaContactsJob.php)</td>
+                                            <td class="p-3 font-sans text-xs text-slate-400">Connects to WAHA API gateway, downloads chat participant lists, resolves identities using phone match, and updates contact sync tags.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-3 font-bold text-purple-400">`NormalizeContactImportBatchJob`</td>
+                                            <td class="p-3">`contacts` queue</td>
+                                            <td class="p-3">[NormalizeContactImportBatchJob](file:///www/wwwroot/Nexus/core/Nexus3/app/Jobs/NormalizeContactImportBatchJob.php)</td>
+                                            <td class="p-3 font-sans text-xs text-slate-400">Runs database-level queries matching message content hashes and timestamps. Deletes duplicated import rows from the same batch.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-3 font-bold text-purple-400">`RollbackContactImportBatchJob`</td>
+                                            <td class="p-3">`contacts` queue</td>
+                                            <td class="p-3">[RollbackContactImportBatchJob](file:///www/wwwroot/Nexus/core/Nexus3/app/Jobs/RollbackContactImportBatchJob.php)</td>
+                                            <td class="p-3 font-sans text-xs text-slate-400">Instantiates `ContactImportRollbackService`, wipes imported database messages inside a transaction, and updates the batch status.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-3 font-bold text-purple-400">`ResolveContactImportIdentitiesJob`</td>
+                                            <td class="p-3">`contacts` queue</td>
+                                            <td class="p-3">[ResolveContactImportIdentitiesJob](file:///www/wwwroot/Nexus/core/Nexus3/app/Jobs/ResolveContactImportIdentitiesJob.php)</td>
+                                            <td class="p-3 font-sans text-xs text-slate-400">Checks if imported identities conflict with existing user emails or phones. Dispatches `ContactIdentityConflictDetected` on failure.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 8: AUDIT BUGS & PATCHES -->
+                    <div id="tab-bugs" class="tab-pane hidden space-y-8">
+                        <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-6 glass-panel">
+                            <h3 class="font-bold text-white text-xl mb-2 flex items-center gap-2"><i class="fa-solid fa-bug text-red-500"></i> Code Audit & Proposed Technical Patches</h3>
+                            <p class="text-xs text-slate-400 mb-6">Detailed technical corrections to fix the three main discrepancies identified in the codebase.</p>
+
+                            <div class="space-y-6">
+                                <!-- Patch 1 -->
+                                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5" onclick="zoomElement(this)">
+                                    <h4 class="font-bold text-purple-400 text-sm"><i class="fa-solid fa-wrench"></i> Patch 1: Correcting the Memory Maintenance Query</h4>
+                                    <p class="text-xs text-slate-300 mt-2">
+                                        Update the maintenance service queries to target `contactMemories()` instead of `memories()` so client-specific memories are pruned correctly:
+                                    </p>
+                                    <pre class="bg-slate-950 p-4 rounded-lg font-mono text-[10px] text-emerald-400 mt-3 border border-slate-800">
+// BEFORE (app/Services/Contact/ContactMemoryMaintenancePipeline.php - Line 53):
+$query = $contact->memories()->where('created_at', '&lt;', now()->subYear());
+
+// PATCHED VERSION:
+$query = $contact->contactMemories()->where('created_at', '&lt;', now()->subYear());
+                                    </pre>
+                                </div>
+
+                                <!-- Patch 2 -->
+                                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5" onclick="zoomElement(this)">
+                                    <h4 class="font-bold text-purple-400 text-sm"><i class="fa-solid fa-wrench"></i> Patch 2: Relationship Graph Database Query</h4>
+                                    <p class="text-xs text-slate-300 mt-2">
+                                        Modify `RelationshipGraphService` to pull node coordinates from the `contact_relationships` table:
+                                    </p>
+                                    <pre class="bg-slate-950 p-4 rounded-lg font-mono text-[10px] text-emerald-400 mt-3 border border-slate-800">
+// BEFORE (app/Services/RelationshipGraphService.php - Line 16):
+foreach ($contact->rules as $rule) { ... }
+
+// PATCHED VERSION:
+$relationships = ContactRelationship::where('source_contact_id', $contact->id)
+    ->orWhere('target_contact_id', $contact->id)
+    ->get();
+
+foreach ($relationships as $rel) {
+    $nodes[] = [
+        'id' => $rel->target_contact_id,
+        'label' => $rel->targetContact->name,
+        'relationship_type' => $rel->type
+    ];
+}
+                                    </pre>
+                                </div>
+
+                                <!-- Patch 3 -->
+                                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5" onclick="zoomElement(this)">
+                                    <h4 class="font-bold text-purple-400 text-sm"><i class="fa-solid fa-wrench"></i> Patch 3: Import Batch Logging for CSV Uploads</h4>
+                                    <p class="text-xs text-slate-300 mt-2">
+                                        Integrate contact CSV uploads with the import batch logging queue:
+                                    </p>
+                                    <pre class="bg-slate-950 p-4 rounded-lg font-mono text-[10px] text-emerald-400 mt-3 border border-slate-800">
+// BEFORE (app/Http/Controllers/ContactController.php - Line 412):
+$contact = Contact::create($row);
+
+// PATCHED VERSION:
+$batch = ContactImportBatch::create([
+    'source' => 'csv_upload',
+    'status' => 'processing',
+    'metadata' => ['filename' => $request->file('file')->getClientOriginalName()]
+]);
+
+ImportContactsBatchJob::dispatch($batch, $csvContent);
+                                    </pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 9: ADVANCED SANDBOX -->
+                    <div id="tab-sandbox" class="tab-pane hidden space-y-8">
+                        
+                        <!-- CLI Tool -->
+                        <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-6 glass-panel">
+                            <h3 class="font-bold text-white text-lg mb-4 flex items-center gap-2"><i class="fa-solid fa-terminal text-purple-400"></i> Interactive Artisan Terminal</h3>
+                            <p class="text-xs text-slate-400 mb-4">Click a CLI command to simulate executing Artisan terminal calls on the Contacts Hub.</p>
+                            
+                            <div class="flex flex-wrap gap-3 mb-6">
+                                <button onclick="runCommandSim('php artisan contact:maintenance --prune --contact=12')" class="bg-slate-950 border border-slate-800 hover:border-purple-500/50 hover:bg-purple-950/20 text-xs px-3.5 py-2 rounded-lg text-slate-300 font-mono transition-all">
+                                    php artisan contact:maintenance --prune --contact=12
+                                </button>
+                                <button onclick="runCommandSim('php artisan contact:decay --amount=0.05')" class="bg-slate-950 border border-slate-800 hover:border-purple-500/50 hover:bg-purple-950/20 text-xs px-3.5 py-2 rounded-lg text-slate-300 font-mono transition-all">
+                                    php artisan contact:decay --amount=0.05
+                                </button>
+                                <button onclick="runCommandSim('php artisan contact:resolve-conflicts')" class="bg-slate-950 border border-slate-800 hover:border-purple-500/50 hover:bg-purple-950/20 text-xs px-3.5 py-2 rounded-lg text-slate-300 font-mono transition-all">
+                                    php artisan contact:resolve-conflicts
+                                </button>
+                            </div>
+
+                            <div class="bg-slate-950 rounded-lg p-5 border border-slate-800 font-mono text-xs text-emerald-400 space-y-2.5 h-64 overflow-y-auto" id="terminal-screen">
+                                <p class="text-slate-500">// Ready. Click a command above to run simulations...</p>
+                            </div>
+                        </div>
+
+                        <!-- CSV Preview -->
+                        <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-6 glass-panel">
+                            <h3 class="font-bold text-white text-lg mb-4 flex items-center gap-2"><i class="fa-solid fa-file-csv text-emerald-400"></i> CSV Batch Import Preview Sandbox</h3>
+                            <p class="text-xs text-slate-400 mb-4">Paste raw CSV contact records to simulate the parser JSON response payload.</p>
+                            
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div>
+                                    <textarea id="csv-input" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-4 font-mono text-xs text-slate-200 focus:outline-none focus:border-purple-500 h-64">name,email,phone,type
+Alex Mercer,alex@mercer.com,+15550192,client
+Sarah Connor,sarah@skynet.net,+15550293,friend
+Bruce Wayne,bruce@waynecorp.com,,prospect</textarea>
+                                    <button onclick="simulateCsvParse()" class="mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs px-6 py-2.5 rounded-lg transition-all">
+                                        Generate Preview JSON
+                                    </button>
+                                </div>
+                                <div class="bg-slate-950 border border-slate-800 rounded-lg p-4 font-mono text-[11px] text-indigo-400 overflow-y-auto h-64">
+                                    <pre id="json-output">// JSON output will appear here...</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 10: COPILOT AI CHAT -->
+                    <div id="tab-copilot" class="tab-pane hidden space-y-6">
+                        <div class="bg-[#090a16] border border-[#15172b] rounded-xl p-6 glass-panel flex flex-col h-[600px]">
+                            <div class="border-b border-[#15172b] pb-4 mb-4 flex items-center justify-between animate-pulse">
+                                <div>
+                                    <h3 class="font-bold text-white text-lg flex items-center gap-2"><i class="fa-solid fa-robot text-purple-400"></i> Contacts Hub AI Assistant</h3>
+                                    <p class="text-xs text-slate-400">Ask about CRM models, properties, listeners, or core implementation scripts.</p>
+                                </div>
+                                <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                            </div>
+
+                            <!-- Chat Feed -->
+                            <div class="flex-grow overflow-y-auto space-y-4 mb-4 pr-2 text-xs" id="chat-feed">
+                                <div class="flex gap-3">
+                                    <div class="h-8 w-8 rounded-full bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
+                                        <i class="fa-solid fa-robot"></i>
+                                    </div>
+                                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 text-slate-300 max-w-[80%]">
+                                        Hello! I am your CRM AI Copilot. Click a question below or write your own:
+                                        <ul class="list-disc pl-4 mt-2 space-y-1.5 text-slate-400">
+                                            <li class="cursor-pointer hover:underline text-purple-400" onclick="askPreset('Where is the Memory Maintenance Pipeline bug?')">Where is the Memory Maintenance Pipeline bug?</li>
+                                            <li class="cursor-pointer hover:underline text-purple-400" onclick="askPreset('How are relationships graphed in RelationshipGraphService?')">How are relationships graphed in RelationshipGraphService?</li>
+                                            <li class="cursor-pointer hover:underline text-purple-400" onclick="askPreset('What is the difference between contact CSV imports and message imports?')">What is the difference between contact CSV imports and message imports?</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chat Input -->
+                            <div class="flex gap-2">
+                                <input type="text" id="chat-input" placeholder="Type a question..." onkeydown="if(event.key==='Enter') sendChatMessage()" class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
+                                <button onclick="sendChatMessage()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs px-5 rounded-lg transition-all">
+                                    Send
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ZOOM OVERLAY MODAL -->
+    <div id="zoom-modal" class="zoom-overlay" onclick="closeZoomModal(event)">
+        <div class="zoom-content" onclick="event.stopPropagation()">
+            <button onclick="closeZoomModal()" class="absolute right-4 top-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+            <div id="zoom-inlined-content"></div>
+        </div>
+    </div>
+
+    <!-- FLOATING SCROLL WIDGET -->
+    <div class="fixed bottom-6 right-6 flex flex-col gap-2.5 z-50">
+        <button onclick="scrollToPosition('top')" class="h-9 w-9 bg-purple-600 hover:bg-purple-700 text-white rounded-full flex items-center justify-center shadow-lg transition-all opacity-80 hover:opacity-100" title="Scroll to Top">
+            <i class="fa-solid fa-arrow-up"></i>
+        </button>
+        <button onclick="scrollToPosition('bottom')" class="h-9 w-9 bg-purple-600 hover:bg-purple-700 text-white rounded-full flex items-center justify-center shadow-lg transition-all opacity-80 hover:opacity-100" title="Scroll to Bottom">
+            <i class="fa-solid fa-arrow-down"></i>
+        </button>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // Tab switcher logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-purple-950/20', 'text-purple-400', 'border-purple-500/30');
+            });
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-purple-950/20', 'text-purple-400', 'border-purple-500/30');
+            }
+        }
+
+        // Initialize active tab on load
+        window.addEventListener('DOMContentLoaded', () => {
+            switchTab('tab-overview');
+            setupDynamicDiagramControls();
+        });
+
+        // Keep track of diagram transform states
+        const diagramStates = {};
+
+        function setupDynamicDiagramControls() {
+            // Inject styles dynamically if not already added
+            if (!document.getElementById('diagram-styles')) {
+                const style = document.createElement('style');
+                style.id = 'diagram-styles';
+                style.innerHTML = `
+                    .diagram-container {
+                        position: relative;
+                        overflow: hidden;
+                        background: rgba(15, 23, 42, 0.4);
+                        border: 1px solid rgba(255, 255, 255, 0.05);
+                        border-radius: 12px;
+                        padding: 12px;
+                        margin-top: 1rem;
+                        margin-bottom: 1rem;
+                        transition: border-color 0.3s ease;
+                    }
+                    [data-theme="light"] .diagram-container {
+                        background: rgba(255, 255, 255, 0.6);
+                        border: 1px solid rgba(0, 0, 0, 0.05);
+                    }
+                    .diagram-viewport {
+                        overflow: hidden;
+                        width: 100%;
+                        height: 480px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        position: relative;
+                        touch-action: none;
+                    }
+                    .diagram-wrapper {
+                        transform-origin: center center;
+                        transition: transform 0.1s ease-out;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 100%;
+                        height: 100%;
+                    }
+                    .diagram-wrapper svg {
+                        max-width: 100% !important;
+                        max-height: 100% !important;
+                        height: auto !important;
+                        cursor: grab;
+                    }
+                    .diagram-wrapper svg:active {
+                        cursor: grabbing;
+                    }
+                    .diagram-fullscreen {
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        z-index: 99999 !important;
+                        background: #090a16 !important;
+                        border: none !important;
+                        border-radius: 0 !important;
+                        padding: 24px !important;
+                    }
+                    [data-theme="light"] .diagram-fullscreen {
+                        background: #f8fafc !important;
+                    }
+                    .diagram-fullscreen .diagram-viewport {
+                        height: calc(100vh - 100px) !important;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            // Wrap all .mermaid elements
+            document.querySelectorAll('.mermaid').forEach((mermaidDiv, index) => {
+                if (mermaidDiv.closest('.diagram-viewport')) return;
+                // Ignore internal template strings or boxes that don't have mermaid content loaded yet
+                if (mermaidDiv.id === 'wf-mermaid-render-box') return;
+
+                const diagramId = 'diag-auto-' + index;
+
+                // Create wrapper container
+                const container = document.createElement('div');
+                container.className = 'diagram-container group';
+                container.setAttribute('data-diagram-id', diagramId);
+
+                // Create Toolbar
+                const toolbar = document.createElement('div');
+                toolbar.className = 'absolute right-4 top-4 flex items-center gap-1.5 bg-slate-950/90 backdrop-blur border border-slate-800 p-1.5 rounded-lg z-10 opacity-60 group-hover:opacity-100 transition-opacity';
+                toolbar.innerHTML = `
+                    <button onclick="zoomDiagram('${diagramId}', 1.25)" class="h-7 w-7 hover:bg-slate-800 text-slate-300 rounded flex items-center justify-center text-xs animate-none" style="padding: 0;" title="Zoom In">
+                        <i class="fa-solid fa-magnifying-glass-plus"></i>
+                    </button>
+                    <button onclick="zoomDiagram('${diagramId}', 0.8)" class="h-7 w-7 hover:bg-slate-800 text-slate-300 rounded flex items-center justify-center text-xs animate-none" style="padding: 0;" title="Zoom Out">
+                        <i class="fa-solid fa-magnifying-glass-minus"></i>
+                    </button>
+                    <button onclick="resetDiagram('${diagramId}')" class="h-7 w-7 hover:bg-slate-800 text-slate-300 rounded flex items-center justify-center text-xs animate-none" style="padding: 0;" title="Reset View">
+                        <i class="fa-solid fa-arrows-to-dot"></i>
+                    </button>
+                    <button onclick="toggleFullscreenDiagram('${diagramId}')" class="h-7 w-7 hover:bg-slate-800 text-slate-300 rounded flex items-center justify-center text-xs animate-none" style="padding: 0;" title="Toggle Fullscreen">
+                        <i class="fa-solid fa-expand"></i>
+                    </button>
+                    <span class="text-[9px] text-slate-500 font-mono pl-1 select-none hidden md:inline border-l border-slate-800 ml-1">Drag to Pan / Wheel to Zoom</span>
+                `;
+
+                const viewport = document.createElement('div');
+                viewport.className = 'diagram-viewport';
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'diagram-wrapper';
+
+                // Re-arrange DOM
+                mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+                container.appendChild(toolbar);
+                container.appendChild(viewport);
+                viewport.appendChild(wrapper);
+                wrapper.appendChild(mermaidDiv);
+
+                // Initialize state
+                diagramStates[diagramId] = {
+                    scale: 1.0,
+                    x: 0,
+                    y: 0,
+                    isDragging: false,
+                    startX: 0,
+                    startY: 0
+                };
+
+                // Add mouse events for pan & zoom
+                viewport.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('button')) return;
+                    const state = diagramStates[diagramId];
+                    state.isDragging = true;
+                    state.startX = e.clientX - state.x;
+                    state.startY = e.clientY - state.y;
+                });
+
+                window.addEventListener('mousemove', (e) => {
+                    const state = diagramStates[diagramId];
+                    if (!state || !state.isDragging) return;
+                    state.x = e.clientX - state.startX;
+                    state.y = e.clientY - state.startY;
+                    updateDiagramTransform(diagramId);
+                });
+
+                window.addEventListener('mouseup', () => {
+                    const state = diagramStates[diagramId];
+                    if (state && state.isDragging) {
+                        state.isDragging = false;
+                    }
+                });
+
+                viewport.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const state = diagramStates[diagramId];
+                    const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
+                    state.scale = Math.min(6.0, Math.max(0.15, state.scale * zoomFactor));
+                    updateDiagramTransform(diagramId);
+                }, { passive: false });
+            });
+        }
+
+        function updateDiagramTransform(id) {
+            const container = document.querySelector(`[data-diagram-id="${id}"]`);
+            if (!container) return;
+            const wrapper = container.querySelector('.diagram-wrapper');
+            const state = diagramStates[id];
+            wrapper.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+        }
+
+        function zoomDiagram(id, factor) {
+            const state = diagramStates[id];
+            if (!state) return;
+            state.scale = Math.min(6.0, Math.max(0.15, state.scale * factor));
+            updateDiagramTransform(id);
+        }
+
+        function resetDiagram(id) {
+            const state = diagramStates[id];
+            if (!state) return;
+            state.scale = 1.0;
+            state.x = 0;
+            state.y = 0;
+            updateDiagramTransform(id);
+        }
+
+        function toggleFullscreenDiagram(id) {
+            const container = document.querySelector(`[data-diagram-id="${id}"]`);
+            if (!container) return;
+            
+            container.classList.toggle('diagram-fullscreen');
+            
+            // Adjust body scrolling
+            if (container.classList.contains('diagram-fullscreen')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+            
+            resetDiagram(id);
+        }
+
+        // Toggle Sidebar
+        let sidebarCollapsed = false;
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar-container');
+            const textElements = document.querySelectorAll('.sidebar-text-content');
+            const navLabels = document.querySelectorAll('.tab-btn');
+            
+            sidebarCollapsed = !sidebarCollapsed;
+            if (sidebarCollapsed) {
+                sidebar.classList.replace('w-80', 'w-16');
+                textElements.forEach(el => el.classList.add('hidden'));
+                navLabels.forEach(el => {
+                    const textNode = el.childNodes[2];
+                    if (textNode) textNode.textContent = '';
+                });
+            } else {
+                sidebar.classList.replace('w-16', 'w-80');
+                textElements.forEach(el => el.classList.remove('hidden'));
+                
+                document.getElementById('btn-tab-overview').innerHTML = '<i class="fa-solid fa-chart-line text-slate-400 w-5"></i> Dashboard Overview';
+                document.getElementById('btn-tab-features').innerHTML = '<i class="fa-solid fa-list-check text-slate-400 w-5"></i> Features Matrix';
+                document.getElementById('btn-tab-workflows').innerHTML = '<i class="fa-solid fa-diagram-project text-slate-400 w-5"></i> System Workflows';
+                document.getElementById('btn-tab-database').innerHTML = '<i class="fa-solid fa-database text-slate-400 w-5"></i> Database Schema Map';
+                document.getElementById('btn-tab-classes').innerHTML = '<i class="fa-solid fa-code text-slate-400 w-5"></i> Class & Code Explorer';
+                document.getElementById('btn-tab-endpoints').innerHTML = '<i class="fa-solid fa-link text-slate-400 w-5"></i> REST API Routes';
+                document.getElementById('btn-tab-jobs').innerHTML = '<i class="fa-solid fa-gears text-slate-400 w-5"></i> Queue Jobs & Commands';
+                document.getElementById('btn-tab-bugs').innerHTML = '<i class="fa-solid fa-bug text-slate-400 w-5"></i> Audit Bugs & Patches';
+                document.getElementById('btn-tab-sandbox').innerHTML = '<i class="fa-solid fa-terminal text-slate-400 w-5"></i> Advanced Sandbox';
+                document.getElementById('btn-tab-copilot').innerHTML = '<i class="fa-solid fa-comments text-slate-400 w-5"></i> CRM Copilot Chat';
+            }
+        }
+
+        // Toggle light/dark theme
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.setAttribute('data-theme', 'light');
+                html.classList.add('light');
+                icon.className = 'fa-solid fa-moon text-indigo-600';
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                html.classList.remove('light');
+                icon.className = 'fa-solid fa-sun text-amber-400';
+            }
+        }
+
+        // Font scaling
+        let baseFontSize = 100;
+        function changeFontSize(val) {
+            if (val === 0) {
+                baseFontSize = 100;
+            } else {
+                baseFontSize = Math.min(140, Math.max(80, baseFontSize + val));
+            }
+            document.documentElement.style.setProperty('--base-font-size', baseFontSize + '%');
+        }
+
+        // Scroll Top / Bottom
+        function scrollToPosition(pos) {
+            const scroller = document.getElementById('content-scroller');
+            if (pos === 'top') {
+                scroller.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' });
+            }
+        }
+
+        // Element Zoom Focus
+        function zoomElement(element) {
+            const modal = document.getElementById('zoom-modal');
+            const inner = document.getElementById('zoom-inlined-content');
+            
+            const clone = element.cloneNode(true);
+            clone.className = clone.className.replace('cursor-pointer', '').replace('glass-panel', '');
+            clone.removeAttribute('onclick');
+            
+            inner.innerHTML = '';
+            inner.appendChild(clone);
+            modal.style.display = 'flex';
+        }
+
+        function closeZoomModal() {
+            const modal = document.getElementById('zoom-modal');
+            modal.style.display = 'none';
+        }
+
+        // Global search filtering
+        function runGlobalSearch() {
+            const q = document.getElementById('global-search').value.toLowerCase().trim();
+            const elementsToSearch = document.querySelectorAll('#content-container div, #content-container tr, #content-container li, #content-container p');
+            
+            if (!q) {
+                elementsToSearch.forEach(el => {
+                    el.style.opacity = '1';
+                });
+                return;
+            }
+            
+            elementsToSearch.forEach(el => {
+                if (el.children.length > 0 && !el.classList.contains('cursor-pointer') && el.tagName !== 'TR') {
+                    return;
+                }
+                const text = el.innerText.toLowerCase();
+                if (text.includes(q)) {
+                    el.style.opacity = '1';
+                } else {
+                    el.style.opacity = '0.25';
+                }
+            });
+        }
+
+        // Accordion Toggle
+        function toggleAccordion(id) {
+            const el = document.getElementById(id);
+            if (el.classList.contains('accordion-open')) {
+                el.classList.remove('accordion-open');
+                el.querySelector('.accordion-content').style.maxHeight = '0';
+            } else {
+                el.classList.add('accordion-open');
+                el.querySelector('.accordion-content').style.maxHeight = '2000px';
+            }
+        }
+
+        // Terminal CLI simulation
+        function runCommandSim(cmd) {
+            const screen = document.getElementById('terminal-screen');
+            screen.innerHTML += `<p class="text-white mt-4">$ ${cmd}</p>`;
+            screen.innerHTML += `<p class="text-indigo-300">// Dispatching job to Laravel Horizon queue...</p>`;
+            
+            setTimeout(() => {
+                if (cmd.includes('--prune')) {
+                    screen.innerHTML += `<p class="text-emerald-400">[2026-07-12 14:27:00] Processing: App\\Jobs\\RunContactMemoryMaintenanceJob</p>`;
+                    screen.innerHTML += `<p class="text-emerald-400">[2026-07-12 14:27:01] Querying database: memories table (legacy) -> 12 items identified</p>`;
+                    screen.innerHTML += `<p class="text-red-400 font-semibold">[WARNING] contact_memories (vNext table) was bypassed! (Known Discrepancy)</p>`;
+                    screen.innerHTML += `<p class="text-emerald-400">[2026-07-12 14:27:02] Cleared Pinecone indices for memory references</p>`;
+                    screen.innerHTML += `<p class="text-white font-bold">SUCCESS: Pruned 12 stale items.</p>`;
+                } else if (cmd.includes('--amount')) {
+                    screen.innerHTML += `<p class="text-emerald-400">[2026-07-12 14:27:03] App\\Services\\Memory\\StructuredMemoryService::applyDecay(0.05)</p>`;
+                    screen.innerHTML += `<p class="text-emerald-400">Updating legacy memories confidence rates...</p>`;
+                    screen.innerHTML += `<p class="text-red-400 font-semibold">[WARNING] vNext contact_memories table skipped from decay pass! (Known Discrepancy)</p>`;
+                    screen.innerHTML += `<p class="text-white font-bold">SUCCESS: Decayed 42 database records.</p>`;
+                } else {
+                    screen.innerHTML += `<p class="text-emerald-400">Searching contact_identifiers and contact_aliases...</p>`;
+                    screen.innerHTML += `<p class="text-white font-bold">SUCCESS: Flagged 2 contacts with identity conflicts.</p>`;
+                }
+                screen.scrollTop = screen.scrollHeight;
+            }, 800);
+        }
+
+        // CSV parsing preview
+        function simulateCsvParse() {
+            const input = document.getElementById('csv-input').value;
+            const output = document.getElementById('json-output');
+            
+            const lines = input.trim().split('\n');
+            if (lines.length < 2) {
+                output.innerText = '{"error": "Invalid CSV input: requires header and records"}';
+                return;
+            }
+            
+            const headers = lines[0].split(',');
+            const records = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',');
+                if (values.length !== headers.length) continue;
+                
+                const rec = {};
+                for (let j = 0; j < headers.length; j++) {
+                    rec[headers[j].trim()] = values[j].trim();
+                }
+                records.push(rec);
+            }
+            
+            const payload = {
+                "success": true,
+                "batch_mode": "contacts_preview",
+                "total_rows_parsed": records.length,
+                "data": records.map(r => ({
+                    "uuid": "uuid-" + Math.floor(Math.random()*1000000),
+                    "name": r.name || null,
+                    "email": r.email || null,
+                    "phone": r.phone || null,
+                    "type": r.type || "contact",
+                    "status": "ready",
+                    "validation": {
+                        "valid_email": r.email ? r.email.includes('@') : true,
+                        "valid_phone": r.phone ? /^\+?\d+$/.test(r.phone.replace(/[\s-]/g,'')) : true
+                    }
+                }))
+            };
+            
+            output.innerText = JSON.stringify(payload, null, 4);
+        }
+
+        // Copilot AI Responses
+        const copilotResponses = {
+            "Where is the Memory Maintenance Pipeline bug?": 
+                "The bug is located in `app/Services/Contact/ContactMemoryMaintenancePipeline.php` at line 53 and 84. Inside the `prune_stale` and `resolve_duplicates` cases, the pipeline references `$contact->memories()` (which maps to the legacy platform `Memory` model). It should instead be pointing to `$contact->contactMemories()`, which maps to the vNext specific `ContactMemory` model. Because of this, actual customer/contact-specific memories are never optimized or stale-pruned.",
+            
+            "How are relationships graphed in RelationshipGraphService?":
+                "The `RelationshipGraphService` currently computes contact relationship trees incorrectly. Instead of querying the `contact_relationships` table (using model `ContactRelationship` which stores custom source-target link types), it iterates through the contact's `ContactReplyRule` rules metadata. It looks for `related_contact_id` fields stored inside rule configurations. This means standard relationship associations defined via the CRM relationships panel are completely ignored on the graph.",
+            
+            "What is the difference between contact CSV imports and message imports?":
+                "Message imports are routed through `ContactImportController` which leverages `ContactImportPipeline`, generates a log entry in the `ContactImportBatch` table, and runs under the queue via `ImportContactMessagesJob`. This batch logging allows imports to support transactional rollback. In contrast, profile imports (`ContactController@import`) bypass this system completely. They iterate over rows and create standard `Contact` entries directly, without generating a batch batch history trace. Therefore, contact creation imports cannot be rolled back."
+        };
+
+        function askPreset(question) {
+            document.getElementById('chat-input').value = question;
+            sendChatMessage();
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const feed = document.getElementById('chat-feed');
+            const query = input.value.trim();
+            if (!query) return;
+
+            feed.innerHTML += `
+                <div class="flex gap-3 justify-end">
+                    <div class="bg-purple-600 text-white rounded-2xl p-3.5 max-w-[80%] text-right font-medium">
+                        ${query}
+                    </div>
+                </div>
+            `;
+            
+            input.value = '';
+            feed.scrollTop = feed.scrollHeight;
+
+            setTimeout(() => {
+                let replyText = "I parsed your query but couldn't find a direct match. In summary: the Contacts Hub is the central CRM database. Key classes include Contact.php, ContactHubService.php, and ContactController.php. Note the discrepancies in memory maintenance and social graphs in the 'Audit Bugs & Patches' tab.";
+                
+                for (const key in copilotResponses) {
+                    if (query.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(query.toLowerCase())) {
+                        replyText = copilotResponses[key];
+                        break;
+                    }
+                }
+
+                feed.innerHTML += `
+                    <div class="flex gap-3">
+                        <div class="h-8 w-8 rounded-full bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div class="bg-[#090a16] border border-[#15172b] rounded-2xl p-3.5 text-slate-300 max-w-[80%]">
+                            ${replyText}
+                        </div>
+                    </div>
+                `;
+                feed.scrollTop = feed.scrollHeight;
+            }, 600);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+---
+id: 82fedce4-4452-48d4-8da4-9f3003b583cd
+---
+flowchart TD
+    subgraph WhatsApp Webhook Ingestion
+        WH[WAHA Webhook Event] --> IngestService[WahaWebhookIngestionService]
+        IngestService -->|تحقق التكرار Idempotency| ProcessWebhookJob[ProcessWahaWebhookJob]
+        ProcessWebhookJob -->|مزامنة الرسائل الواردة| LiveMsgsSyncService[LiveMsgsSyncService]
+    end
+
+    subgraph Historical Synchronization
+        WahaAPI[WAHA API Endpoint] --> SyncContacts[SyncWahaContactsJob]
+        WahaAPI --> SyncMessages[SyncWahaMessagesJob]
+        WahaAPI --> SyncSingleContact[SyncSingleContactMessagesJob]
+    end
+
+    subgraph Intelligence & Profiling Engine
+        LiveMsgsSyncService -->|إطلاق إشعار| WahaBatchAnalyzeJob[WahaBatchAnalyzeJob]
+        WahaBatchAnalyzeJob --> WahaAnalysisService[WahaAnalysisService]
+
+        RunAnalysis[Manual Trigger: Run Analysis] --> AnalyzeContactJob[AnalyzeContactMessagesJob]
+        AnalyzeContactJob --> IntelligencePipeline[ContactIntelligenceExtractionPipeline]
+
+        IntelligencePipeline -->|استدعاء LLM| UniversalAiGateway[UniversalAiGatewayService]
+        WahaAnalysisService -->|محاكاة / استدعاء| UniversalAiGateway
+
+        UniversalAiGateway -->|حفظ النتائج| Findings[(ContactAnalysisFinding)]
+        UniversalAiGateway -->|تعديل الشخصية| ContactProfile[(Contact Metadata)]
+    end
+
+    subgraph Memory & Maintenance
+        ContactMsgUpdate[New Messages Ingested] --> ExtractMemoryJob[ExtractMemoryJob]
+        ExtractMemoryJob -->|استخراج الحقائق| ContactMemory[(ContactMemory)]
+
+        Scheduler[Daily Cron] --> MemoryMaintenanceJob[RunContactMemoryMaintenanceJob]
+        MemoryMaintenanceJob -->|صيانة / دمج / فض النزاعات| ContactMemory
+    end

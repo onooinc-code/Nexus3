@@ -3,18 +3,20 @@
 namespace App\Services;
 
 use App\Models\AgentTask;
+use Illuminate\Support\Facades\Redis;
 
 class TaskQueueService
 {
-    protected array $queue = [];
-
-    protected array $processing = [];
-
-    protected array $completed = [];
-
-    protected array $failed = [];
-
     protected LogService $logService;
+
+    // Redis keys
+    const KEY_QUEUED = 'nexus:tasks:queued';
+
+    const KEY_PROCESSING = 'nexus:tasks:processing';
+
+    const KEY_COMPLETED = 'nexus:tasks:completed';
+
+    const KEY_FAILED = 'nexus:tasks:failed';
 
     public function __construct(LogService $logService)
     {
@@ -25,19 +27,19 @@ class TaskQueueService
     {
         $id = $task->id;
         $task->update([
-            'status' => 'pending',
+            'status' => 'pending', // or 'todo' based on mapping
             'metadata' => array_merge($task->metadata ?? [], [
                 'queued_at' => now()->toISOString(),
                 'queue_options' => $options,
             ]),
         ]);
 
-        // ensure we operate on the fresh model instance
         $fresh = AgentTask::find($id);
 
-        $this->queue[] = $fresh->id;
+        // Add to Redis list (Right push)
+        Redis::rpush(self::KEY_QUEUED, $fresh->id);
 
-        $this->logService->info('Task enqueued', [
+        $this->logService->info('Task enqueued to Redis', [
             'channel' => 'task',
             'type' => 'queue',
             'related_id' => $fresh->id,
@@ -50,18 +52,23 @@ class TaskQueueService
 
     public function dequeue(): ?AgentTask
     {
-        if (empty($this->queue)) {
+        // Atomically pop from queued and push to processing
+        // LPOPRPUSH is deprecated in newer Redis, RPOPLPUSH or similar. In Laravel we can use transaction or simpler approach.
+        // For simplicity, we'll use LPOP and then SADD/RPUSH.
+        $taskId = Redis::lpop(self::KEY_QUEUED);
+
+        if (! $taskId) {
             return null;
         }
 
-        $taskId = array_shift($this->queue);
+        Redis::sadd(self::KEY_PROCESSING, $taskId);
+
         $task = AgentTask::find($taskId);
 
         if ($task) {
             $task->update(['status' => 'running']);
-            $this->processing[] = $taskId;
 
-            $this->logService->info('Task dequeued', [
+            $this->logService->info('Task dequeued from Redis', [
                 'channel' => 'task',
                 'type' => 'dequeue',
                 'related_id' => $task->id,
@@ -84,10 +91,10 @@ class TaskQueueService
             ]),
         ]);
 
-        $this->processing = array_filter($this->processing, fn ($id) => $id !== $task->id);
-        $this->completed[] = $task->id;
+        Redis::srem(self::KEY_PROCESSING, $task->id);
+        Redis::sadd(self::KEY_COMPLETED, $task->id);
 
-        $this->logService->info('Task completed', [
+        $this->logService->info('Task completed in Redis', [
             'channel' => 'task',
             'type' => 'complete',
             'related_id' => $task->id,
@@ -108,10 +115,10 @@ class TaskQueueService
             ]),
         ]);
 
-        $this->processing = array_filter($this->processing, fn ($id) => $id !== $task->id);
-        $this->failed[] = $task->id;
+        Redis::srem(self::KEY_PROCESSING, $task->id);
+        Redis::sadd(self::KEY_FAILED, $task->id);
 
-        $this->logService->error('Task failed', [
+        $this->logService->error('Task failed in Redis', [
             'channel' => 'task',
             'type' => 'fail',
             'related_id' => $task->id,
@@ -127,13 +134,13 @@ class TaskQueueService
         $id = $task->id;
         $task->update(['status' => 'cancelled']);
 
-        $this->queue = array_filter($this->queue, fn ($qid) => $qid !== $id);
-        $this->processing = array_filter($this->processing, fn ($pid) => $pid !== $id);
+        Redis::lrem(self::KEY_QUEUED, 0, $id);
+        Redis::srem(self::KEY_PROCESSING, $id);
 
         $fresh = AgentTask::find($id);
 
         if ($fresh) {
-            $this->logService->info('Task cancelled', [
+            $this->logService->info('Task cancelled in Redis', [
                 'channel' => 'task',
                 'type' => 'cancel',
                 'related_id' => $fresh->id,
@@ -144,20 +151,12 @@ class TaskQueueService
             return $fresh;
         }
 
-        $this->logService->warning('Task cancelled but fresh model could not be retrieved', [
-            'channel' => 'task',
-            'type' => 'cancel',
-            'related_id' => $id,
-            'related_type' => 'App\Models\AgentTask',
-            'context' => ['original_task' => $task->toArray()],
-        ]);
-
         return $task;
     }
 
     public function pause(AgentTask $task): AgentTask
     {
-        $task->update(['status' => 'paused']);
+        $task->update(['status' => 'paused']); // or blocked
 
         $this->logService->info('Task paused', [
             'channel' => 'task',
@@ -188,72 +187,65 @@ class TaskQueueService
 
     public function getQueueSize(): int
     {
-        return count($this->queue);
+        return Redis::llen(self::KEY_QUEUED) ?? 0;
     }
 
     public function getProcessingSize(): int
     {
-        return count($this->processing);
+        return Redis::scard(self::KEY_PROCESSING) ?? 0;
     }
 
     public function getCompletedCount(): int
     {
-        return count($this->completed);
+        return Redis::scard(self::KEY_COMPLETED) ?? 0;
     }
 
     public function getFailedCount(): int
     {
-        return count($this->failed);
+        return Redis::scard(self::KEY_FAILED) ?? 0;
     }
 
     public function getStats(): array
     {
+        $queued = $this->getQueueSize();
+        $processing = $this->getProcessingSize();
+        $completed = $this->getCompletedCount();
+        $failed = $this->getFailedCount();
+
         return [
-            'queued' => $this->getQueueSize(),
-            'processing' => $this->getProcessingSize(),
-            'completed' => $this->getCompletedCount(),
-            'failed' => $this->getFailedCount(),
-            'total' => $this->getQueueSize() + $this->getProcessingSize() + $this->getCompletedCount() + $this->getFailedCount(),
+            'queued' => $queued,
+            'processing' => $processing,
+            'completed' => $completed,
+            'failed' => $failed,
+            'total' => $queued + $processing + $completed + $failed,
         ];
     }
 
     public function clearQueue(): void
     {
-        $this->queue = [];
-
-        $this->logService->info('Task queue cleared', [
-            'channel' => 'task',
-            'type' => 'clear',
-        ]);
+        Redis::del(self::KEY_QUEUED);
+        $this->logService->info('Task queue cleared from Redis', ['channel' => 'task', 'type' => 'clear']);
     }
 
     public function clearCompleted(): void
     {
-        $this->completed = [];
-
-        $this->logService->info('Completed tasks cleared', [
-            'channel' => 'task',
-            'type' => 'clear',
-        ]);
+        Redis::del(self::KEY_COMPLETED);
+        $this->logService->info('Completed tasks cleared from Redis', ['channel' => 'task', 'type' => 'clear']);
     }
 
     public function clearFailed(): void
     {
-        $this->failed = [];
-
-        $this->logService->info('Failed tasks cleared', [
-            'channel' => 'task',
-            'type' => 'clear',
-        ]);
+        Redis::del(self::KEY_FAILED);
+        $this->logService->info('Failed tasks cleared from Redis', ['channel' => 'task', 'type' => 'clear']);
     }
 
     public function getQueuedTaskIds(): array
     {
-        return $this->queue;
+        return Redis::lrange(self::KEY_QUEUED, 0, -1) ?: [];
     }
 
     public function getProcessingTaskIds(): array
     {
-        return $this->processing;
+        return Redis::smembers(self::KEY_PROCESSING) ?: [];
     }
 }

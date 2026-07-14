@@ -35,7 +35,7 @@ class TaskSchedulingService
                 ]);
 
                 // Dispatch execution
-                $this->executionService->executeTask($task);
+                $this->executionService->execute($task);
 
             } catch (\Exception $e) {
                 $this->logService->error('Failed to dispatch due task', [

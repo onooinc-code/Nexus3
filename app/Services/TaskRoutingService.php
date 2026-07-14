@@ -24,6 +24,7 @@ class TaskRoutingService
         $workflow = $task->workflow;
         $agentType = $task->metadata['agent_type'] ?? null;
 
+        // 1. Try to route based on Workflow step configuration
         if ($workflow && $workflow->steps) {
             $step = $this->findStepForTask($workflow, $task);
             if ($step) {
@@ -31,6 +32,15 @@ class TaskRoutingService
             }
         }
 
+        // 2. If no agent type is set, use keyword analysis (Smart Routing)
+        if (! $agentType) {
+            $agentType = $this->analyzeTaskKeywords($task);
+            Log::info("Task routed via keyword analysis to: {$agentType}", [
+                'task_id' => $task->id,
+            ]);
+        }
+
+        // 3. Resolve the agent and its handler
         if ($agentType && $this->registry->has($agentType)) {
             $agent = Agent::where('type', $agentType)->first();
             if ($agent) {
@@ -59,6 +69,37 @@ class TaskRoutingService
             'agent_type' => null,
             'handler' => null,
         ];
+    }
+
+    /**
+     * Analyze task title and description to determine the best agent type.
+     */
+    protected function analyzeTaskKeywords(AgentTask $task): string
+    {
+        $text = strtolower(($task->title ?? '').' '.($task->description ?? ''));
+
+        // Check for reflection/analysis tasks
+        if (preg_match('/\b(analyze|evaluation|evaluate|review|reflection|audit|assess)\b/', $text)) {
+            return Agent::TYPE_REFLECTION;
+        }
+
+        // Check for specialized/research/tool tasks
+        if (preg_match('/\b(research|search|scrape|fetch|query|tool|specialized)\b/', $text)) {
+            return Agent::TYPE_SPECIALIZED;
+        }
+
+        // Check for supervision/coordination tasks
+        if (preg_match('/\b(supervise|coordinate|approve|manage|conflict|oversee)\b/', $text)) {
+            return Agent::TYPE_SUPERVISOR;
+        }
+
+        // Check for complex/team tasks
+        if (preg_match('/\b(team|group|collaborate|complex|parallel|workflow)\b/', $text)) {
+            return Agent::TYPE_TEAM;
+        }
+
+        // Default to autonomous agent for standard tasks
+        return Agent::TYPE_AUTONOMOUS;
     }
 
     protected function findStepForTask(Workflow $workflow, AgentTask $task): ?array

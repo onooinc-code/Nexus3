@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\SystemController;
 use App\Http\Controllers\AgentController;
 use App\Http\Controllers\AgentPersonaController;
 use App\Http\Controllers\AgentToolLibraryController;
+use App\Http\Controllers\AIApiKeyController;
 use App\Http\Controllers\AiCostAnalyticsController;
 use App\Http\Controllers\AiInstanceController;
 use App\Http\Controllers\AiModelController;
@@ -50,6 +51,7 @@ use App\Http\Controllers\SettingsHubAdminController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\SystemTelemetryController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskTemplateController;
 use App\Http\Controllers\WahaManageController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\WorkflowController;
@@ -428,6 +430,9 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'auth:sanctum']], functi
         ->name('tasks.routing-stats');
 
     // New TaskHub specific endpoints (must come before resource)
+    Route::post('/task-templates/{taskTemplate}/spawn', [TaskTemplateController::class, 'spawn'])
+        ->name('task-templates.spawn');
+    Route::apiResource('task-templates', TaskTemplateController::class);
     Route::post('/tasks/{task}/execute', [TaskController::class, 'execute'])
         ->name('tasks.execute');
     Route::get('/tasks/{task}/logs', [TaskController::class, 'logs'])
@@ -710,7 +715,7 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'auth:sanctum']], functi
         ->name('ai.providers.index');
     Route::post('/ai/providers', [AiProviderController::class, 'store'])
         ->name('ai.providers.store');
-    
+
     Route::get('/ai/providers/{id}/details', [AiProviderController::class, 'details'])
         ->name('ai.providers.details');
     Route::patch('/ai/providers/{id}/meta', [AiProviderController::class, 'updateMeta'])
@@ -736,13 +741,13 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'auth:sanctum']], functi
         ->name('ai.providers.toggle-active');
 
     // API Keys Sub-resource
-    Route::get('/ai/providers/{id}/keys', [\App\Http\Controllers\AIApiKeyController::class, 'indexForProvider'])
+    Route::get('/ai/providers/{id}/keys', [AIApiKeyController::class, 'indexForProvider'])
         ->name('ai.providers.keys.index');
-    Route::post('/ai/providers/{id}/keys', [\App\Http\Controllers\AIApiKeyController::class, 'store'])
+    Route::post('/ai/providers/{id}/keys', [AIApiKeyController::class, 'store'])
         ->name('ai.providers.keys.store');
-    Route::delete('/ai/api-keys/{keyId}', [\App\Http\Controllers\AIApiKeyController::class, 'destroy'])
+    Route::delete('/ai/api-keys/{keyId}', [AIApiKeyController::class, 'destroy'])
         ->name('ai.api-keys.destroy');
-    Route::post('/ai/api-keys/{keyId}/set-default', [\App\Http\Controllers\AIApiKeyController::class, 'setDefault'])
+    Route::post('/ai/api-keys/{keyId}/set-default', [AIApiKeyController::class, 'setDefault'])
         ->name('ai.api-keys.set-default');
     Route::get('/ai/intents/routing', [AiRequestController::class, 'getRoutingMatrix'])
         ->name('ai.intents.routing.index');

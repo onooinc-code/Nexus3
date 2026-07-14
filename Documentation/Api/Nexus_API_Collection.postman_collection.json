@@ -1,0 +1,3881 @@
+{
+  "info": {
+    "name": "Nexus Platform API Collection",
+    "description": "Complete API documentation for the Nexus Platform, including all endpoints for Contacts Hub, Notification Hub, HedraSoul, AI Models, Workflows, Tasks, Memory Hub, and more.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "nexus_platform",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearer_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "description": "Authentication endpoints for login, register, and token management",
+      "item": [
+        {
+          "name": "Public - Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "health"
+              ]
+            },
+            "description": "Check if the API is healthy and running. No authentication required."
+          },
+          "response": []
+        },
+        {
+          "name": "Public - Broadcasting Auth",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"channel_name\": \"private-updates\",\n  \"socket_id\": \"socket_123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/broadcasting/auth",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "broadcasting",
+                "auth"
+              ]
+            },
+            "description": "Authenticate for real-time broadcasting using Sanctum tokens"
+          },
+          "response": []
+        },
+        {
+          "name": "Public - Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "register"
+              ]
+            },
+            "description": "Register a new user account"
+          },
+          "response": []
+        },
+        {
+          "name": "Public - Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "login"
+              ]
+            },
+            "description": "Login with email and password. Returns authentication token."
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/verify-token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "verify-token"
+              ]
+            },
+            "description": "Verify if the current authentication token is valid"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/refresh-token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "refresh-token"
+              ]
+            },
+            "description": "Refresh the current authentication token"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "logout"
+              ]
+            },
+            "description": "Logout the current user and invalidate the token"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👥 Contacts Hub",
+      "description": "Complete contact management including profiles, messages, intelligence, and analysis",
+      "item": [
+        {
+          "name": "Get All Contacts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts?page=1&per_page=15",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "15"
+                }
+              ]
+            },
+            "description": "Retrieve list of all contacts with pagination"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Contact by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "1"
+              ]
+            },
+            "description": "Get a specific contact by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Contact",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\",\n  \"phone\": \"+1234567890\",\n  \"tags\": [\"important\", \"vip\"],\n  \"metadata\": {\n    \"source\": \"whatsapp\",\n    \"timezone\": \"EST\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts"
+              ]
+            },
+            "description": "Create a new contact"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Contact",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Smith\",\n  \"tags\": [\"updated\", \"vip\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "1"
+              ]
+            },
+            "description": "Update an existing contact"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Contact",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "1"
+              ]
+            },
+            "description": "Delete a contact"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Contacts Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "stats"
+              ]
+            },
+            "description": "Get aggregate statistics for all contacts"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Contact Intelligence",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/1/intelligence",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "1",
+                "intelligence"
+              ]
+            },
+            "description": "Get AI-generated intelligence about a contact"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Contact Memory",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/1/memory",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "1",
+                "memory"
+              ]
+            },
+            "description": "Get memory records for a specific contact"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Contact Messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/1/messages?limit=50",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "1",
+                "messages"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "Get all messages for a contact"
+          },
+          "response": []
+        },
+        {
+          "name": "Import Contacts",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contacts\": [\n    {\n      \"name\": \"Contact 1\",\n      \"email\": \"contact1@example.com\"\n    },\n    {\n      \"name\": \"Contact 2\",\n      \"email\": \"contact2@example.com\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/import",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "import"
+              ]
+            },
+            "description": "Import multiple contacts at once"
+          },
+          "response": []
+        },
+        {
+          "name": "Export Contacts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/export",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "export"
+              ]
+            },
+            "description": "Export all contacts to CSV or JSON format"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Contact Identifiers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/1/identifiers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "1",
+                "identifiers"
+              ]
+            },
+            "description": "Get all identifiers (phone, email, social) for a contact"
+          },
+          "response": []
+        },
+        {
+          "name": "Add Contact Identifier",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"whatsapp\",\n  \"value\": \"+1234567890\",\n  \"verified\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/1/identifiers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "1",
+                "identifiers"
+              ]
+            },
+            "description": "Add a new identifier for a contact"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Contact Notes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/1/notes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "1",
+                "notes"
+              ]
+            },
+            "description": "Get all notes for a contact"
+          },
+          "response": []
+        },
+        {
+          "name": "Add Contact Note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"This contact is a VIP customer\",\n  \"category\": \"customer_info\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/1/notes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "1",
+                "notes"
+              ]
+            },
+            "description": "Add a new note to a contact"
+          },
+          "response": []
+        },
+        {
+          "name": "Merge Contacts",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"merge_into_id\": 1,\n  \"merge_from_ids\": [2, 3]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/1/merge",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "1",
+                "merge"
+              ]
+            },
+            "description": "Merge multiple contacts into one"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Global Reply Mode",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/reply-mode",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "reply-mode"
+              ]
+            },
+            "description": "Get the global reply mode setting"
+          },
+          "response": []
+        },
+        {
+          "name": "Set Global Reply Mode",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"auto\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/reply-mode",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "reply-mode"
+              ]
+            },
+            "description": "Set the global reply mode (auto, manual, etc.)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Contact Reply Mode",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/1/reply-mode",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "1",
+                "reply-mode"
+              ]
+            },
+            "description": "Get the reply mode for a specific contact"
+          },
+          "response": []
+        },
+        {
+          "name": "Set Contact Reply Mode",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"manual\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/1/reply-mode",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "1",
+                "reply-mode"
+              ]
+            },
+            "description": "Set the reply mode for a specific contact"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔔 Notifications Hub",
+      "description": "Notification templates, sending, and broadcast management",
+      "item": [
+        {
+          "name": "Get Notification Templates",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications/templates",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "templates"
+              ]
+            },
+            "description": "Get all notification templates"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Notification Template",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Welcome Email\",\n  \"subject\": \"Welcome to Nexus\",\n  \"body\": \"Hello {{name}}, welcome to our platform!\",\n  \"channel\": \"email\",\n  \"variables\": [\"name\", \"email\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications/templates",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "templates"
+              ]
+            },
+            "description": "Create a new notification template"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Notification Template by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications/templates/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "templates",
+                "1"
+              ]
+            },
+            "description": "Get a specific notification template"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Notification Template",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject\": \"Welcome to the Nexus Platform\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications/templates/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "templates",
+                "1"
+              ]
+            },
+            "description": "Update a notification template"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Notification Template",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications/templates/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "templates",
+                "1"
+              ]
+            },
+            "description": "Delete a notification template"
+          },
+          "response": []
+        },
+        {
+          "name": "Send Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipient_id\": 1,\n  \"template_id\": 1,\n  \"variables\": {\n    \"name\": \"John\"\n  },\n  \"channel\": \"email\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications/send",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "send"
+              ]
+            },
+            "description": "Send a notification to a recipient"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Notification Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications?page=1&per_page=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get notification logs with pagination"
+          },
+          "response": []
+        },
+        {
+          "name": "Retry Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications/1/retry",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "1",
+                "retry"
+              ]
+            },
+            "description": "Retry sending a failed notification"
+          },
+          "response": []
+        },
+        {
+          "name": "Broadcast Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"channel\": \"updates\",\n  \"title\": \"System Update\",\n  \"message\": \"A new update is available\",\n  \"data\": {}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications/broadcast",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "broadcast"
+              ]
+            },
+            "description": "Broadcast a real-time notification to all connected clients"
+          },
+          "response": []
+        },
+        {
+          "name": "Register FCM Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"fcm_device_token_here\",\n  \"device_name\": \"iPhone 12\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications/fcm-token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "fcm-token"
+              ]
+            },
+            "description": "Register a Firebase Cloud Messaging token for push notifications"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "💬 Conversations",
+      "description": "Conversation management and messaging",
+      "item": [
+        {
+          "name": "Get All Conversations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversations?page=1&per_page=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "conversations"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all conversations with pagination"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contact_id\": 1,\n  \"subject\": \"Support Request\",\n  \"channel\": \"email\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "conversations"
+              ]
+            },
+            "description": "Create a new conversation"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Conversation by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversations/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "conversations",
+                "1"
+              ]
+            },
+            "description": "Get a specific conversation"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Conversation Messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversations/1/messages?limit=50",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "conversations",
+                "1",
+                "messages"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "Get all messages in a conversation"
+          },
+          "response": []
+        },
+        {
+          "name": "Send Message in Conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"This is my response\",\n  \"attachments\": []\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversations/1/send-message",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "conversations",
+                "1",
+                "send-message"
+              ]
+            },
+            "description": "Send a message in a conversation"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Conversation",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"closed\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversations/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "conversations",
+                "1"
+              ]
+            },
+            "description": "Update a conversation"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Conversation",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversations/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "conversations",
+                "1"
+              ]
+            },
+            "description": "Delete a conversation"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🤖 Agents Hub",
+      "description": "AI agent management, execution, and control",
+      "item": [
+        {
+          "name": "Get All Agents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/agents?page=1&per_page=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all agents"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Support Agent\",\n  \"description\": \"Handles customer support\",\n  \"model\": \"gpt-4\",\n  \"system_prompt\": \"You are a helpful support agent\",\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/agents",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents"
+              ]
+            },
+            "description": "Create a new agent"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Agent by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/agents/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "1"
+              ]
+            },
+            "description": "Get a specific agent"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Agent",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/agents/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "1"
+              ]
+            },
+            "description": "Update an agent"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Agent",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/agents/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "1"
+              ]
+            },
+            "description": "Delete an agent"
+          },
+          "response": []
+        },
+        {
+          "name": "Run Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"input\": \"Handle this support request\",\n  \"context\": {}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/agents/1/run",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "1",
+                "run"
+              ]
+            },
+            "description": "Execute an agent with input"
+          },
+          "response": []
+        },
+        {
+          "name": "Simulate Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"input\": \"Test input\",\n  \"max_iterations\": 5\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/agents/1/simulate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "1",
+                "simulate"
+              ]
+            },
+            "description": "Simulate an agent run without actually executing"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Agent Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/agents/1/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "1",
+                "status"
+              ]
+            },
+            "description": "Get the current status of an agent"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Agent Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/agents/1/logs?limit=50",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "1",
+                "logs"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "Get execution logs for an agent"
+          },
+          "response": []
+        },
+        {
+          "name": "Quarantine Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Suspicious behavior detected\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/agents/1/quarantine",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "1",
+                "quarantine"
+              ]
+            },
+            "description": "Quarantine an agent to prevent execution"
+          },
+          "response": []
+        },
+        {
+          "name": "Unquarantine Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/agents/1/unquarantine",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "1",
+                "unquarantine"
+              ]
+            },
+            "description": "Remove an agent from quarantine"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Agent Personas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/agent-personas?page=1&per_page=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agent-personas"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all agent personas"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "⚙️ Workflows",
+      "description": "Workflow management and execution",
+      "item": [
+        {
+          "name": "Get All Workflows",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/workflows?page=1&per_page=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workflows"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all workflows"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Workflow",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Customer Onboarding\",\n  \"description\": \"Onboard new customers\",\n  \"steps\": [\n    {\n      \"type\": \"send_email\",\n      \"config\": {}\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/workflows",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workflows"
+              ]
+            },
+            "description": "Create a new workflow"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Workflow by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/workflows/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workflows",
+                "1"
+              ]
+            },
+            "description": "Get a specific workflow"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Workflow",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Customer Onboarding\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/workflows/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workflows",
+                "1"
+              ]
+            },
+            "description": "Update a workflow"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Workflow",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/workflows/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workflows",
+                "1"
+              ]
+            },
+            "description": "Delete a workflow"
+          },
+          "response": []
+        },
+        {
+          "name": "Execute Workflow",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contact_id\": 1,\n  \"variables\": {}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/workflows/1/execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workflows",
+                "1",
+                "execute"
+              ]
+            },
+            "description": "Execute a workflow"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Workflow Progress",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/workflows/1/progress",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workflows",
+                "1",
+                "progress"
+              ]
+            },
+            "description": "Get the progress of a workflow execution"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Workflow Templates",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/workflows/templates",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workflows",
+                "templates"
+              ]
+            },
+            "description": "Get available workflow templates"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📋 Tasks",
+      "description": "Task management and execution",
+      "item": [
+        {
+          "name": "Get All Tasks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tasks?page=1&per_page=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all tasks"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Follow up with customer\",\n  \"description\": \"Call customer to check on order\",\n  \"type\": \"manual\",\n  \"priority\": \"high\",\n  \"due_date\": \"2024-12-31\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/tasks",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks"
+              ]
+            },
+            "description": "Create a new task"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Task by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tasks/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "1"
+              ]
+            },
+            "description": "Get a specific task"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Task",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"completed\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/tasks/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "1"
+              ]
+            },
+            "description": "Update a task"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tasks/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "1"
+              ]
+            },
+            "description": "Delete a task"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Task Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tasks/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "stats"
+              ]
+            },
+            "description": "Get task statistics"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Active Tasks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tasks/active",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "active"
+              ]
+            },
+            "description": "Get all active tasks"
+          },
+          "response": []
+        },
+        {
+          "name": "Execute Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tasks/1/execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "1",
+                "execute"
+              ]
+            },
+            "description": "Execute a task"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tasks/1/cancel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "1",
+                "cancel"
+              ]
+            },
+            "description": "Cancel a task"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🧠 Memory Hub",
+      "description": "Memory management and retrieval",
+      "item": [
+        {
+          "name": "Get All Memories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/memories?page=1&per_page=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "memories"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all memories"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Memory",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Customer prefers email communication\",\n  \"contact_id\": 1,\n  \"category\": \"preferences\",\n  \"confidence\": 0.95\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/memories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "memories"
+              ]
+            },
+            "description": "Create a new memory"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Memory by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/memories/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "memories",
+                "1"
+              ]
+            },
+            "description": "Get a specific memory"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Memory",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"confidence\": 0.98\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/memories/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "memories",
+                "1"
+              ]
+            },
+            "description": "Update a memory"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Memory",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/memories/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "memories",
+                "1"
+              ]
+            },
+            "description": "Delete a memory"
+          },
+          "response": []
+        },
+        {
+          "name": "Search Memories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/memories/search?query=customer%20preferences",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "memories",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "customer%20preferences"
+                }
+              ]
+            },
+            "description": "Search memories by query"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Contact Memories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/contacts/1/memories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contacts",
+                "1",
+                "memories"
+              ]
+            },
+            "description": "Get all memories for a specific contact"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👻 HedraSoul",
+      "description": "AI soul management, sessions, and control",
+      "item": [
+        {
+          "name": "Get HedraSoul Sessions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/hedrasoul/sessions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hedrasoul",
+                "sessions"
+              ]
+            },
+            "description": "Get all HedraSoul sessions"
+          },
+          "response": []
+        },
+        {
+          "name": "Create HedraSoul Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contact_id\": 1,\n  \"title\": \"Customer Support Session\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/hedrasoul/sessions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hedrasoul",
+                "sessions"
+              ]
+            },
+            "description": "Create a new HedraSoul session"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Session Messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/hedrasoul/sessions/1/messages",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hedrasoul",
+                "sessions",
+                "1",
+                "messages"
+              ]
+            },
+            "description": "Get all messages in a HedraSoul session"
+          },
+          "response": []
+        },
+        {
+          "name": "Send Message in HedraSoul Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Hello, how can I help you today?\",\n  \"role\": \"assistant\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/hedrasoul/sessions/1/messages",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hedrasoul",
+                "sessions",
+                "1",
+                "messages"
+              ]
+            },
+            "description": "Send a message in a HedraSoul session"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Souly Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/hedrasoul/souly/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hedrasoul",
+                "souly",
+                "status"
+              ]
+            },
+            "description": "Get the status of the Souly AI system"
+          },
+          "response": []
+        },
+        {
+          "name": "Get HedraSoul Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/hedrasoul/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hedrasoul",
+                "profile"
+              ]
+            },
+            "description": "Get the HedraSoul profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Update HedraSoul Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personality\": \"friendly\",\n  \"tone\": \"professional\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/hedrasoul/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hedrasoul",
+                "profile"
+              ]
+            },
+            "description": "Update the HedraSoul profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Get HedraSoul Approvals",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/hedrasoul/approvals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hedrasoul",
+                "approvals"
+              ]
+            },
+            "description": "Get pending approvals for HedraSoul"
+          },
+          "response": []
+        },
+        {
+          "name": "Approve HedraSoul Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/hedrasoul/approvals/1/approve",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hedrasoul",
+                "approvals",
+                "1",
+                "approve"
+              ]
+            },
+            "description": "Approve a pending HedraSoul item"
+          },
+          "response": []
+        },
+        {
+          "name": "Get HedraSoul Memories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/hedrasoul/memories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hedrasoul",
+                "memories"
+              ]
+            },
+            "description": "Get HedraSoul memories"
+          },
+          "response": []
+        },
+        {
+          "name": "Get HedraSoul Instructions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/hedrasoul/instructions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hedrasoul",
+                "instructions"
+              ]
+            },
+            "description": "Get HedraSoul instructions"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🧪 AI Models Hub",
+      "description": "AI model and provider management",
+      "item": [
+        {
+          "name": "Get All AI Providers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/ai/providers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "providers"
+              ]
+            },
+            "description": "Get all AI providers"
+          },
+          "response": []
+        },
+        {
+          "name": "Create AI Provider",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"OpenAI\",\n  \"type\": \"openai\",\n  \"api_key\": \"sk-...\",\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/ai/providers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "providers"
+              ]
+            },
+            "description": "Create a new AI provider"
+          },
+          "response": []
+        },
+        {
+          "name": "Get AI Provider by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/ai/providers/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "providers",
+                "1"
+              ]
+            },
+            "description": "Get a specific AI provider"
+          },
+          "response": []
+        },
+        {
+          "name": "Update AI Provider",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/ai/providers/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "providers",
+                "1"
+              ]
+            },
+            "description": "Update an AI provider"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete AI Provider",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/ai/providers/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "providers",
+                "1"
+              ]
+            },
+            "description": "Delete an AI provider"
+          },
+          "response": []
+        },
+        {
+          "name": "Test AI Provider",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"test_prompt\": \"Say hello\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/ai/providers/1/test",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "providers",
+                "1",
+                "test"
+              ]
+            },
+            "description": "Test the connection to an AI provider"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All AI Models",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/ai-models",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai-models"
+              ]
+            },
+            "description": "Get all AI models"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Provider Health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/ai/providers/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "providers",
+                "health"
+              ]
+            },
+            "description": "Get health status of all AI providers"
+          },
+          "response": []
+        },
+        {
+          "name": "Get AI Cost Forecast",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/ai/cost/forecast",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "cost",
+                "forecast"
+              ]
+            },
+            "description": "Get AI cost forecast"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "⚙️ Settings",
+      "description": "Application settings and configuration",
+      "item": [
+        {
+          "name": "Get All Settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/settings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "settings"
+              ]
+            },
+            "description": "Get all application settings"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Grouped Settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/settings/grouped",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "settings",
+                "grouped"
+              ]
+            },
+            "description": "Get settings grouped by category"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Setting by Key",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/settings/app_name",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "settings",
+                "app_name"
+              ]
+            },
+            "description": "Get a specific setting by key"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Setting",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"api_timeout\",\n  \"value\": \"30\",\n  \"group\": \"api\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/settings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "settings"
+              ]
+            },
+            "description": "Create a new setting"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Setting",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": \"60\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/settings/api_timeout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "settings",
+                "api_timeout"
+              ]
+            },
+            "description": "Update a setting"
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk Update Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"settings\": {\n    \"api_timeout\": \"60\",\n    \"max_retries\": \"3\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/settings/bulk",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "settings",
+                "bulk"
+              ]
+            },
+            "description": "Update multiple settings at once"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Setting",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/settings/api_timeout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "settings",
+                "api_timeout"
+              ]
+            },
+            "description": "Delete a setting"
+          },
+          "response": []
+        },
+        {
+          "name": "Get System Health Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/settings/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "settings",
+                "health"
+              ]
+            },
+            "description": "Get system health status"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📊 Monitoring",
+      "description": "System monitoring and health checks",
+      "item": [
+        {
+          "name": "Get Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/monitoring/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "monitoring",
+                "health"
+              ]
+            },
+            "description": "Check the health status of the system"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Reverb Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/monitoring/health/reverb",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "monitoring",
+                "health",
+                "reverb"
+              ]
+            },
+            "description": "Check the health of Reverb WebSocket server"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Queue Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/monitoring/health/queue",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "monitoring",
+                "health",
+                "queue"
+              ]
+            },
+            "description": "Check the health of the job queue"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/monitoring/metrics",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "monitoring",
+                "metrics"
+              ]
+            },
+            "description": "Get system metrics"
+          },
+          "response": []
+        },
+        {
+          "name": "Get WebSocket Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/monitoring/metrics/websocket",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "monitoring",
+                "metrics",
+                "websocket"
+              ]
+            },
+            "description": "Get WebSocket server metrics"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/dashboard/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "dashboard",
+                "stats"
+              ]
+            },
+            "description": "Get dashboard statistics"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Dashboard Health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/dashboard/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "dashboard",
+                "health"
+              ]
+            },
+            "description": "Get dashboard health information"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📝 Logs",
+      "description": "Logging and error tracking",
+      "item": [
+        {
+          "name": "Get Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/logs?page=1&per_page=50",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "logs"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "Get system logs with pagination"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Log by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/logs/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "logs",
+                "1"
+              ]
+            },
+            "description": "Get a specific log entry"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Log Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/logs/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "logs",
+                "stats"
+              ]
+            },
+            "description": "Get log statistics"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Log Levels",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/logs/levels",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "logs",
+                "levels"
+              ]
+            },
+            "description": "Get available log levels"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Error Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/logs/errors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "logs",
+                "errors"
+              ]
+            },
+            "description": "Get all error logs"
+          },
+          "response": []
+        },
+        {
+          "name": "Clear Logs",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/logs/clear",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "logs",
+                "clear"
+              ]
+            },
+            "description": "Clear all logs (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Log by ID",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/logs/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "logs",
+                "1"
+              ]
+            },
+            "description": "Delete a specific log entry"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👤 Profile",
+      "description": "User profile management",
+      "item": [
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profile"
+              ]
+            },
+            "description": "Get the current user's profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Smith\",\n  \"email\": \"john@example.com\",\n  \"timezone\": \"UTC\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profile"
+              ]
+            },
+            "description": "Update the current user's profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Avatar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/profile/avatar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profile",
+                "avatar"
+              ]
+            },
+            "description": "Update the user's avatar/profile picture"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "⚡ WebHooks",
+      "description": "Webhook management and events",
+      "item": [
+        {
+          "name": "WAHA WhatsApp Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event\": \"message.received\",\n  \"data\": {\n    \"from\": \"+1234567890\",\n    \"body\": \"Hello\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/webhooks/waha",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "webhooks",
+                "waha"
+              ]
+            },
+            "description": "Receive webhooks from WAHA WhatsApp integration"
+          },
+          "response": []
+        },
+        {
+          "name": "Workflow Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event\": \"workflow.completed\",\n  \"data\": {}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/webhooks/workflows/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "webhooks",
+                "workflows",
+                "1"
+              ]
+            },
+            "description": "Handle workflow webhook events"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://n.soulyeg.online",
+      "type": "string"
+    },
+    {
+      "key": "bearer_token",
+      "value": "",
+      "type": "string",
+      "description": "Your Sanctum API token - get this by logging in"
+    }
+  ]
+}

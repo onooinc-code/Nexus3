@@ -1,38 +1,47 @@
 @extends('TasksHub.layout')
 
 @section('tasks_content')
-    <!-- Vue Component TasksKanban will mount here -->
-    <div id="tasks-kanban-app" data-initial-tasks="{{ json_encode($tasks) }}"></div>
-
-    <!-- Live Log Viewer Modal -->
-    <div class="modal fade" id="liveLogModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content bg-dark border-secondary">
-                <div class="modal-header border-secondary">
-                    <h5 class="modal-title text-light">Task Execution</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-0">
-                    <div id="live-log-viewer-container"></div>
-                </div>
-            </div>
+<div class="tab-content h-100" id="taskhub-tabContent">
+    <!-- Dashboard Tab -->
+    <div class="tab-pane fade show active h-100" id="content-dashboard" role="tabpanel">
+        <div class="h-100 pe-2 pb-3">
+            @include('TasksHub.dashboard.stat-cards')
+            @include('TasksHub.dashboard.charts')
+            @include('TasksHub.dashboard.insights-feed')
         </div>
     </div>
 
-    <!-- Hook TasksKanban execute action to Live Log Viewer -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Vue component will mount and might trigger an event, or we can just patch it globally
-            // Wait, we need to show the modal when 'execute' is clicked.
-            // Since execute is handled inside Vue, we can dispatch a window event from Vue.
-            window.addEventListener('open-live-log', function(e) {
-                const taskId = e.detail.taskId;
-                if(window.mountLiveLogViewer) {
-                    window.mountLiveLogViewer(taskId);
-                }
-                const modal = new bootstrap.Modal(document.getElementById('liveLogModal'));
-                modal.show();
-            });
-        });
-    </script>
+    <!-- Board Tab -->
+    <div class="tab-pane fade h-100" id="content-board" role="tabpanel">
+        <div class="h-100 pe-2 pb-3">
+            @include('TasksHub.board.index')
+        </div>
+    </div>
+
+    <!-- List Tab -->
+    <div class="tab-pane fade h-100" id="content-list" role="tabpanel">
+        <div class="h-100 pe-2 pb-3">
+            @include('TasksHub.list.index')
+        </div>
+    </div>
+    
+    <!-- Queue Monitor Tab -->
+    <div class="tab-pane fade h-100" id="content-queue" role="tabpanel">
+        @include('TasksHub.queue.index')
+    </div>
+
+    <!-- Automations Tab -->
+    <div class="tab-pane fade h-100" id="content-automations" role="tabpanel">
+        @include('TasksHub.automations.index')
+    </div>
+</div>
+
+<!-- Global Modals Container -->
+<div id="tasks-modals-container">
+    <!-- Task Create Modal (F14) -->
+    @include('TasksHub.modals.create-task')
+    
+    <!-- Quick View Sidebar (F12) -->
+    @include('TasksHub.list.quick-view')
+</div>
 @endsection

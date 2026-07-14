@@ -208,6 +208,10 @@ class WorkflowInterpreter
         $branches = $step['branches'] ?? [];
         $outputs = [];
 
+        if (empty($branches)) {
+            return ['success' => true];
+        }
+
         foreach ($branches as $branchIndex => $branchStep) {
             $branchStep['id'] ??= $step['id'].'_branch_'.($branchIndex + 1);
             $branchStep['name'] ??= $step['name'].' Branch '.($branchIndex + 1);
@@ -225,7 +229,17 @@ class WorkflowInterpreter
             ];
         }
 
-        return ['success' => true, 'output' => ['parallel' => $outputs]];
+        return [
+            'success' => true,
+            'pause' => true,
+            'waiting_for' => [
+                'type' => 'parallel_branches',
+                'step_id' => $step['id'],
+                'total_branches' => count($branches),
+                'completed_branches' => [],
+            ],
+            'output' => ['parallel' => $outputs],
+        ];
     }
 
     protected function runWait(array $step): array

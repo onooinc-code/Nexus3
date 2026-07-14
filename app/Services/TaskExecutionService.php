@@ -4,7 +4,12 @@ namespace App\Services;
 
 use App\Jobs\ExecuteAgentTaskJob;
 use App\Models\AgentTask;
+use App\Services\Tasks\TaskApiExecutionService;
+use App\Services\Tasks\TaskCodeExecutionService;
+use App\Services\Tasks\TaskTerminalExecutionService;
+use App\Services\Tasks\TaskToolExecutionService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 
 /**
  * Service for executing tasks asynchronously via queue jobs
@@ -95,6 +100,18 @@ class TaskExecutionService
                     'executed_at' => now()->toDateTimeString(),
                     'message' => 'System pipeline executed successfully',
                 ];
+            } elseif ($task->type === 'code') {
+                $service = app(TaskCodeExecutionService::class);
+                $result = $service->execute($task);
+            } elseif ($task->type === 'api') {
+                $service = app(TaskApiExecutionService::class);
+                $result = $service->execute($task);
+            } elseif ($task->type === 'terminal') {
+                $service = app(TaskTerminalExecutionService::class);
+                $result = $service->execute($task);
+            } elseif ($task->type === 'tool') {
+                $service = app(TaskToolExecutionService::class);
+                $result = $service->execute($task);
             } else {
                 throw new \Exception("Unsupported task type for synchronous execution: {$task->type}");
             }
@@ -137,8 +154,9 @@ class TaskExecutionService
      */
     public function canExecute(AgentTask $task): bool
     {
-        // Only agent and system types can be auto-executed
-        if (! in_array($task->type, ['agent', 'system'], true)) {
+        // Only supported types can be auto-executed
+        $supportedTypes = ['agent', 'system', 'code', 'api', 'terminal', 'tool'];
+        if (! in_array($task->type, $supportedTypes, true)) {
             return false;
         }
 
@@ -151,13 +169,14 @@ class TaskExecutionService
      */
     public function isQueueOverloaded(): bool
     {
-        // Get queue stats - this would typically come from Redis/Horizon
-        // For now, we'll simulate with a simple check
-        // In a real implementation, this would check queue depth, worker count, etc.
+        // Get queue stats from Redis/Queue connection
+        $queueDepth = Queue::size('agent-tasks');
 
-        // Placeholder implementation - always return false for now
-        // In production, this would check actual queue metrics
-        return false;
+        // Define a threshold. If there are more than 100 tasks in the queue, we consider it overloaded.
+        // This could also be fetched from config() or settings.
+        $threshold = 100;
+
+        return $queueDepth >= $threshold;
     }
 
     /**

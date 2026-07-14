@@ -10,6 +10,7 @@ use App\Services\AiModelsHub\UniversalAiGatewayService;
 use App\Services\ContactHubService;
 use App\Services\LogService;
 use App\Services\TaskManagementService;
+use Illuminate\Support\Facades\Http;
 
 class WorkflowTaskDispatcher
 {
@@ -28,6 +29,7 @@ class WorkflowTaskDispatcher
             'log' => $this->logStep($execution, $step, $variables),
             'action' => $this->runActionStep($step, $variables),
             'code' => $this->runCodeStep($step, $variables),
+            'http_request' => $this->runHttpRequestStep($step, $variables),
             default => [
                 'success' => true,
                 'output' => ['message' => "Step {$step['name']} processed.", 'type' => $type],
@@ -249,5 +251,46 @@ class WorkflowTaskDispatcher
             'error' => 'Code step execution requires a dedicated sandbox and is disabled in this runtime.',
             'output' => ['variables_snapshot' => $variables],
         ];
+    }
+
+    protected function runHttpRequestStep(array $step, array $variables): array
+    {
+        $input = $step['input'] ?? [];
+        $url = $input['url'] ?? null;
+        $method = strtoupper($input['method'] ?? 'GET');
+        $headers = $input['headers'] ?? [];
+        $data = $input['data'] ?? [];
+        $timeout = (int) ($input['timeout'] ?? 30);
+
+        if (empty($url)) {
+            return ['success' => false, 'error' => 'HTTP Request Step missing URL.'];
+        }
+
+        try {
+            $request = Http::timeout($timeout)->withHeaders($headers);
+            $response = match ($method) {
+                'GET' => $request->get($url, $data),
+                'POST' => $request->post($url, $data),
+                'PUT' => $request->put($url, $data),
+                'PATCH' => $request->patch($url, $data),
+                'DELETE' => $request->delete($url, $data),
+                default => throw new \Exception("Unsupported HTTP method: {$method}"),
+            };
+
+            return [
+                'success' => $response->successful(),
+                'output' => [
+                    'status' => $response->status(),
+                    'body' => $response->json() ?? $response->body(),
+                    'headers' => $response->headers(),
+                ],
+                'error' => $response->failed() ? "HTTP Request failed with status {$response->status()}" : null,
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'success' => false,
+                'error' => 'HTTP Request Exception: '.$e->getMessage(),
+            ];
+        }
     }
 }

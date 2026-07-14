@@ -21,6 +21,7 @@ class WorkflowValidationService
         'code',
         'compensate',
         'trigger',
+        'http_request',
     ];
 
     public function validateWorkflow(array $workflowData): array
