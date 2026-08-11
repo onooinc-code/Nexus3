@@ -223,7 +223,7 @@ createApp({
             this.agentPrompt = '';
             this.agentThinking = true;
 
-            const doApiKey = "REDACTED_DO_TOKEN";
+            const doApiKey = ""; // Set via environment variable
             const systemPrompt = `You are nexus-manager Agent, the dedicated AI engineer for Nexus Credentials Hub.
 The project is split into modular files: 
 - HTML Shell: /www/wwwroot/Nexus/core/Nexus3/public/nexus-credentials-hub.html
