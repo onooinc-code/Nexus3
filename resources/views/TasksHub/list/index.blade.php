@@ -142,12 +142,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     d.search = $('#filter-search').val(); // Override default search
                 },
                 dataFilter: function(data) {
-                    var json = jQuery.parseJSON(data);
-                    // Map Laravel resource to DataTables expected format
+                    var json = JSON.parse(data);
+                    // Map Laravel LengthAwarePaginator or Resource format to DataTables
+                    let total = json.meta ? json.meta.total : (json.total !== undefined ? json.total : (json.data ? json.data.length : 0));
                     let mapped = {
-                        recordsTotal: json.meta ? json.meta.total : json.data.length,
-                        recordsFiltered: json.meta ? json.meta.total : json.data.length,
-                        data: json.data
+                        recordsTotal: total,
+                        recordsFiltered: total,
+                        data: json.data || []
                     };
                     return JSON.stringify(mapped);
                 }
@@ -224,16 +225,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Initialize Table if active
+    // Initialize Table & handle Tab switching
     if ($('#content-list').hasClass('active')) {
         initDataTable();
-    } else {
-        $('a[data-bs-toggle="tab"], button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
-            if ($(e.target).attr('data-bs-target') === '#content-list' && !dtTable) {
-                initDataTable();
-            }
-        });
     }
+    $('a[data-bs-toggle="tab"], button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+        if ($(e.target).attr('data-bs-target') === '#content-list') {
+            if (!dtTable) {
+                initDataTable();
+            } else {
+                dtTable.columns.adjust().draw(false);
+            }
+        }
+    });
 
     // Open Quick View on Row Click
     $('#tasks-datatable').on('click', 'tbody tr', function(e) {

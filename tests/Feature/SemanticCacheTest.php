@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Services\AiModelsHub\SemanticCache;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class SemanticCacheTest extends TestCase

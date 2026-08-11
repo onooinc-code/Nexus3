@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شهادة مفردات مرتب - موجهة لشركة كونتاكت للتمويل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --brand-dark: #000000;
+            --brand-gray: #4A5568;
+            --brand-light: #F7FAFC;
+            --brand-accent: #2563EB;
+            --border-color: #CBD5E0;
+            --text-dark: #1A202C;
+            --text-muted: #718096;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            background-color: #EDF2F7;
+            color: var(--text-dark);
+            line-height: 1.4;
+            padding: 20px;
+        }
+
+        .no-print {
+            max-width: 850px;
+            margin: 0 auto 15px auto;
+            background: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            background: var(--brand-dark);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .page {
+            max-width: 850px;
+            width: 100%;
+            margin: 0 auto;
+            background: white;
+            padding: 30px 45px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Header */
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid var(--brand-dark);
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+        }
+
+        .logo-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .logo-img {
+            width: 180px;
+            height: auto;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .company-hqs {
+            font-size: 9.5px;
+            color: var(--text-dark);
+            text-align: left;
+            line-height: 1.4;
+            direction: ltr;
+        }
+        
+        .company-hqs .org-title {
+            font-weight: 800;
+            font-size: 10.5px;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        /* Document Meta */
+        .doc-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10.5px;
+            color: var(--brand-dark);
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            direction: ltr;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .doc-meta span {
+            font-weight: 700;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 900;
+            margin-bottom: 12px;
+            color: var(--brand-dark);
+        }
+
+        .greeting {
+            font-size: 14px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: var(--brand-accent);
+        }
+
+        .main-text {
+            font-size: 12.5px;
+            text-align: justify;
+            margin-bottom: 12px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        /* Detailed Grid Layout */
+        .section-title {
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .info-grid {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+            font-size: 12px;
+        }
+        
+        .info-grid td {
+            padding: 3px 0;
+            vertical-align: top;
+        }
+        
+        .info-grid td:first-child {
+            width: 35%;
+            color: var(--brand-gray);
+            font-weight: 700;
+        }
+        
+        .info-grid td:last-child {
+            width: 65%;
+            font-weight: 800;
+            color: var(--brand-dark);
+        }
+
+        /* Salary Table */
+        .salary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            font-size: 11.5px;
+        }
+
+        .salary-table th {
+            color: var(--brand-dark);
+            text-align: right;
+            padding: 4px 0;
+            font-size: 11px;
+            border-bottom: 1px solid var(--brand-dark);
+        }
+
+        .salary-table td {
+            padding: 4px 0;
+            font-weight: 600;
+        }
+
+        .salary-table .amount {
+            text-align: left;
+            font-family: monospace;
+            font-weight: 800;
+            font-size: 12.5px;
+            direction: ltr;
+        }
+
+        .salary-table .gross {
+            font-weight: 800;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .salary-table .deduction { color: #E53E3E; }
+
+        .net-box {
+            text-align: center;
+            margin: 12px 0;
+            padding: 8px;
+            background: #F0FFF4;
+            border: 1px solid #68D391;
+            border-radius: 5px;
+        }
+
+        .net-box h3 { font-size: 14px; margin-bottom: 1px; font-weight: 900; }
+        .net-box .spell { font-size: 11.5px; font-weight: 600; margin-bottom: 2px; }
+        .net-box .total { font-size: 16px; font-weight: 900; font-family: monospace; direction: ltr;}
+
+        .payroll-disclaimer {
+            font-size: 10px;
+            color: var(--brand-dark);
+            margin-bottom: 8px;
+            line-height: 1.4;
+            text-align: justify;
+        }
+        
+        .disclaimer-title {
+            font-weight: 800;
+        }
+
+        /* Executive Signatures & Stamp Block */
+        .executive-signoff {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .sign-col {
+            width: 190px;
+            text-align: right;
+        }
+
+        .sig-space {
+            height: 32px;
+            border-bottom: 1px solid var(--brand-dark);
+            margin-bottom: 4px;
+        }
+
+        .sign-col strong {
+            display: block;
+            font-size: 11px;
+            color: var(--brand-dark);
+            font-weight: 900;
+        }
+
+        .sign-col span {
+            font-size: 9px;
+            color: var(--brand-gray);
+            font-weight: 700;
+            display: block;
+            margin-top: 1px;
+        }
+
+        .stamp-box {
+            width: 140px;
+            height: 52px;
+            border: 2px dashed #A0AEC0;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--brand-dark);
+            text-align: center;
+            direction: ltr;
+            background: #F7FAFC;
+        }
+
+        .stamp-box span:first-child {
+            font-size: 10.5px;
+            font-weight: 900;
+            letter-spacing: 0.8px;
+        }
+
+        .stamp-box span:nth-child(2) {
+            font-size: 8.5px;
+            font-weight: 800;
+        }
+
+        .stamp-box span:last-child {
+            font-size: 7.5px;
+            font-weight: 700;
+            color: var(--brand-gray);
+        }
+
+        /* Separate Footer Section with QR Codes */
+        .footer-section {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1.5px solid var(--brand-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 8.5px;
+            color: var(--text-dark);
+        }
+
+        .footer-left {
+            line-height: 1.4;
+            max-width: 65%;
+        }
+
+        .footer-left strong {
+            color: var(--brand-dark);
+            font-weight: 800;
+        }
+
+        .footer-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px 8px;
+            margin-top: 3px;
+            font-family: monospace;
+            font-size: 8px;
+            color: var(--brand-gray);
+            direction: ltr;
+        }
+
+        .qr-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .qr-item {
+            text-align: center;
+        }
+
+        .qr-item .qr-bg {
+            background: white;
+            padding: 2px;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        .qr-item label {
+            display: block;
+            font-size: 7.5px;
+            font-weight: 800;
+            color: var(--brand-dark);
+            margin-top: 1px;
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .no-print { display: none !important; }
+            .page {
+                padding: 20px 35px !important;
+                box-shadow: none !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                height: 297mm !important;
+                max-height: 297mm !important;
+                overflow: hidden !important;
+                border: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print">
+        <div><strong>شركة إنتجرانت - خطاب مفردات مرتب (موجه لـ شركة كونتاكت للتمويل)</strong></div>
+        <button class="btn" onclick="window.print()">طباعة المستند</button>
+    </div>
+
+    <div class="page">
+        <div>
+            <div class="header-top">
+                <div class="logo-section">
+                    <img src="/integrant-logo.svg" class="logo-img" alt="Integrant Official Logo">
+                </div>
+                <div class="company-hqs">
+                    <span class="org-title">Integrant Inc. (Egypt ODC)</span>
+                    Building 250, Sector 2, Maadi Technology Park, Cairo<br>
+                    USA HQ: 16870 W Bernardo Dr, Suite 250, San Diego, CA<br>
+                    Web: www.integrant.com | HR: +20 2 2517 8890<br>
+                    C.R: 108922 | TIN: 482-910-331 | Social Ins: 44109923
+                </div>
+            </div>
+
+            <div class="doc-meta">
+                <span>REF: INT-HR-2026-0801-CONTACT</span>
+                <span>ISSUE DATE: August 01, 2026</span>
+                <span>VALIDITY: 30 Days</span>
+            </div>
+
+            <div class="title">شهادة مفردات مرتب وإثبات عمل رسمية</div>
+
+            <div class="greeting">السادة / شركة كونتاكت للتمويل (Contact Financial Holding) - قطاع الائتمان والتمويل،،،</div>
+
+            <div class="main-text">
+                تحية طيبة وبعد،، بناءً على طلب الموظف المذكور أدناه لتقديمه لشركتكم الموقرة لغرض دراسة الملف الائتماني والتقسيط، تُقر إدارة الموارد البشرية بشركة <strong>إنتجرانت (Integrant Inc.)</strong>، بأن السيد/ <strong>هدرا عادل شفيق سكلا</strong> (رقم قومي: <strong>29110012705831</strong>)، والمقيم في: 150 شارع الملتقى العربي - شيراتون، القاهرة، هو أحد العاملين الدائمين بالشركة. بناءً على منظومة العمل (Agentic SDLC) وهيكلة فرق النخبة (The Pod Model)، فقد اجتاز فترة الاختبار بنجاح ويشغل حالياً منصباً هندسياً حرجاً في قطاع البنية التحتية للذكاء الاصطناعي.
+            </div>
+
+            <div class="section-title">1. البيانات الأساسية للموظف</div>
+            
+            <table class="info-grid">
+                <tbody>
+                    <tr>
+                        <td>الاسم بالكامل</td>
+                        <td>هدرا عادل شفيق سكلا</td>
+                    </tr>
+                    <tr>
+                        <td>الكود الوظيفي (ID)</td>
+                        <td>INT-EG-1904</td>
+                    </tr>
+                    <tr>
+                        <td>المسمى الوظيفي</td>
+                        <td>Lead AI Platform Engineer</td>
+                    </tr>
+                    <tr>
+                        <td>القسم والتخصص</td>
+                        <td>Hybrid Software Development (NVIDIA AI Stack, Triton/TensorRT)</td>
+                    </tr>
+                    <tr>
+                        <td>تاريخ التعيين</td>
+                        <td>01 مايو 2026 (حالة نشطة)</td>
+                    </tr>
+                    <tr>
+                        <td>نظام ونوع العقد</td>
+                        <td>دوام كامل - دائم (Hybrid)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="section-title">2. تفنيد عناصر الراتب والإستحقاقات الشهرية (جنيه مصري)</div>
+
+            <table class="salary-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50%;">البيان / نوع البدل الشهري</th>
+                        <th style="width: 30%;">التصنيف المالي</th>
+                        <th style="text-align: left; width: 20%;">القيمة (EGP)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>الراتب الأساسي (مربوط بقيمة الدولار الأمريكي)</td>
+                        <td>أجر ثابت</td>
+                        <td class="amount">40,000.00</td>
+                    </tr>
+                    <tr>
+                        <td>بدل سكن ومعيشة</td>
+                        <td>بدل ثابت</td>
+                        <td class="amount">8,000.00</td>
+                    </tr>
+                    <tr>
+                        <td>بدل البنية التحتية والذكاء الاصطناعي</td>
+                        <td>بدل فني وتقني</td>
+                        <td class="amount">10,000.00</td>
+                    </tr>
+                    <tr>
+                        <td>برنامج العمل الإضافي المخطط (POP)</td>
+                        <td>استحقاق متغير</td>
+                        <td class="amount">8,000.00</td>
+                    </tr>
+                    <tr>
+                        <td>بدل انتقال وصيانة سيارة</td>
+                        <td>بدل شهري</td>
+                        <td class="amount">4,000.00</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--brand-dark);">
+                        <td>بدل اتصالات ودعم العمل المرن من المنزل</td>
+                        <td>بدل تشغيلي</td>
+                        <td class="amount">0.00</td>
+                    </tr>
+                    <tr class="gross">
+                        <td></td>
+                        <td style="text-align: left;">إجمالي الراتب الشامل (TOTAL GROSS)</td>
+                        <td class="amount">70,000.00</td>
+                    </tr>
+                    <tr><td colspan="3" style="height: 4px; border: none;"></td></tr>
+                    <tr>
+                        <td>استقطاعات ضريبية وتأمينات اجتماعية وطبية شاملة</td>
+                        <td>خصومات قانونية</td>
+                        <td class="amount deduction">(10,000.00)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="net-box">
+                <h3>صافي الراتب المستلم شهرياً</h3>
+                <div class="spell">(فقط ستون ألف جنيه مصري لا غير)</div>
+                <div class="total">EGP 60,000.00</div>
+            </div>
+
+            <div class="payroll-disclaimer">
+                <span class="disclaimer-title">تأكيد آلية التحويل البنكي:</span> تُقر شركة إنتجرانت بأن صافي الراتب الشهري (60,000 ج.م) يتم تحويله بشكل منتظم لحساب الموظف البنكي عبر نظام التحويلات البنكية المباشرة الخاص بالشركة في اليوم الأول من كل شهر. وتتطابق هذه الشهادة تماماً مع الإيداعات البنكية المذكورة في كشف حساب الموظف.
+            </div>
+            
+            <div class="payroll-disclaimer">
+                <span class="disclaimer-title">إقرار ومسؤولية:</span> صدرت هذه الشهادة بناءً على طلب الموظف لتقديمها لشركة كونتاكت للتمويل دون أدنى مسؤولية مالية أو التزام قانوني على شركة إنتجرانت تجاه حقوق أو التزامات الموظف المالية.
+            </div>
+        </div>
+
+        <div>
+            <div class="executive-signoff">
+                <div class="sign-col">
+                    <div class="sig-space"></div>
+                    <strong>يوسف عوض (Yousef Awad)</strong>
+                    <span>المؤسس والرئيس التنفيذي (CEO)</span>
+                    <span>شركة إنتجرانت (Integrant, Inc.)</span>
+                </div>
+
+                <div class="stamp-box">
+                    <span>INTEGRANT INC.</span>
+                    <span>HR DEPARTMENT</span>
+                    <span>EGYPT OPERATIONS</span>
+                </div>
+
+                <div class="sign-col">
+                    <div class="sig-space"></div>
+                    <strong>جولي باتشيكو (Julie Pacheco)</strong>
+                    <span>نائب رئيس قطاع الموارد البشرية والعمليات</span>
+                    <span>شركة إنتجرانت (Integrant, Inc.)</span>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <div class="footer-left">
+                    <strong>شركة إنتجرانت المحدودة (تأسست 1992 في سان دييغو | فرع القاهرة منذ 2008)</strong><br>
+                    <span>وثيقة رسمية وسرية • موجهة حصرياً لشركة كونتاكت للتمويل • صالحة لمدة 30 يوماً</span>
+                    <div class="footer-meta-grid">
+                        <span>C.R: 108922</span>
+                        <span>TIN: 482-910-331</span>
+                        <span>Social Ins: 44109923</span>
+                        <span>System Hash: 8f9a2b4c1d</span>
+                        <span>Verify: hr-verify@integrant.com</span>
+                        <span>Web: www.integrant.com</span>
+                    </div>
+                </div>
+
+                <div class="qr-wrapper">
+                    <div class="qr-item">
+                        <div id="qr-digital" class="qr-bg"></div>
+                        <label>البوابة الرقمية</label>
+                    </div>
+                    <div class="qr-item">
+                        <div id="qr-mailto" class="qr-bg"></div>
+                        <label>التحقق البريدي</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            new QRCode(document.getElementById("qr-digital"), {
+                text: "https://verify.integrant.com/check?id=INT-HR-2026-0801-CONTACT",
+                width: 38, height: 38, colorDark: "#000"
+            });
+
+            const mailtoUri = "mailto:hr-verify@integrant.com?subject=Contact%20Finance%20Verification:%20Hedra%20Sokla%20(ID:%2029110012705831)&body=Please%20verify%20the%20employment%20status%20of%20Mr.%20Hedra%20Sokla%20for%20Contact%20Financial%20Holding.";
+            new QRCode(document.getElementById("qr-mailto"), {
+                text: mailtoUri,
+                width: 38, height: 38, colorDark: "#000"
+            });
+        };
+    </script>
+</body>
+</html>

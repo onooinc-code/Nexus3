@@ -14,6 +14,8 @@ class DynamicRestProvider implements AiProviderInterface
 
     protected ?object $providerRecord = null;
 
+    protected ?string $currentKeyId = null;
+
     public function __construct(string $providerId, EncryptedApiKeyStorage $keyStorage)
     {
         $this->providerId = $providerId;
@@ -28,7 +30,7 @@ class DynamicRestProvider implements AiProviderInterface
 
     protected function getApiKey(): ?string
     {
-        return $this->keyStorage->getDecryptedKey($this->providerId);
+        return $this->keyStorage->getDecryptedKey($this->providerId, $this->currentKeyId);
     }
 
     protected function buildHeaders(): array
@@ -92,6 +94,7 @@ class DynamicRestProvider implements AiProviderInterface
 
             if ($response->successful()) {
                 $data = $response->json();
+
                 return $this->normalizeModelsResponse($data);
             }
 
@@ -136,8 +139,8 @@ class DynamicRestProvider implements AiProviderInterface
             }
 
             return [
-                'id'          => $id ?? $name,
-                'name'        => $name ?? $id,
+                'id' => $id ?? $name,
+                'name' => $name ?? $id,
                 'description' => $model['description'] ?? null,
             ];
         }, $rawList)));
@@ -160,8 +163,8 @@ class DynamicRestProvider implements AiProviderInterface
         $url = rtrim($record->base_url, '/').'/'.ltrim($record->generate_endpoint, '/');
 
         $payload = [
-            'model'       => $options['model'] ?? $this->getDefaultModel(),
-            'messages'    => [
+            'model' => $options['model'] ?? $this->getDefaultModel(),
+            'messages' => [
                 ['role' => 'user', 'content' => $prompt],
             ],
             'temperature' => $options['temperature'] ?? 0.7,
@@ -171,34 +174,56 @@ class DynamicRestProvider implements AiProviderInterface
             $payload['max_tokens'] = $options['max_tokens'];
         }
 
-        try {
-            $response = Http::withHeaders($this->buildHeaders())
-                ->withOptions(['verify' => config('services.ai.verify_ssl', true)])
-                ->post($url, $payload);
+        $maxRetries = 3;
 
-            if ($response->successful()) {
-                $data    = $response->json();
-                $content = $data['choices'][0]['message']['content'] ?? '';
-                $usage   = $data['usage'] ?? ['input_tokens' => 0, 'output_tokens' => 0];
+        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+            try {
+                $response = Http::withHeaders($this->buildHeaders())
+                    ->withOptions(['verify' => config('services.ai.verify_ssl', true)])
+                    ->post($url, $payload);
 
-                return [
-                    'success'  => true,
-                    'provider' => $this->getProviderName(),
-                    'model'    => $payload['model'],
-                    'content'  => $content,
-                    'usage'    => [
-                        'input_tokens'  => $usage['prompt_tokens'] ?? 0,
-                        'output_tokens' => $usage['completion_tokens'] ?? 0,
-                    ],
-                ];
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $content = $data['choices'][0]['message']['content'] ?? '';
+                    $usage = $data['usage'] ?? ['input_tokens' => 0, 'output_tokens' => 0];
+
+                    return [
+                        'success' => true,
+                        'provider' => $this->getProviderName(),
+                        'model' => $payload['model'],
+                        'content' => $content,
+                        'used_key_id' => $this->currentKeyId,
+                        'usage' => [
+                            'input_tokens' => $usage['prompt_tokens'] ?? 0,
+                            'output_tokens' => $usage['completion_tokens'] ?? 0,
+                        ],
+                    ];
+                }
+
+                $status = $response->status();
+                $body = $response->body();
+
+                if (in_array($status, [402, 403, 429]) || str_contains(strtolower($body), 'quota') || str_contains(strtolower($body), 'rate limit')) {
+                    if ($this->currentKeyId) {
+                        $this->keyStorage->flagKeyExhausted($this->currentKeyId, 60, "HTTP {$status}: ".substr($body, 0, 150));
+                        if ($attempt < $maxRetries) {
+                            Log::info("Rotating API key for provider [{$this->providerId}] after attempt {$attempt} rate/quota limit.");
+
+                            continue;
+                        }
+                    }
+                }
+
+                return ['success' => false, 'error' => "HTTP {$status}: ".$body, 'status' => $status];
+            } catch (\Exception $e) {
+                Log::error('Dynamic generation attempt '.$attempt.' failed: '.$e->getMessage());
+                if ($attempt === $maxRetries) {
+                    return ['success' => false, 'error' => $e->getMessage()];
+                }
             }
-
-            return ['success' => false, 'error' => $response->body()];
-        } catch (\Exception $e) {
-            Log::error('Dynamic generation failed: '.$e->getMessage());
-
-            return ['success' => false, 'error' => $e->getMessage()];
         }
+
+        return ['success' => false, 'error' => 'All key attempts failed'];
     }
 
     public function generateEmbeddings(string $text, array $options = []): array
@@ -216,36 +241,55 @@ class DynamicRestProvider implements AiProviderInterface
             'input' => $text,
         ];
 
-        try {
-            $response = Http::withHeaders($this->buildHeaders())
-                ->withOptions(['verify' => config('services.ai.verify_ssl', true)])
-                ->post($url, $payload);
+        $maxRetries = 3;
+        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+            try {
+                $response = Http::withHeaders($this->buildHeaders())
+                    ->withOptions(['verify' => config('services.ai.verify_ssl', true)])
+                    ->post($url, $payload);
 
-            if ($response->successful()) {
-                $data      = $response->json();
-                $embedding = $data['data'][0]['embedding'] ?? null;
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $embedding = $data['data'][0]['embedding'] ?? null;
 
-                if ($embedding) {
-                    return [
-                        'success'  => true,
-                        'provider' => $this->getProviderName(),
-                        'model'    => $payload['model'],
-                        'vector'   => $embedding,
-                        'usage'    => [
-                            'input_tokens' => $data['usage']['prompt_tokens'] ?? 0,
-                        ],
-                    ];
+                    if ($embedding) {
+                        return [
+                            'success' => true,
+                            'provider' => $this->getProviderName(),
+                            'model' => $payload['model'],
+                            'used_key_id' => $this->currentKeyId,
+                            'vector' => $embedding,
+                            'usage' => [
+                                'input_tokens' => $data['usage']['prompt_tokens'] ?? 0,
+                            ],
+                        ];
+                    }
+
+                    return ['success' => false, 'error' => 'Malformed response from provider'];
                 }
 
-                return ['success' => false, 'error' => 'Malformed response from provider'];
+                $status = $response->status();
+                $body = $response->body();
+
+                if (in_array($status, [402, 403, 429]) || str_contains(strtolower($body), 'quota') || str_contains(strtolower($body), 'rate limit')) {
+                    if ($this->currentKeyId) {
+                        $this->keyStorage->flagKeyExhausted($this->currentKeyId, 60, "HTTP {$status}: ".substr($body, 0, 150));
+                        if ($attempt < $maxRetries) {
+                            continue;
+                        }
+                    }
+                }
+
+                return ['success' => false, 'error' => "HTTP {$status}: ".$body];
+            } catch (\Exception $e) {
+                Log::error('Dynamic embeddings attempt '.$attempt.' failed: '.$e->getMessage());
+                if ($attempt === $maxRetries) {
+                    return ['success' => false, 'error' => $e->getMessage()];
+                }
             }
-
-            return ['success' => false, 'error' => $response->body()];
-        } catch (\Exception $e) {
-            Log::error('Dynamic embeddings failed: '.$e->getMessage());
-
-            return ['success' => false, 'error' => $e->getMessage()];
         }
+
+        return ['success' => false, 'error' => 'All embedding attempts failed'];
     }
 
     public function validateRequest(array $request): array
@@ -267,37 +311,49 @@ class DynamicRestProvider implements AiProviderInterface
 
         $endpoint = $record->test_endpoint ?: $record->models_fetch_endpoint;
         if (! $endpoint) {
-            return ['status' => 'unknown', 'error' => 'No test or models endpoint configured'];
+            $endpoint = match (strtolower($record->schema ?? 'openai')) {
+                'gemini' => '/models',
+                'anthropic' => '/v1/models',
+                default => '/models',
+            };
         }
 
-        // If no API key is stored, skip the live request — it will always 401
+        $baseUrl = rtrim($record->base_url, '/');
+        $endpointPath = '/'.ltrim($endpoint, '/');
+
+        // Prevent duplicate /v1/v1 in URL
+        if (str_ends_with(strtolower($baseUrl), '/v1') && str_starts_with(strtolower($endpointPath), '/v1/')) {
+            $endpointPath = substr($endpointPath, 3);
+        }
+
+        $url = $baseUrl.$endpointPath;
         $apiKey = $this->getApiKey();
-        if (! $apiKey) {
-            return ['status' => 'no_key', 'error' => 'No API key configured for this provider'];
-        }
-
-        $url = rtrim($record->base_url, '/').'/'.ltrim($endpoint, '/');
 
         try {
-            $start    = microtime(true);
+            $start = microtime(true);
             $response = Http::withHeaders($this->buildHeaders())
                 ->withOptions(['verify' => config('services.ai.verify_ssl', true)])
                 ->timeout(10)
                 ->get($url);
             $latencyMs = (int) round((microtime(true) - $start) * 1000);
 
+            $status = $response->status();
+            $isHealthy = $response->successful() || (in_array($status, [401, 403]) && ! $apiKey);
+
             $result = [
-                'status'      => $response->successful() ? 'healthy' : 'unhealthy',
-                'latency'     => $latencyMs,
-                'http_status' => $response->status(),
-                'url'         => $url,
+                'status' => $isHealthy ? 'healthy' : 'unhealthy',
+                'latency' => $latencyMs,
+                'http_status' => $status,
+                'url' => $url,
             ];
 
-            // Include the provider's error body so frontend can surface it
             if (! $response->successful()) {
                 $data = $response->json();
                 $body = $response->body();
-                $result['provider_error'] = $data['error']['message'] ?? $data['message'] ?? substr($body, 0, 300);
+                $result['provider_error'] = $data['error']['message'] ?? $data['message'] ?? (substr($body, 0, 300) ?: "HTTP Error {$status}");
+                if (in_array($status, [401, 403]) && ! $apiKey) {
+                    $result['provider_error'] = 'Endpoint is online & reachable (Authentication key required for full request).';
+                }
             }
 
             return $result;

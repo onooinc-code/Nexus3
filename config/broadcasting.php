@@ -11,12 +11,12 @@ return [
     | any of the connections defined in the "connections" array below.
     |
     */
-    'default' => env('BROADCAST_DRIVER', 'null'),
+    'default' => env('BROADCAST_DRIVER', 'reverb'),
 
     /*
     |--------------------------------------------------------------------------
     | Broadcast Connections
-    |--------------------------------------------------------------------------
+    |-----------------------------------------q---------------------------------
     |
     | Here you may define all of the broadcast connections that will be used
     | to broadcast events to other systems or over WebSocket connections.

@@ -271,36 +271,6 @@ class OpenAIProvider implements AiProviderInterface
         ]);
     }
 
-    public function getRateLimitStatus(): array
-    {
-        return [
-            'provider' => $this->getProviderName(),
-            'limit' => 60,
-            'remaining' => 60,
-            'reset_at' => now()->addMinute()->toISOString(),
-        ];
-    }
-
-    public function getHealthStatus(): array
-    {
-        try {
-            $response = $this->callOpenAI($this->getDefaultModel(), [['role' => 'user', 'content' => 'hi']], ['max_tokens' => 5]);
-
-            return [
-                'provider' => $this->getProviderName(),
-                'status' => 'healthy',
-                'latency_ms' => 0,
-                'model' => $this->getDefaultModel(),
-            ];
-        } catch (\Throwable $e) {
-            return [
-                'provider' => $this->getProviderName(),
-                'status' => 'unhealthy',
-                'error' => $e->getMessage(),
-            ];
-        }
-    }
-
     public function formatRequest(array $prompt, array $options = []): array
     {
         $model = $options['model'] ?? $this->getDefaultModel();

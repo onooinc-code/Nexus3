@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hermes Agent API Documentation</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+    .card { background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; }
+    .badge-method { font-size: 0.9rem; padding: 6px 12px; border-radius: 6px; }
+    .bg-get { background-color: #0284c7; }
+    .bg-post { background-color: #16a34a; }
+    pre { background-color: #090d16; color: #38bdf8; padding: 14px; border-radius: 8px; border: 1px solid #1e293b; direction: ltr; text-align: left; }
+    .token-box { background-color: #334155; color: #facc15; font-family: monospace; padding: 8px 12px; border-radius: 6px; word-break: break-all; direction: ltr; display: inline-block; }
+  </style>
+</head>
+<body class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1 class="fw-bold text-white">🚀 Hermes Agent API Documentation</h1>
+        <p class="text-secondary mb-0">الوثيقة الرسمية لربط واستهلاك Hermes Agent كـ OpenAI-Compatible API</p>
+      </div>
+      <span class="badge bg-success px-3 py-2 fs-6">🟢 LIVE & RUNNING</span>
+    </div>
+
+    <!-- Main Config -->
+    <div class="card p-4 mb-4">
+      <h4 class="text-warning fw-bold mb-3">🔑 بيانات الاتصال والتوثيق (Credentials)</h4>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="text-secondary small">Base URL الخارجي:</label>
+          <div class="fw-bold text-info">http://162.243.58.33:8642/v1</div>
+        </div>
+        <div class="col-md-6">
+          <label class="text-secondary small">Model ID:</label>
+          <div class="fw-bold text-info">hermes-souly</div>
+        </div>
+        <div class="col-12">
+          <label class="text-secondary small d-block mb-1">Bearer Token (API Key):</label>
+          <div class="token-box">a84cb5ec9ab34280d3d842ff3db11243be8214d04bd37f9cb3720b6f3e655d27</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Endpoints -->
+    <h3 class="fw-bold mb-3 text-white">📌 قائمة الـ Endpoints</h3>
+
+    <!-- Endpoint 1 -->
+    <div class="card p-4 mb-3">
+      <div class="d-flex align-items-center mb-2">
+        <span class="badge badge-method bg-get me-2">GET</span>
+        <h5 class="mb-0 text-white font-monospace">/v1/models</h5>
+      </div>
+      <p class="text-secondary">استرجاع قائمة الموديلات المتاحة للاستعلام عبر الـ Agent.</p>
+      <div class="mb-2"><strong class="text-light">Headers:</strong> <code>Authorization: Bearer &lt;API_KEY&gt;</code></div>
+      <pre>curl -X GET http://162.243.58.33:8642/v1/models \
+  -H "Authorization: Bearer a84cb5ec9ab34280d3d842ff3db11243be8214d04bd37f9cb3720b6f3e655d27"</pre>
+    </div>
+
+    <!-- Endpoint 2 -->
+    <div class="card p-4 mb-3">
+      <div class="d-flex align-items-center mb-2">
+        <span class="badge badge-method bg-post me-2">POST</span>
+        <h5 class="mb-0 text-white font-monospace">/v1/chat/completions</h5>
+      </div>
+      <p class="text-secondary">المحرك الرئيسي للتفاعل مع Hermes Agent (محادثة، أدوات، مهارات، وذاكرة).</p>
+      <div class="mb-2"><strong class="text-light">Headers:</strong> <code>Authorization: Bearer &lt;API_KEY&gt;</code> | <code>Content-Type: application/json</code></div>
+      <pre>curl -X POST http://162.243.58.33:8642/v1/chat/completions \
+  -H "Authorization: Bearer a84cb5ec9ab34280d3d842ff3db11243be8214d04bd37f9cb3720b6f3e655d27" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "hermes-souly",
+    "messages": [{"role": "user", "content": "مرحبا سولي"}],
+    "stream": false
+  }'</pre>
+    </div>
+  </div>
+</body>
+</html>

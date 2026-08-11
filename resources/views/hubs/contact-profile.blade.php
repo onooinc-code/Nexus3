@@ -80,8 +80,36 @@
                 </span>
             </div>
         </div>
-        <div class="ms-auto text-end">
-            <button class="btn btn-outline-primary me-2"><i class="fa-solid fa-pen me-1"></i> Edit</button>
+        <div class="ms-auto text-end d-flex flex-wrap gap-2 justify-content-end">
+            <a href="{{ route('hub.contacts.archives', $contact->id) }}"
+               class="btn btn-sm"
+               style="background: rgba(100,116,139,0.12); border: 1px solid rgba(100,116,139,0.35); color: #cbd5e1; border-radius: 8px;"
+               title="Open The Grand Archives (Ledgers)">
+                <i class="fa-solid fa-folder-open me-1" style="font-size: 0.8rem;"></i> The Grand Archives
+            </a>
+            
+            <a href="{{ route('hub.contacts.war-room', $contact->id) }}"
+               class="btn btn-sm"
+               style="background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.35); color: #fca5a5; border-radius: 8px; font-weight: bold;"
+               title="Open The War Room (God Mode)">
+                <i class="fa-solid fa-radiation me-1" style="font-size: 0.8rem;"></i> War Room ☢️
+            </a>
+
+            <a href="{{ route('hub.contacts.studio.eg', $contact->id) }}"
+               class="btn btn-sm"
+               style="background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.35); color: #6ee7b7; border-radius: 8px;"
+               title="Open Psycho Studio (AR)">
+                <i class="fa-solid fa-eye me-1" style="font-size: 0.8rem;"></i> Psycho Studio 🇪🇬
+            </a>
+
+            <a href="{{ route('hub.contacts.studio', $contact->id) }}"
+               class="btn btn-sm"
+               style="background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.35); color: #a5b4fc; border-radius: 8px;"
+               title="Open Nexus Profile (EN)">
+                <i class="fa-solid fa-brain me-1" style="font-size: 0.8rem;"></i> Nexus Profile 🇬🇧
+            </a>
+            
+            <button class="btn btn-outline-primary ms-2"><i class="fa-solid fa-pen me-1"></i> Edit</button>
             <div class="dropdown d-inline-block">
                 <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                     <i class="fa-solid fa-bolt me-1"></i> Actions
@@ -94,6 +122,7 @@
         </div>
     </div>
 </div>
+
 
 <!-- Tabs Navigation -->
 <div class="card hover-3d border-0 animate-fade-in stagger-3">
@@ -122,6 +151,11 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="rules-tab" data-bs-toggle="tab" data-bs-target="#rules" type="button" role="tab">
                     <i class="fa-solid fa-list-check me-2"></i> Rules & Preferences
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="devices-tab" data-bs-toggle="tab" data-bs-target="#devices" type="button" role="tab">
+                    <i class="fa-solid fa-mobile-screen me-2"></i> Devices
                 </button>
             </li>
         </ul>
@@ -278,6 +312,11 @@
                     <textarea class="form-control" rows="3">When replying to this contact, always maintain a highly professional and technical tone. Reference previous AI topics if applicable.</textarea>
                     <button class="btn btn-sm btn-primary mt-3">Save Rule</button>
                 </div>
+            </div>
+
+            <!-- Devices Tab -->
+            <div class="tab-pane fade" id="devices" role="tabpanel">
+                @include('contacts.components.devices')
             </div>
         </div>
     </div>

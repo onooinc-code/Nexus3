@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>Nexus Ertugrul — لوحة التحكم</title>
+  <style>
+    :root {
+      --bg: #0a0f1e;
+      --panel: #111827;
+      --panel2: #1a2338;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --accent: #3b82f6;
+      --accent2: #6366f1;
+      --success: #10b981;
+      --error: #ef4444;
+      --warn: #f59e0b;
+      --border: #1e293b;
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    /* ── Toast Notifications ── */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .toast {
+      background: var(--panel);
+      color: var(--text);
+      padding: 16px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      border-right: 4px solid var(--accent); /* RTL: Accent on right */
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 300px;
+      max-width: 400px;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .toast.success { border-right-color: var(--success); }
+    .toast.error { border-right-color: var(--error); }
+    .toast.info { border-right-color: var(--accent); }
+
+    .toast-icon {
+      font-size: 1.2rem;
+    }
+    
+    .toast-content {
+      flex: 1;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+    
+    .toast-close {
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 1.2rem;
+      border: none;
+      background: transparent;
+      padding: 0;
+    }
+    .toast-close:hover { color: var(--text); }
+
+    /* ── General Styles ── */
+    p { margin: 0; }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-title h1 {
+      margin: 0;
+      font-size: 1.2rem;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    #wsStatus {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: var(--panel2);
+      border: 1px solid var(--border);
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .dot.green { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .dot.red   { background: var(--error);   box-shadow: 0 0 6px var(--error); }
+
+    /* ── Controls Bar ── */
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      background: var(--panel2);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .filter-group input,
+    .filter-group select {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .filter-group input { flex: 1; }
+
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .btn {
+      padding: 7px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.8rem;
+      transition: opacity 0.15s;
+    }
+
+    .btn:hover { opacity: 0.85; }
+    .btn-primary  { background: var(--accent); color: #fff; }
+    .btn-success  { background: var(--success); color: #fff; }
+    .btn-danger   { background: var(--error); color: #fff; }
+    .btn-warn     { background: var(--warn); color: #fff; }
+    .btn-ghost    { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+
+    #pauseBtn.paused { background: var(--warn); color: #fff; }
+
+    /* ── Stats Bar ── */
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      padding: 10px 24px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+
+    .stat-item { display: flex; align-items: center; gap: 5px; }
+    .stat-count { font-weight: 700; color: var(--text); }
+
+    /* ── Task List ── */
+    #taskList {
+      padding: 16px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      padding: 60px 20px;
+      font-size: 1rem;
+    }
+
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+
+    .task-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .task-card:hover { border-color: var(--accent2); }
+
+    .task-card.status-SUCCESS  { border-right: 3px solid var(--success); }
+    .task-card.status-ERROR    { border-right: 3px solid var(--error); }
+    .task-card.status-IN_PROGRESS { border-right: 3px solid var(--accent); animation: pulse 2s infinite; }
+
+    @keyframes pulse {
+      0%, 100% { border-right-color: var(--accent); }
+      50%       { border-right-color: var(--accent2); }
+    }
+
+    .task-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .task-header:hover { background: rgba(255,255,255,0.03); }
+
+    .task-title-text {
+      flex: 1;
+      font-weight: 600;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .task-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .badge {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-SUCCESS     { background: rgba(16,185,129,0.15); color: var(--success); border: 1px solid var(--success); }
+    .badge-ERROR       { background: rgba(239,68,68,0.15);  color: var(--error);   border: 1px solid var(--error); }
+    .badge-IN_PROGRESS { background: rgba(59,130,246,0.15); color: var(--accent);  border: 1px solid var(--accent); }
+    .badge-TASK        { background: rgba(99,102,241,0.15); color: var(--accent2); border: 1px solid var(--accent2); }
+
+    .chevron { color: var(--muted); transition: transform 0.2s; font-size: 0.85rem; }
+    .task-card.expanded .chevron { transform: rotate(180deg); }
+
+    /* ── Logs Panel ── */
+    .task-logs {
+      display: none;
+      padding: 14px 16px;
+      background: #060b18;
+      border-top: 1px solid var(--border);
+      font-family: 'Consolas', 'Fira Code', monospace;
+      font-size: 0.82rem;
+      max-height: 360px;
+      overflow-y: auto;
+    }
+
+    .task-card.expanded .task-logs { display: block; }
+
+    .log-entry {
+      display: flex;
+      gap: 10px;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      align-items: flex-start;
+      line-height: 1.4;
+    }
+
+    .log-time  { color: var(--muted); white-space: nowrap; flex-shrink: 0; font-size: 0.75rem; }
+    .log-level { font-weight: 700; flex-shrink: 0; width: 60px; text-align: center; }
+    .log-msg   { flex: 1; word-break: break-word; }
+
+    .level-SUCCESS  { color: var(--success); }
+    .level-ERROR    { color: var(--error); }
+    .level-INFO     { color: #38bdf8; }
+    .level-TASK     { color: var(--accent2); }
+    .level-WARN     { color: var(--warn); }
+
+    .log-data pre {
+      margin: 4px 0 0 0;
+      color: var(--muted);
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-size: 0.78rem;
+      background: rgba(255,255,255,0.03);
+      padding: 6px 8px;
+      border-radius: 4px;
+    }
+
+    /* ── Task Actions ── */
+    .task-actions {
+      display: flex;
+      gap: 8px;
+      padding: 10px 16px;
+      background: rgba(0,0,0,0.15);
+      border-top: 1px solid var(--border);
+      display: none;
+    }
+
+    .task-card.expanded .task-actions { display: flex; }
+
+    /* ── Posts Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      width: 90%;
+      max-width: 700px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h2 { margin: 0; font-size: 1rem; }
+    .modal-close { background: none; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; padding: 0 4px; }
+    .modal-close:hover { color: var(--text); }
+
+    .modal-body {
+      overflow-y: auto;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .post-item {
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .post-url { font-size: 0.75rem; color: var(--muted); margin-top: 6px; }
+
+    /* ── Pagination ── */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 16px;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .pagination button {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .pagination button:not(:disabled):hover { border-color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="header-title">
+    <span style="font-size:1.5rem">🤖</span>
+    <h1>Nexus Ertugrul — لوحة التحكم</h1>
+  </div>
+  <div id="wsStatus">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">جاري الاتصال...</span>
+  </div>
+</header>
+
+<!-- ── Controls Bar ── -->
+<div class="controls-bar">
+  <div class="filter-group">
+    <input type="text" id="searchInput" placeholder="🔍 بحث في المهام..." />
+    <select id="statusFilter">
+      <option value="ALL">كل الحالات</option>
+      <option value="IN_PROGRESS">قيد التنفيذ</option>
+      <option value="SUCCESS">مكتملة</option>
+      <option value="ERROR">فاشلة</option>
+      <option value="TASK">جديدة</option>
+    </select>
+  </div>
+  <div class="btn-group">
+    <button class="btn btn-primary" id="createTaskBtn">✨ مهمة جديدة</button>
+    <button class="btn btn-success" id="forcePolBtn">⚡ Poll الآن</button>
+    <button class="btn btn-ghost"   id="pauseBtn">⏸ إيقاف مؤقت</button>
+    <button class="btn btn-danger"  id="clearBtn">🗑 مسح الكل</button>
+  </div>
+</div>
+
+<!-- ── Stats Bar ── -->
+<div class="stats-bar">
+  <div class="stat-item">إجمالي: <span class="stat-count" id="statTotal">0</span></div>
+  <div class="stat-item">✅ ناجحة: <span class="stat-count" id="statSuccess">0</span></div>
+  <div class="stat-item">❌ فاشلة: <span class="stat-count" id="statError">0</span></div>
+  <div class="stat-item">⏳ جارية: <span class="stat-count" id="statRunning">0</span></div>
+  <div class="stat-item" style="margin-right: auto;">
+    الصفحة: <span class="stat-count" id="statPage">1</span>
+  </div>
+</div>
+
+<!-- ── Task List ── -->
+<div id="taskList"></div>
+
+<!-- ── Pagination ── -->
+<div class="pagination">
+  <button id="prevPage" disabled>‹ السابق</button>
+  <span id="pageInfo">صفحة 1</span>
+  <button id="nextPage" disabled>التالي ›</button>
+</div>
+
+<!-- ── Posts Modal ── -->
+<div class="modal-overlay" id="postsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>📋 البوستات المستخرجة</h2>
+      <button class="modal-close" id="closeModal">✕</button>
+    </div>
+    <div class="modal-body" id="postsModalBody"></div>
+  </div>
+</div>
+
+<!-- ── Task Management Modal ── -->
+<div class="modal-overlay" id="taskManageModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="taskModalTitle">✨ إضافة مهمة جديدة</h2>
+      <button class="modal-close" id="closeTaskModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="manageTaskId" value="">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label for="manageTaskInstruction" style="font-size: 0.9rem; font-weight: 600;">التعليمة (Instruction)</label>
+        <textarea id="manageTaskInstruction" rows="4" placeholder="مثال: افتح موقع اليوم السابع وهاتلي عنوان الخبر الرئيسي..." style="background: var(--panel2); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 6px; font-family: inherit; font-size: 0.9rem; resize: vertical;"></textarea>
+      </div>
+      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+        <button class="btn btn-ghost" id="cancelTaskBtn">إلغاء</button>
+        <button class="btn btn-primary" id="saveTaskBtn">حفظ المهمة</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="dashboard.js"></script>
+</body>
+</html>

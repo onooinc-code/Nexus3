@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 خطة بناء منظومة البروفايل الكامل — Nexus × RAGFlow</title>
+<style>
+  :root{
+    --bg:#0b0f1a; --panel:#131a2b; --panel2:#1a2236; --accent:#4f8cff; --accent2:#22d3a6;
+    --warn:#ffb020; --danger:#ff5a5a; --purple:#a855f7; --text:#e6edf7; --muted:#8a98b3;
+    --green:#22d3a6; --yellow:#ffb020; --red:#ff5a5a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;padding:0 0 80px}
+  header{background:linear-gradient(120deg,#111a30,#1b2748);padding:28px 24px;border-bottom:1px solid #243;box-shadow:0 4px 24px rgba(0,0,0,.4)}
+  header h1{font-size:26px;margin-bottom:6px}
+  header p{color:var(--muted);font-size:14px}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 18px}
+  nav{position:sticky;top:0;z-index:50;background:#0d1424;border-bottom:1px solid #223;padding:10px 0;overflow-x:auto;white-space:nowrap}
+  nav button{background:var(--panel);color:var(--text);border:1px solid #2a3650;border-radius:8px;padding:8px 13px;margin:0 4px;cursor:pointer;font-size:13px;transition:.2s}
+  nav button:hover{background:var(--accent);color:#fff}
+  nav button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  section{display:none;padding:24px 0;animation:fade .3s}
+  section.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  h2{font-size:21px;margin:10px 0 16px;color:var(--accent);border-right:4px solid var(--accent);padding-right:10px}
+  h3{font-size:16px;margin:18px 0 8px;color:var(--accent2)}
+  h4{font-size:14px;margin:12px 0 6px;color:var(--accent)}
+  .card{background:var(--panel);border:1px solid #232f48;border-radius:12px;padding:18px;margin:12px 0;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+  .mini{background:var(--panel2);border:1px solid #2a3650;border-radius:10px;padding:14px}
+  .mini h4{color:var(--accent);font-size:14px;margin-bottom:6px}
+  .mini p{font-size:13px;color:var(--muted)}
+  .tag{display:inline-block;background:#1d2942;color:var(--accent);border:1px solid #2a3a5c;border-radius:20px;padding:2px 10px;font-size:11px;margin:2px}
+  .pill{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+  .p-green{background:rgba(34,211,166,.15);color:var(--green);border:1px solid var(--green)}
+  .p-yellow{background:rgba(255,176,32,.15);color:var(--yellow);border:1px solid var(--yellow)}
+  .p-red{background:rgba(255,90,90,.15);color:var(--red);border:1px solid var(--red)}
+  .p-purple{background:rgba(168,85,247,.15);color:var(--purple);border:1px solid var(--purple)}
+  .p-blue{background:rgba(79,140,255,.15);color:var(--accent);border:1px solid var(--accent)}
+  details{background:var(--panel2);border:1px solid #2a3650;border-radius:10px;padding:12px 16px;margin:8px 0}
+  summary{cursor:pointer;font-weight:600;color:var(--accent);font-size:14px}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+  th,td{border:1px solid #2a3650;padding:8px 10px;text-align:right}
+  th{background:#16203a;color:var(--accent2)}
+  td code{background:#0d1424;padding:2px 6px;border-radius:4px;color:var(--warn);font-size:12px}
+  .step{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed #233}
+  .step .n{flex:0 0 28px;height:28px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  .step .b{flex:1}
+  .step .b b{color:var(--accent2)}
+  .flow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0}
+  .flow .s{background:var(--panel2);border:1px solid #2a3650;border-radius:8px;padding:10px 14px;font-size:13px}
+  .flow .a{color:var(--accent);font-size:18px}
+  .note{background:rgba(79,140,255,.08);border-right:3px solid var(--accent);padding:10px 14px;border-radius:8px;font-size:13px;margin:10px 0;color:#cdd9f0}
+  .danger{background:rgba(255,90,90,.08);border-right:3px solid var(--danger)}
+  .ok{background:rgba(34,211,166,.08);border-right:3px solid var(--green)}
+  .warn{background:rgba(255,176,32,.08);border-right:3px solid var(--warn)}
+  ul{margin:8px 0 8px 20px;font-size:14px}
+  li{margin:4px 0}
+  .bar{display:flex;height:26px;border-radius:6px;overflow:hidden;margin:10px 0;font-size:11px;font-weight:700}
+  .bar span{display:flex;align-items:center;justify-content:center;color:#08101f}
+  .dep{font-size:12px;color:var(--muted);margin:4px 0}
+  .dep b{color:var(--warn)}
+  .check{color:var(--green);font-weight:700}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:30px}
+  .toc a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>📋 خطة بناء منظومة البروفايل الكامل لجهات الاتصال</h1>
+    <p>Nexus ContactsHub × RAGFlow — خطة تنفيذية مرحلية | إعداد: سولي (Souly) | ٩ أغسطس ٢٠٢٦</p>
+    <p style="color:var(--yellow)">⚠️ ملف تخطيط فقط (Planning-Only) — لم يُنفذ أي كود بعد. للمراجعة والاعتماد.</p>
+  </div>
+</header>
+
+<nav class="wrap" id="nav">
+  <button data-t="s0" class="active">النظرة العامة</button>
+  <button data-t="s1">Phase 0</button>
+  <button data-t="s2">Phase 1</button>
+  <button data-t="s3">Phase 2</button>
+  <button data-t="s4">Phase 3</button>
+  <button data-t="s5">Phase 4</button>
+  <button data-t="s6">المخطط البياني</button>
+  <button data-t="s7">المخاطر</button>
+</nav>
+
+<!-- ===== OVERVIEW ===== -->
+<section id="s0" class="active">
+<div class="wrap">
+  <h2>النظرة العامة للمشروع</h2>
+  <div class="note ok">🎯 <b>الهدف:</b> بناء بروفايل كامل لكل جهة اتصال في Nexus يجمع كل حرف عنها (هوية، حقائق، شخصية، مواقف هدرا، مواضيع، كل الرسائل، ملاحظات وتنبيهات، شبكة علاقات) — مع تخزين الرسائل بالكامل في RAGFlow (chunks + memories) — بحيث يتواصل الـ agent المسؤول بأفضل شكل ممكن.</div>
+
+  <div class="grid">
+    <div class="mini"><h4>المصادر (Inputs)</h4><p>١. رسائل واتساب قديمة (WAHA/backup)<br>٢. رسائل فيسبوك قديمة (Messenger export)<br>٣. ملفات XML لبروفايل الفيسبوك</p></div>
+    <div class="mini"><h4>المخازن (Stores)</h4><p>MySQL/Nexus (مهيكل) + RAGFlow (chunks+memories) + message_history_index (فهرس)</p></div>
+    <div class="mini"><h4>المخرجات (Outputs)</h4><p>بروفايل كامل لكل contact + Agent Handoff Protocol + Visual Board + تنبيهات هدرا</p></div>
+  </div>
+
+  <h3>📊 مسار التنفيذ (٥ مراحل)</h3>
+  <div class="flow">
+    <div class="s">P0 تحضير</div><span class="a">→</span>
+    <div class="s">P1 استيراد</div><span class="a">→</span>
+    <div class="s">P2 تحليل</div><span class="a">→</span>
+    <div class="s">P3 RAGFlow</div><span class="a">→</span>
+    <div class="s">P4 Agent View</div>
+  </div>
+
+  <div class="bar">
+    <span style="background:var(--accent);flex:1">P0 10%</span>
+    <span style="background:var(--accent2);flex:2">P1 25%</span>
+    <span style="background:var(--purple);flex:2">P2 20%</span>
+    <span style="background:var(--warn);flex:3">P3 25%</span>
+    <span style="background:var(--green);flex:2">P4 20%</span>
+  </div>
+
+  <div class="note warn">📌 <b>قاعدة التنفيذ:</b> نبدأ بجهة اتصال تجريبية واحدة (موثوقة) + واحدة حساسة (مثل مارلين) لاختبار الـ boundary قبل التعميم على الكل.</div>
+</div>
+</section>
+
+<!-- ===== PHASE 0 ===== -->
+<section id="s1">
+<div class="wrap">
+  <h2>Phase 0 — التحضير واكتشاف المصادر</h2>
+  <div class="note">الهدف: تحديد إيه المتاح فعلاً قبل كتابة أي كود.</div>
+
+  <h4>الخطوات</h4>
+  <div class="step"><div class="n">1</div><div class="b"><b>جرد المصادر:</b> هدرا يحدد إيه المتاح:
+    <ul>
+      <li>رسائل واتساب — من WAHA live API؟ ولا من backup/export ملف؟</li>
+      <li>رسائل فيسبوك — عندك Messenger export؟ (تنسيق JSON/HTML؟)</li>
+      <li>ملفات XML — عندك ملفات معينة لبروفايلات معينة؟</li>
+    </ul></div></div>
+  <div class="step"><div class="n">2</div><div class="b"><b>تأكيد RAGFlow:</b> API key موجود ✅ — نحدد استراتيجية الـ datasets (Dataset لكل contact ولا Dataset واحد بـ metadata filtering). التوصية: <b>Dataset لكل contact</b> لعزل أفضل.</div></div>
+  <div class="step"><div class="n">3</div><div class="b"><b>اختيار Pilots:</b> contact واحد موثوق (مثلاً عميل/شريك) + contact واحد سام/مقطوع (مارلين) لاختبار الـ boundary_rules والـ trust_score.</div></div>
+  <div class="step"><div class="n">4</div><div class="b"><b>تأكيد المخطط:</b> مراجعة الجداول الحالية (contacts, contact_facts, contact_stances, contact_messages) وتحديد الحقول الناقصة للإضافة في P2.</div></div>
+
+  <h4>المخرجات</h4>
+  <ul>
+    <li>قائمة المصادر المتاحة + تنسيقاتها</li>
+    <li>قرار استراتيجية RAGFlow (Dataset-per-contact)</li>
+    <li>تحديد الـ 2 pilots</li>
+  </ul>
+  <div class="dep">⬇️ <b>يعتمد على:</b> م input من هدرا (المصادر). <b>يليه:</b> Phase 1.</div>
+  <p class="check">✅ نقطة توقف (Checkpoint): موافقة هدرا على المصادر والـ pilots قبل البدء.</p>
+</div>
+</section>
+
+<!-- ===== PHASE 1 ===== -->
+<section id="s2">
+<div class="wrap">
+  <h2>Phase 1 — استيراد واستخراج (Importers + XML Parser)</h2>
+  <div class="note">الهدف: نقل كل الرسائل + بيانات الـ XML إلى Nexus بشكل مهيكل ونظيف.</div>
+
+  <h3>١.١ WhatsApp Importer</h3>
+  <div class="step"><div class="n">1</div><div class="b">بناء service يسحب رسائل جهة الاتصال من <code>WAHA API</code> (/api/contacts/{session}/.../messages) أو يقرأ ملف export.</div></div>
+  <div class="step"><div class="n">2</div><div class="b">تطبيع كل رسالة → <code>contact_messages</code> (channel=whatsapp, direction, body, source_timestamp) + فهرسة في <code>message_history_index</code>.</div></div>
+  <div class="step"><div class="n">3</div><div class="b">ربط الرسائل بـ contact عبر <code>ContactIdentifier::normalize()</code> (الرقم المعتاد عندك).</div></div>
+
+  <h3>١.٢ Facebook Messenger Importer</h3>
+  <div class="step"><div class="n">4</div><div class="b">parser لـ Messenger export (JSON/HTML) → نفس المسار (channel=fb_messenger).</div></div>
+  <div class="step"><div class="n">5</div><div class="b">مطابقة الـ fb_id مع جدول <code>contacts.fb_id</code> المضاف حديثاً.</div></div>
+
+  <h3>١.٣ Facebook XML Profile Parser</h3>
+  <div class="step"><div class="n">6</div><div class="b">service يحلل XML الـ profile (friends, education, work, family_members, birthday) ويحوله إلى <code>contact_facts</code> بـ <code>source=fb_xml</code> + <code>confidence</code> مناسب.</div></div>
+  <div class="step"><div class="n">7</div><div class="b">تحديث <code>contacts</code>: name, company, title, avatar_url من الـ XML.</div></div>
+
+  <h3>١.٤ التنظيف</h3>
+  <div class="step"><div class="n">8</div><div class="b">تشغيل <code>NormalizeContactImportBatchJob</code> لإزالة التكرار (content hash + timestamp) — موجود عندنا ✅.</div></div>
+
+  <h4>المخرجات</h4>
+  <ul>
+    <li><code>contact_messages</code> + <code>message_history_index</code> ممتلئة بالرسائل</li>
+    <li><code>contact_facts</code> من XML لكل جهة</li>
+    <li>تقرير استيراد (عدد الرسائل/الجهات/المكرر)</li>
+  </ul>
+  <div class="dep">⬇️ <b>يعتمد على:</b> P0 (المصادر). <b>يليه:</b> P2.</div>
+  <p class="check">✅ Checkpoint: فحص يدوي لهدرا على الـ 2 pilots إن الرسائل ظهرت صح من غير تشويه.</p>
+</div>
+</section>
+
+<!-- ===== PHASE 2 ===== -->
+<section id="s3">
+<div class="wrap">
+  <h2>Phase 2 — التحليل الذكي والبناء المهيكل</h2>
+  <div class="note">الهدف: تحويل الرسائل الخام إلى معرفة مهيكلة (شخصية، مواقف، ثقة، DNA نفسي).</div>
+
+  <h3>٢.١ تحليل الرسائل (توسيع الموجود)</h3>
+  <div class="step"><div class="n">1</div><div class="b">توسيع <code>AnalyzeContactMessagesJob</code> ليشمل <b>كل</b> الرسائل (مش بس ١٠٠) — تقسيم لـ batches عبر UniversalAiGatewayService.</div></div>
+  <div class="step"><div class="n">2</div><div class="b">استخراج: <code>topics</code> + <code>persona</code> + <code>emotional_baseline</code> + <code>autopilot_rules</code> → <code>contact_analysis_findings</code>.</div></div>
+  <div class="step"><div class="n">3</div><div class="b">توليد <code>contact_topics</code> + <code>contact_topic_mentions</code> لكل موضوع متكرر.</div></div>
+
+  <h3>٢.٢ مواقف هدرا (Stances)</h3>
+  <div class="step"><div class="n">4</div><div class="b">توليد <code>contact_stances</code> أوتوماتيك: لكل topic (money, family, business, general) → <code>hedra_stance</code> + <code>boundary_rules</code> + <code>past_incidents</code> (من تحليل الرسائل + ملاحظات هدرا).</div></div>
+
+  <h3>٢.٣ الثقة والمخاطر + DNA النفسي (إضافات جديدة)</h3>
+  <div class="step"><div class="n">5</div><div class="b">إضافة أعمدة/جداول:
+    <ul>
+      <li><code>contacts.trust_score</code> (0-100) + <code>contacts.red_flags</code> (JSON array)</li>
+      <li><code>contacts.psychological_dna</code> (JSON): decision_style, triggers, ego_sensitivity, talk_listen_ratio, commitment_reliability</li>
+      <li><code>contacts.alerts</code> (JSON): تنبيهات هدرا (مثال: "لا تتحدث عن العائلة")</li>
+    </ul></div></div>
+  <div class="step"><div class="n">6</div><div class="b">حساب القيم من التحليل + قواعد مبدئية (مثال: مارلين → trust_score=0, red_flags=[manipulation, lying], alerts=[no_sharing]).</div></div>
+
+  <h3>٢.٤ الحقائق</h3>
+  <div class="step"><div class="n">7</div><div class="b">تلخيص الحقائق المستخرجة في <code>contact_facts</code> (category: bio/work/habit/relationship/preference/psychology) بـ confidence متدرج.</div></div>
+
+  <h4>المخرجات</h4>
+  <ul>
+    <li>بروفايل مهيكل: facts + stances + topics + trust + dna + alerts</li>
+    <li>جاهزية للاستهلاك بواسطة الـ Agent</li>
+  </ul>
+  <div class="dep">⬇️ <b>يعتمد على:</b> P1 (الرسائل). <b>يليه:</b> P3.</div>
+  <p class="check">✅ Checkpoint: مراجعة هدرا لبروفايل الـ pilot الموثوق — هل المواقف والثقة منطقية؟</p>
+</div>
+</section>
+
+<!-- ===== PHASE 3 ===== -->
+<section id="s4">
+<div class="wrap">
+  <h2>Phase 3 — مزامنة RAGFlow (Chunks + Memories)</h2>
+  <div class="note">الهدف: تخزين كل الرسائل في RAGFlow للاسترجاع الدلالي + سياق الـ Agent.</div>
+
+  <h3>٣.١ إنشاء Dataset لكل contact</h3>
+  <div class="step"><div class="n">1</div><div class="b"><code>POST /datasets</code> → اسم <code>contact_{contact_id}_{slug}</code>، chunk_method=naive.</div></div>
+  <div class="step"><div class="n">2</div><div class="b"><code>POST /datasets/{id}/documents?type=empty</code> → مستند يحمل الـ chunks.</div></div>
+
+  <h3>٣.٢ رفع الرسائل كـ Chunks</h3>
+  <div class="step"><div class="n">3</div><div class="b">لكل رسالة (أو مجموعة متقاربة زمنياً): <code>POST /datasets/{id}/documents/{doc}/chunks</code> بـ:
+    <ul><li><code>content</code> = نص الرسالة + سياق (مين قال إيه)</li><li><code>important_keywords</code> = المواضيع</li><li><code>tag_kwd</code> = [contact_id, platform, direction]</li></ul></div></div>
+  <div class="step"><div class="n">4</div><div class="b">تخزين <code>ragflow_dataset_id</code> + <code>ragflow_doc_id</code> في <code>contacts.metadata</code> للربط العكسي.</div></div>
+
+  <h3>٣.٣ Memory للخلاصة (مهم)</h3>
+  <div class="step"><div class="n">5</div><div class="b"><code>POST /memories</code> بنوع <code>["raw","semantic","episodic"]</code> — ونحفظ فيه <b>الخلاصة الذكية فقط</b> (من P2: persona + topics + stances + life events) مش الرسائل الخام.</div></div>
+  <div class="step"><div class="n">6</div><div class="b">ربط الـ agent: عند الحوار، <code>GET /messages/search</code> جوه الـ Memory ده لاسترجاع السياق.</div></div>
+
+  <div class="note danger">⚠️ <b>تحذير:</b> متحطش كل الرسائل كـ Memory raw — الـ memory_size افتراضي ٥MB (≈٥٠٠ رسالة). الـ Dataset/chunks هو مخزن الرسائل الكامل؛ الـ Memory للخلاصة بس.</div>
+
+  <h3>٣.٤ المزامنة الحية (Horizon Job)</h3>
+  <div class="step"><div class="n">7</div><div class="b">بناء <code>SyncContactToRagflowJob</code> (queue: peopleconnect) يسمع أي رسالة جديدة (من WAHA webhook) ويرسلها لـ RAGFlow (chunk + تحديث memory).</div></div>
+  <div class="step"><div class="n">8</div><div class="b">بناء <code>RagflowRetrievalService</code> يغلّف <code>POST /retrieval</code> بـ <code>metadata_condition</code> على contact_id + platform.</div></div>
+
+  <h4>المخرجات</h4>
+  <ul>
+    <li>كل رسائل الـ pilots في RAGFlow (مسترجعة دلالياً)</li>
+    <li>Memory خلاصة لكل جهة</li>
+    <li>مزامنة حية أوتوماتيك</li>
+  </ul>
+  <div class="dep">⬇️ <b>يعتمد على:</b> P1+P2. <b>يليه:</b> P4.</div>
+  <p class="check">✅ Checkpoint: اختبار retrieval حقيقي — اسأل سؤال عن الـ pilot وتأكد إن الـ chunk رجع صح من RAGFlow.</p>
+</div>
+</section>
+
+<!-- ===== PHASE 4 ===== -->
+<section id="s5">
+<div class="wrap">
+  <h2>Phase 4 — واجهة الـ Agent + التنبيهات + اللوحة البصرية</h2>
+  <div class="note">الهدف: تحويل كل اللي فوق لـ "بروتوكول جاهز" يتواصل بيه الـ agent + لوحة هدرا البصرية.</div>
+
+  <h3>٤.١ Agent Handoff Protocol (المخرج الأهم)</h3>
+  <div class="step"><div class="n">1</div><div class="b">Generator بيولّد ملف تعليمات لكل contact من (persona + stances + trust + alerts + comm_pref):
+    <pre style="background:#0d1424;padding:10px;border-radius:8px;font-size:12px;color:#cdd9f0;overflow:auto">عند الرد على [الاسم]:
+├─ النبرة: [دافئة/رسمية/مختصرة]
+├─ القناة المفضلة: [واتساب/فيسبوك]
+├─ تجنب: [موضوع X — حدود هدرا]
+├─ مستوى الثقة: [متوسط] → لا تشارك [بيانات حساسة]
+└─ التنبيهات: [لا تتحدث عن العائلة / متلاعب]</pre></div></div>
+  <div class="step"><div class="n">2</div><div class="b">تخزين البروتوكول في <code>contacts.metadata.handoff_protocol</code> + عرضه للـ agent قبل أي رد.</div></div>
+
+  <h3>٤.٢ التنبيهات</h3>
+  <div class="step"><div class="n">3</div><div class="b"><code>contacts.alerts</code> (JSON) تظهر للـ agent كـ hard-stop قبل الإرسال + للوحة البصرية كـ badges حمراء.</div></div>
+
+  <h3>٤.٣ Visual Profile Board (لوحتك البصرية)</h3>
+  <div class="step"><div class="n">4</div><div class="b">صفحة HTML لكل contact (مثل الملف اللي فات) فيها: دائرة ثقة ملونة + خط زمني + بطاقات حقائق + المواقف + التنبيهات + زر "عايز أتواصل دلوقتي" (يطلع البروتوكول جاهز).</div></div>
+  <div class="step"><div class="n">5</div><div class="b">نشر على <code>n.soulyeg.online/contact_{id}.html</code> (نفس ستايل الملفات اللي عاملينها).</div></div>
+
+  <h3>٤.٤ ربط الـ Agent</h3>
+  <div class="step"><div class="n">6</div><div class="b">في كل رسالة واردة: الـ agent يحمّل البروتوكول + يعمل retrieval من RAGFlow + يولّد الرد بالنبرة الصحيحة + يفحص الـ boundary_rules قبل الإرسال.</div></div>
+
+  <h4>المخرجات</h4>
+  <ul>
+    <li>نظام تواصل ذكي end-to-end</li>
+    <li>لوحة بصرية لهدرا لكل جهة</li>
+    <li>حماية أوتوماتيك عبر التنبيهات + الثقة</li>
+  </ul>
+  <div class="dep">⬇️ <b>يعتمد على:</b> P1+P2+P3. <b>يليه:</b> تشغيل كامل.</div>
+  <p class="check">✅ Checkpoint نهائي: هدرا يختبر الرد على الـ pilot الموثوق + السامي ويتأكد إن النبرة/الحدود صح.</p>
+</div>
+</section>
+
+<!-- ===== DIAGRAM ===== -->
+<section id="s6">
+<div class="wrap">
+  <h2>المخطط البياني لتدفق البيانات</h2>
+  <div class="card">
+    <div class="flow" style="flex-direction:column;align-items:stretch">
+      <div class="s" style="text-align:center">📥 المصادر: WAHA + FB Messages + FB XML</div>
+      <div class="a" style="text-align:center">↓</div>
+      <div class="s" style="text-align:center">⚙️ Importers (P1) → contact_messages + contact_facts + message_history_index</div>
+      <div class="a" style="text-align:center">↓</div>
+      <div class="s" style="text-align:center">🧠 AI Analysis (P2) → findings + stances + trust + psychological_dna + alerts</div>
+      <div class="a" style="text-align:center">↓   ↓</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+        <div class="s" style="flex:1;min-width:240px;text-align:center">🗄️ MySQL/Nexus<br>(مصدر الحقيقة)</div>
+        <div class="s" style="flex:1;min-width:240px;text-align:center">🔎 RAGFlow<br>Dataset(chunks) + Memory(خلاصة)</div>
+      </div>
+      <div class="a" style="text-align:center">↓</div>
+      <div class="s" style="text-align:center">🤖 Agent Handoff Protocol + Boundary Check</div>
+      <div class="a" style="text-align:center">↓</div>
+      <div class="s" style="text-align:center">📤 رد ذكي بـ نبرة هدرا + حدوده + 🎨 Visual Board لهدرا</div>
+    </div>
+  </div>
+
+  <h3>🗃️ إضافات المخطط (Migration مقترحة في P2)</h3>
+  <table>
+    <tr><th>الجدول/العمود</th><th>النوع</th><th>الوصف</th></tr>
+    <tr><td><code>contacts.trust_score</code></td><td>unsignedTinyInt</td><td>0-100 درجة الثقة</td></tr>
+    <tr><td><code>contacts.red_flags</code></td><td>JSON</td><td>قائمة علامات تحذير</td></tr>
+    <tr><td><code>contacts.psychological_dna</code></td><td>JSON</td><td>decision_style, triggers, ego, ratio, reliability</td></tr>
+    <tr><td><code>contacts.alerts</code></td><td>JSON</td><td>تنبيهات هدرا (hard-stop للـ agent)</td></tr>
+    <tr><td><code>contacts.metadata.ragflow_dataset_id</code></td><td>string</td><td>معرف Dataset في RAGFlow</td></tr>
+    <tr><td><code>contacts.metadata.handoff_protocol</code></td><td>text/JSON</td><td>بروتوكول التواصل المولّد</td></tr>
+  </table>
+</div>
+</section>
+
+<!-- ===== RISKS ===== -->
+<section id="s7">
+<div class="wrap">
+  <h2>سجل المخاطر وحلولها</h2>
+  <table>
+    <tr><th>المخاطرة</th><th>التأثير</th><th>التخفيف (Mitigation)</th></tr>
+    <tr><td>مصادر الرسائل مش متاحة بوضوح</td><td class="p-yellow">متوسط</td><td>نبدأ بجهة واحدة عندها بيانات؛ نؤجل الباقي لحد ما هدرا يجهز المصدر</td></tr>
+    <tr><td>تجاوز memory_size في RAGFlow (٥MB)</td><td class="p-red">عالي</td><td>الرسائل الخام → Dataset chunks؛ Memory → خلاصة بس</td></tr>
+    <tr><td>خلط بيانات جهة بجهة (wrong contact_id)</td><td class="p-red">عالي</td><td>normalize صارم + اختبار على pilots قبل التعميم</td></tr>
+    <tr><td>تسريب معلومات حساسة لجهة سامة (مارلين)</td><td class="p-red">حرج</td><td>trust_score=0 + alerts hard-stop + لا مشاركة في البروتوكول</td></tr>
+    <tr><td>تحليل AI يطلع مواقف غلط</td><td class="p-yellow">متوسط</td><td>human-in-loop: هدرا يراجع الـ pilot قبل P3</td></tr>
+    <tr><td>XML format يختلف من جهة لأخرى</td><td class="p-yellow">متوسط</td><td>parser مرن يتجاهل الحقول الناقصة + logs للمراجعة</td></tr>
+  </table>
+
+  <div class="note ok">✅ <b>مبدأ الأمان:</b> Human-in-loop عند كل Checkpoint — هدرا يراجع قبل الانتقال للمرحلة التالية. ولا تنفيذ تلقائي كامل من غير موافقتك.</div>
+
+  <h3>⏱️ تقدير زمني تقريبي (حسب تعقيد المصادر)</h3>
+  <table>
+    <tr><th>المرحلة</th><th>الوقت التقديري</th></tr>
+    <tr><td>P0 التحضير</td><td>١ جلسة (معتمد على input هدرا)</td></tr>
+    <tr><td>P1 الاستيراد</td><td>٢-٣ أيام</td></tr>
+    <tr><td>P2 التحليل</td><td>٢-٣ أيام</td></tr>
+    <tr><td>P3 RAGFlow</td><td>٣-٤ أيام</td></tr>
+    <tr><td>P4 Agent View</td><td>٢-٣ أيام</td></tr>
+  </table>
+</div>
+</section>
+
+<footer>
+  🧠 Souly × Hedra — خطة منظومة البروفايل الكامل | ملف تخطيط فقط (لم يُنفذ) | رابط: <code>n.soulyeg.online/contact_profile_plan.html</code>
+</footer>
+
+<script>
+  const nav=document.getElementById('nav');
+  const btns=nav.querySelectorAll('button');
+  const secs=document.querySelectorAll('section');
+  btns.forEach(b=>b.onclick=()=>{
+    btns.forEach(x=>x.classList.remove('active'));
+    secs.forEach(s=>s.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById(b.dataset.t).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+</script>
+</body>
+</html>

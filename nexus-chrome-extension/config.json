@@ -1,0 +1,26 @@
+{
+  "NEXUS_BASE_URL": "https://n.soulyeg.online",
+  "REVERB_HOST": "n.soulyeg.online",
+  "REVERB_PORT": 443,
+  "REVERB_SCHEME": "https",
+  "REVERB_APP_KEY": "nexus_key",
+  "NEXUS_API_TOKEN": "1|MyG7PAjSvWSlc0WClomDsXia6HIBda913wKtZ54c2697c05e",
+  "AGENT_ID": "ertugrul_browser_agent",
+  "VERSION": "1.2.1",
+  "DEFAULT_TARGET_URL": "about:blank",
+  "ENDPOINTS": {
+    "DOM_TRIGGER": "/api/v1/events/dom-trigger",
+    "PENDING_TASKS": "/api/v1/agent-tasks/pending",
+    "UPDATE_STATUS": "/api/v1/agent-tasks/{id}/status"
+  },
+  "DEFAULT_SETTINGS": {
+    "autoSolveCaptcha": true,
+    "domObservation": true,
+    "pollingIntervalMs": 5000,
+    "pageRenderDelayMs": 3000,
+    "pingTimeoutMs": 2500,
+    "pingRetries": 5,
+    "humanDelayMinMs": 40,
+    "humanDelayMaxMs": 160
+  }
+}

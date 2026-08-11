@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Events\AgentCompleted;
 use App\Events\ContactCreated;
+use App\Events\PeopleConnect\MessageAnalyzed;
 use App\Events\PeopleConnect\MessageReceived;
+use App\Events\PeopleConnect\SessionOpened;
 use App\Events\WorkflowCompleted;
 use App\Events\WorkflowStarted;
 use App\Models\Agent;
@@ -36,8 +38,8 @@ class EventTest extends TestCase
     {
         Event::fake([
             MessageReceived::class,
-            \App\Events\PeopleConnect\MessageAnalyzed::class,
-            \App\Events\PeopleConnect\SessionOpened::class,
+            MessageAnalyzed::class,
+            SessionOpened::class,
         ]);
         $response = $this->postJson('/api/v1/webhooks/waha', [
             'event' => 'message',

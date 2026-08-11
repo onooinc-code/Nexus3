@@ -205,6 +205,7 @@
     </div>
 </div>
 
+@include('hubs.partials.ai-hub.modals.prompt-test-modal')
 @endsection
 
 @push('scripts')
@@ -222,6 +223,28 @@
     }
 
     $(document).ready(function() {
+        // ─── Tab State Persistence (localStorage & Hash) ─────────────────────
+        const savedTab = localStorage.getItem('activeAiHubTab') || window.location.hash;
+        if (savedTab) {
+            const targetBtn = $(`#aiHubTabs button[data-bs-target="${savedTab}"]`);
+            if (targetBtn.length) {
+                const tab = bootstrap.Tab.getOrCreateInstance(targetBtn[0]);
+                tab.show();
+            }
+        }
+
+        $('#aiHubTabs button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+            const target = $(e.target).attr('data-bs-target');
+            if (target) {
+                localStorage.setItem('activeAiHubTab', target);
+                if (history.replaceState) {
+                    history.replaceState(null, null, target);
+                } else {
+                    window.location.hash = target;
+                }
+            }
+        });
+
         // Fetch global telemetry for top ribbon
         function fetchRibbonTelemetry() {
             $.ajax({

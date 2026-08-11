@@ -6,6 +6,7 @@ use App\Models\Agent;
 use App\Models\AIModel;
 use App\Models\AIProvider;
 use App\Models\IntentRouting;
+use Illuminate\Support\Facades\Log;
 
 /**
  * UniversalAiGatewayService
@@ -66,7 +67,7 @@ class UniversalAiGatewayService
     }
 
     /**
-     * Execute an Agent's prompt against the resolved AI Model.
+     * Execute an Agent's prompt against the resolved AI Model with a 3-Tier Fallback Pipeline.
      */
     public function executeWithAgent(Agent $agent, array $context): array
     {
@@ -76,34 +77,56 @@ class UniversalAiGatewayService
             throw new \RuntimeException('No AI model available for execution. Please ensure Gemini or another provider is active.');
         }
 
-        $provider = new DynamicRestProvider($model->provider->id, $this->keyStorage);
+        // Build execution chain: Primary -> Fallback #1 -> Fallback #2 -> Fallback #3
+        $modelsChain = [$model];
+        $settings = $agent->settings ?? [];
+
+        if (! empty($settings['fallback_models']) && is_array($settings['fallback_models'])) {
+            foreach (array_slice($settings['fallback_models'], 0, 3) as $fallbackModelId) {
+                if ($fallbackModelId && $fallbackModelId !== $model->id) {
+                    $fallbackModel = AIModel::with('provider')->find($fallbackModelId);
+                    if ($fallbackModel && $fallbackModel->provider && $fallbackModel->status === 'active') {
+                        $modelsChain[] = $fallbackModel;
+                    }
+                }
+            }
+        }
 
         $prompt = is_string($context['input']) ? $context['input'] : json_encode($context['input']);
-
         $temperature = $agent->settings['temperature'] ?? 0.7;
         $maxTokens = $agent->settings['max_tokens'] ?? 2048;
 
-        $options = [
-            'model' => $model->external_id ?? $model->name,
-            'temperature' => (float) $temperature,
-            'max_tokens' => (int) $maxTokens,
-            'system' => $context['system_prompt'] ?? '',
-        ];
+        $lastError = 'Unknown execution failure';
 
-        // Format prompt as messages array if needed by specific providers
-        // DynamicRestProvider handles wrapping in user content.
+        foreach ($modelsChain as $index => $currentModel) {
+            $provider = new DynamicRestProvider($currentModel->provider->id, $this->keyStorage);
 
-        $result = $provider->generateText($prompt, $options);
+            $options = [
+                'model' => $currentModel->external_id ?? $currentModel->name,
+                'temperature' => (float) $temperature,
+                'max_tokens' => (int) $maxTokens,
+                'system' => $context['system_prompt'] ?? '',
+            ];
 
-        if (! $result['success']) {
-            throw new \RuntimeException('LLM call failed: '.($result['error'] ?? 'Unknown error'));
+            $result = $provider->generateText($prompt, $options);
+
+            if ($result['success']) {
+                $result['used_model'] = $currentModel->name;
+                $result['used_provider'] = $currentModel->provider->name;
+                $result['fallback_tier'] = $index; // 0 = Primary, 1..3 = Fallback tiers
+
+                if ($index > 0) {
+                    Log::info("AI Execution resolved via Fallback Tier {$index} ({$currentModel->name}) for Agent [{$agent->name}].");
+                }
+
+                return $result;
+            }
+
+            $lastError = $result['error'] ?? 'Unknown provider error';
+            Log::warning("AI Model [{$currentModel->name}] Tier {$index} failed for Agent [{$agent->name}]: {$lastError}. Attempting next fallback tier.");
         }
 
-        // Attach resolved model metadata for logging purposes
-        $result['used_model'] = $model->name;
-        $result['used_provider'] = $model->provider->name;
-
-        return $result;
+        throw new \RuntimeException('LLM call and all 3 fallback tiers failed: '.$lastError);
     }
 
     /**

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Models Hub — Deep Audit & Comprehensive Action Plan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0B0F17;
+            --bg-card: #141C2B;
+            --bg-card-hover: #1A2438;
+            --border-color: #23314B;
+            --accent-blue: #3B82F6;
+            --accent-purple: #8B5CF6;
+            --accent-green: #10B981;
+            --accent-red: #EF4444;
+            --accent-amber: #F59E0B;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        code, pre, .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.95)), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            border-bottom: 1px solid var(--border-color);
+            padding: 3rem 0;
+        }
+
+        .glass-card {
+            background: rgba(20, 28, 43, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1);
+        }
+
+        .badge-critical { background: rgba(239, 68, 68, 0.2); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .badge-warning { background: rgba(245, 158, 11, 0.2); color: #FCD34D; border: 1px solid rgba(245, 158, 11, 0.4); }
+        .badge-info { background: rgba(59, 130, 246, 0.2); color: #93C5FD; border: 1px solid rgba(59, 130, 246, 0.4); }
+        .badge-success { background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.4); }
+
+        .nav-pills-custom .nav-link {
+            color: var(--text-secondary);
+            border-radius: 8px;
+            padding: 0.75rem 1.25rem;
+            font-weight: 600;
+            margin: 0 0.25rem;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .nav-pills-custom .nav-link:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-pills-custom .nav-link.active {
+            background: var(--accent-blue);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+        }
+
+        .issue-card {
+            border-right: 4px solid var(--accent-red);
+        }
+
+        .issue-card.warning {
+            border-right-color: var(--accent-amber);
+        }
+
+        .issue-card.success {
+            border-right-color: var(--accent-green);
+        }
+
+        .table-custom {
+            color: var(--text-primary);
+        }
+        .table-custom th {
+            background: rgba(30, 41, 59, 0.6);
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
+        }
+        .table-custom td {
+            border-bottom: 1px solid rgba(35, 49, 75, 0.5);
+            padding: 0.75rem 1rem;
+            vertical-align: middle;
+        }
+
+        .endpoint-method {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+        .method-get { background: rgba(16, 185, 129, 0.2); color: #34D399; }
+        .method-post { background: rgba(59, 130, 246, 0.2); color: #60A5FA; }
+        .method-put { background: rgba(245, 158, 11, 0.2); color: #FBBF24; }
+        .method-delete { background: rgba(239, 68, 68, 0.2); color: #F87171; }
+
+        .timeline-step {
+            position: relative;
+            padding-right: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .timeline-step::before {
+            content: '';
+            position: absolute;
+            right: 0.75rem;
+            top: 0;
+            bottom: -1.5rem;
+            width: 2px;
+            background: var(--border-color);
+        }
+        .timeline-step:last-child::before { display: none; }
+        .timeline-icon {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--accent-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            color: var(--accent-blue);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header class="header-section">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <span class="badge badge-critical mb-2"><i class="fa-solid fa-bug me-1"></i> Forensic Quality Audit</span>
+                    <h1 class="fw-bold fs-2 text-white mb-2">🤖 AI Models Hub — التقرير الشامل والنواقص وخطة التنفيذ</h1>
+                    <p class="text-secondary mb-0">تحليل فني ومعماري دقيق لكافة ملفات الباك إند، الواجهات، الثغرات، نقاط النهاية API، ومصفوفة الـ Fallback</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge badge-info px-3 py-2 fs-6"><i class="fa-solid fa-server me-1"></i> Nexus v3 monolith</span>
+                    <div class="text-secondary small mt-1">تاريخ الفحص: 02 أغسطس 2026</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container my-5">
+
+        <!-- Quick Summary Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="glass-card text-center py-3">
+                    <i class="fa-solid fa-triangle-exclamation text-danger fs-3 mb-2"></i>
+                    <h3 class="fw-bold text-white mb-1">11</h3>
+                    <div class="text-secondary small">مشكلة واجهات ونواقص Modals</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card text-center py-3">
+                    <i class="fa-solid fa-code-branch text-warning fs-3 mb-2"></i>
+                    <h3 class="fw-bold text-white mb-1">7</h3>
+                    <div class="text-secondary small">ثغرات ونواقص الباك إند والـ Schema</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card text-center py-3">
+                    <i class="fa-solid fa-layer-group text-info fs-3 mb-2"></i>
+                    <h3 class="fw-bold text-white mb-1">18</h3>
+                    <div class="text-secondary small">API Endpoints موثقة للتحكم</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card text-center py-3">
+                    <i class="fa-solid fa-check-double text-success fs-3 mb-2"></i>
+                    <h3 class="fw-bold text-white mb-1">3</h3>
+                    <div class="text-secondary small">راحل تنفيذية للوصول لـ 100% Ready</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-pills nav-pills-custom mb-4 justify-content-center" id="auditTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" id="frontend-tab" data-bs-toggle="pill" data-bs-target="#tab-frontend" type="button"><i class="fa-solid fa-desktop me-1"></i> مشاكل الواجهات والـ Modals</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="backend-tab" data-bs-toggle="pill" data-bs-target="#tab-backend" type="button"><i class="fa-solid fa-gears me-1"></i> الباك إند والـ Fallback</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="apikeys-tab" data-bs-toggle="pill" data-bs-target="#tab-apikeys" type="button"><i class="fa-solid fa-key me-1"></i> المفاتيح والتدوير والتقارير</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="endpoints-tab" data-bs-toggle="pill" data-bs-target="#tab-endpoints" type="button"><i class="fa-solid fa-plug me-1"></i> دليل الـ API Endpoints</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="roadmap-tab" data-bs-toggle="pill" data-bs-target="#tab-roadmap" type="button"><i class="fa-solid fa-list-check me-1"></i> خطة التنفيذ (A to Z)</button>
+            </li>
+        </ul>
+
+        <!-- Tab Contents -->
+        <div class="tab-content" id="auditTabsContent">
+
+            <!-- Tab 1: Frontend Issues -->
+            <div class="tab-pane fade show active" id="tab-frontend" role="tabpanel">
+                <div class="glass-card">
+                    <h4 class="fw-bold text-white mb-3"><i class="fa-solid fa-triangle-exclamation text-danger me-2"></i> تحليل مشاكل الواجهة والأدوات التفاعلية (Frontend Auditing)</h4>
+                    
+                    <div class="issue-card glass-card p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="fw-bold text-white mb-0">1. مودال إضافة مفتاح API فارغ بالكامل (Empty Add Key Modal Placeholder)</h5>
+                            <span class="badge badge-critical">حرِج جداً - Critical UI Defect</span>
+                        </div>
+                        <p class="text-secondary small mb-2">عند النقر على زر "Generate New API Key" أو إضافة مفتاح، يفتح مودال <code>#addKeyModal</code> في الملف <code>resources/views/hubs/partials/ai-hub/api-keys/modals/add-key.blade.php</code> الذي يحتوي على نص تجريبي مؤقت:</p>
+                        <div class="bg-dark p-2 rounded border border-secondary font-mono text-warning small mb-2">
+                            &lt;p class="text-muted text-center py-5"&gt;&lt;i class="fa-solid fa-wand-magic-sparkles fa-2x mb-3 opacity-50"&gt;&lt;/i&gt;&lt;br&gt;Wizard steps would go here.&lt;/p&gt;
+                        </div>
+                        <div class="text-light small"><strong>السبب والأثر:</strong> عدم وجود مدخلات لاختيار المزود، اسم المفتاح، النص المشفر، تاريخ الانتهاء أو زر الحفظ الحقيقي، مما يمنع المستخدم تماماً من إضافة أي مفتاح جديد من الواجهة!</div>
+                    </div>
+
+                    <div class="issue-card glass-card p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="fw-bold text-white mb-0">2. أخطاء JavaScript في الداش بورد (Dashboard Telemetry Syntax/Fetch Exception)</h5>
+                            <span class="badge badge-critical">حرِج - JS Runtime Crash</span>
+                        </div>
+                        <p class="text-secondary small mb-2">في الملف <code>resources/views/hubs/partials/ai-hub/dashboard/index.blade.php</code>، عند جلب بيانات الـ Telemetry عبر <code>fetch('/hub/models/telemetry')</code> يحدث خطأ غير معالج عند فشل الاستجابة أو إرجاع 500 HTML error:</p>
+                        <div class="bg-dark p-2 rounded border border-secondary font-mono text-danger small mb-2">
+                            Uncaught (in promise) SyntaxError: Unexpected token '&lt;', "&lt;!DOCTYPE "... is not valid JSON
+                        </div>
+                        <div class="text-light small"><strong>السبب والأثر:</strong> غياب <code>try...catch</code> ومكونات الـ Fallback في جافاسكريبت مما يسبب توقف رسم Chart.js وظهور رسائل خطأ في المتصفح.</div>
+                    </div>
+
+                    <div class="issue-card warning glass-card p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="fw-bold text-white mb-0">3. إدخال شروط التوجيه (Intent Routing Conditions) كـ Text Raw JSON</h5>
+                            <span class="badge badge-warning">متوسط - UX Flaw</span>
+                        </div>
+                        <p class="text-secondary small mb-0">يُطلب من المستخدم كتابة مصفوفة الشروط (مثل الحد الأقصى للتكلفة أو التوكنات) كـ JSON نصي مباشر في فورم الإضافة، مما يسبب أخطاء تنسيق وتجربة استخدام صعبة.</p>
+                    </div>
+
+                    <div class="issue-card warning glass-card p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="fw-bold text-white mb-0">4. غياب التحديث الحي عبر WebSockets (Top Health Ribbon & Live Counters)</h5>
+                            <span class="badge badge-warning">متوسط - Missing Realtime</span>
+                        </div>
+                        <p class="text-secondary small mb-0">عدادات الـ TPM والـ Active Requests وشريط الصحة في أعلى الصفحة غير مرتبطة بـ Echo Channels/Reverb المباشرة وبالتالي لا تتحدث إلا عند إعادة تحميل الصفحة.</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Tab 2: Backend & Fallback -->
+            <div class="tab-pane fade" id="tab-backend" role="tabpanel">
+                <div class="glass-card">
+                    <h4 class="fw-bold text-white mb-3"><i class="fa-solid fa-gears text-warning me-2"></i> تحليل مشاكل الباك إند ومحرك التراجع المتعدد (Multi-Provider Fallback)</h4>
+                    
+                    <div class="glass-card p-3 mb-4 border-info">
+                        <h5 class="fw-bold text-info mb-2"><i class="fa-solid fa-circle-info me-2"></i> كيف يعمل الـ Fallback حالياً؟ وهل يمكن إضافة أكثر من Provider؟</h5>
+                        <p class="text-secondary small mb-2">حالياً، موديل <code>IntentRouting.php</code> وقاعدة البيانات يحتفظان بـ <strong>fallback_provider_id واحد فقط</strong> ومزود افتراضي واحد لكل غرض (Intent). عند فشل الطلب على المزود الرئيسي عبر <code>CircuitBreaker.php</code> أو <code>IntentRoutingEngine.php</code> يتم التحويل إلى المزود الاحتياطي الفردي المسجل.</p>
+                        <div class="p-3 bg-dark rounded border border-secondary text-light small mb-2">
+                            <strong>الوضع الحالي:</strong> Default Provider (OpenAI) ──(فشل)──► Single Fallback Provider (Gemini)<br>
+                            <strong>الوضع المطلوب لتعدد الـ Fallbacks:</strong> Default Provider (OpenAI) ──► Fallback #1 (Gemini) ──► Fallback #2 (Groq) ──► Fallback #3 (Local Ollama)
+                        </div>
+                        <p class="text-warning small mb-0"><i class="fa-solid fa-triangle-exclamation me-1"></i> <strong>النتيجة:</strong> النظام الحالي ينفذ Fallback أحادي بكفاءة، ولكن لدعم <strong>سلسلة تراجع متعددة (Multi-Provider Fallback Chain)</strong> يتطلب تغيير حقل <code>fallback_provider_id</code> في الداتا بيز إلى <code>fallback_chain (json array)</code> وتحديث خوارزمية الدوران في <code>UniversalAiGatewayService.php</code>.</p>
+                    </div>
+
+                    <div class="issue-card glass-card p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="fw-bold text-white mb-0">1. تعارض أسماء الأعمدة وحقول التاريخ (Column Inconsistency in Usage Logs)</h5>
+                            <span class="badge badge-critical">حرِج - Database & Query Bug</span>
+                        </div>
+                        <p class="text-secondary small mb-2">في ملف Migration لجدول <code>usage_logs</code> العمود هو <code>timestamp</code> مع وجود Index عليه، بينما في الكلاس <code>AiHubService.php</code> الدالة <code>getTelemetry()</code> تقرأ الحقل بـ <code>created_at</code> مما يسبب تباطؤاً وفشل بعض الاستعلامات عند التحليل.</p>
+                    </div>
+
+                    <div class="issue-card warning glass-card p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="fw-bold text-white mb-0">2. غياب الـ Streaming (Server-Sent Events)</h5>
+                            <span class="badge badge-warning">ميزة مفقودة - Streaming Lack</span>
+                        </div>
+                        <p class="text-secondary small mb-0">محول REST العام <code>DynamicRestProvider.php</code> لا يدعم الـ Stream Response المباشر توكن بتوكن، بل ينتظر الرد الكامل من الـ LLM API.</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Tab 3: API Keys & Rotation -->
+            <div class="tab-pane fade" id="tab-apikeys" role="tabpanel">
+                <div class="glass-card">
+                    <h4 class="fw-bold text-white mb-3"><i class="fa-solid fa-key text-success me-2"></i> حالة المفاتيح والتدوير وتقارير الاستهلاك لكل مفتاح</h4>
+                    
+                    <div class="table-responsive mb-4">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>المكون / الميزة</th>
+                                    <th>الحالة الحالية</th>
+                                    <th>المشكلة / النقص</th>
+                                    <th>المطلوب لتجهيزه</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong class="text-white">إضافة وتشفير المفاتيح</strong></td>
+                                    <td><span class="badge badge-critical">معطل من الواجهة</span></td>
+                                    <td>مودال الإضافة مفرغ في الواجهة (Placeholder)، بينما الباك إند مشفر بـ AES-256.</td>
+                                    <td>بناء مدخلات المودال وتوصيله بـ <code>storeApiKey</code>.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong class="text-white">التدوير التلقائي (Key Rotation)</strong></td>
+                                    <td><span class="badge badge-warning">جزئي - غير مجدول</span></td>
+                                    <td>الأمر <code>ai-hub:rotate-keys</code> موجود ولكنه غير مضاف لـ Laravel Scheduler.</td>
+                                    <td>إضافة الأمر لـ <code>routes/console.php</code> للتفعيل اليومي.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong class="text-white">فحص صحة المفتاح المنفرد</strong></td>
+                                    <td><span class="badge badge-warning">غير موجود</span></td>
+                                    <td>الفحص يتم للمزود بالكامل وليس لكل مفتاح بشكل منفرد (Ping Key).</td>
+                                    <td>إضافة زر <code>Test Key</code> ونقطة نهاية بفحص اتصال كل مفتاح.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong class="text-white">تقارير الاستهلاك لكل مفتاح</strong></td>
+                                    <td><span class="badge badge-critical">مفقود في الـ Schema</span></td>
+                                    <td>جدول <code>usage_logs</code> لا يحتفظ بـ <code>api_key_id</code> لربط التكلفة بالمفتاح.</td>
+                                    <td>إضافة Migration بـ <code>api_key_id</code> وتحديث التتبع.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong class="text-white">فترة التبريد (Cooldown Multiplier)</strong></td>
+                                    <td><span class="badge badge-info">ثابتة</span></td>
+                                    <td>فترة التبريد عند أخطاء 429 ثابتة ولا تتضاعف مع تكرار الأخطاء.</td>
+                                    <td>تطبيق خوارزمية Exponential Backoff.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: API Endpoints Registry -->
+            <div class="tab-pane fade" id="tab-endpoints" role="tabpanel">
+                <div class="glass-card">
+                    <h4 class="fw-bold text-white mb-3"><i class="fa-solid fa-plug text-info me-2"></i> الدليل الكامل لجميع نقاط النهاية (API Endpoints Registry)</h4>
+                    <p class="text-secondary small mb-3">جميع المسارات البرمجية المتاحة حالياً لإدارة واستخدام الـ AI Models Hub في منصة Nexus v3:</p>
+
+                    <div class="table-responsive">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Endpoint Route</th>
+                                    <th>Controller Method</th>
+                                    <th>الوصف والغرض</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="endpoint-method method-get">GET</span></td>
+                                    <td><code class="text-info">/hub/models</code></td>
+                                    <td><code>HubController@models</code></td>
+                                    <td>عرض واجهة الـ Hub الرئيسية واستدعاء بيانات المزودين والمفتاتيح</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="endpoint-method method-get">GET</span></td>
+                                    <td><code class="text-info">/hub/models/telemetry</code></td>
+                                    <td><code>AiHubController@telemetry</code></td>
+                                    <td>جلب إحصائيات الاستهلاك والتوكنات وزمن الاستجابة للداش بورد</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="endpoint-method method-post">POST</span></td>
+                                    <td><code class="text-primary">/hub/models/providers</code></td>
+                                    <td><code>AiHubController@storeProvider</code></td>
+                                    <td>إضافة مزود AI جديد (OpenAI, Gemini, Ollama, إلخ)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="endpoint-method method-post">POST</span></td>
+                                    <td><code class="text-primary">/hub/models/providers/ping</code></td>
+                                    <td><code>AiHubController@pingProvider</code></td>
+                                    <td>اختبار الاتصال بمزود معين وفحص زمن الاستجابة</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="endpoint-method method-post">POST</span></td>
+                                    <td><code class="text-primary">/hub/models/providers/{id}/sync</code></td>
+                                    <td><code>AiHubController@syncModels</code></td>
+                                    <td>مزامنة قائمة النماذج المتاحة من API المزود تلقائياً</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="endpoint-method method-post">POST</span></td>
+                                    <td><code class="text-primary">/hub/models/api-keys</code></td>
+                                    <td><code>AiHubController@storeApiKey</code></td>
+                                    <td>تخزين مفتاح API جديد وتشفيره بـ AES-256</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="endpoint-method method-delete">DELETE</span></td>
+                                    <td><code class="text-danger">/hub/models/api-keys/{id}</code></td>
+                                    <td><code>AiHubController@revokeApiKey</code></td>
+                                    <td>إلغاء وتدمير مفتاح API معين</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="endpoint-method method-post">POST</span></td>
+                                    <td><code class="text-primary">/hub/models/routing</code></td>
+                                    <td><code>AiHubController@storeRoutingRule</code></td>
+                                    <td>إضافة قاعدة توجيه ذكية جديدة (Intent Routing Rule)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="endpoint-method method-post">POST</span></td>
+                                    <td><code class="text-primary">/hub/models/playground/chat</code></td>
+                                    <td><code>AiHubController@simulateChat</code></td>
+                                    <td>محاكاة واختبار إرسال المحادثات للنماذج في بيئة الاختبار</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="endpoint-method method-post">POST</span></td>
+                                    <td><code class="text-primary">/api/v1/ai-models/route</code></td>
+                                    <td><code>AiRouteController@route</code></td>
+                                    <td>نقطة النهاية الأساسية للـ Gateway لتنفيذ الطلبات برمجياً من الـ Agents</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 5: Roadmap -->
+            <div class="tab-pane fade" id="tab-roadmap" role="tabpanel">
+                <div class="glass-card">
+                    <h4 class="fw-bold text-white mb-4"><i class="fa-solid fa-list-check text-success me-2"></i> خطة العمل التنفيذية لتجهيز الـ Hub بنسبة 100% (Action Plan)</h4>
+
+                    <div class="timeline-step">
+                        <div class="timeline-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                        <h5 class="fw-bold text-white mb-1">المرحلة 1: إصلاح واجهات المدخلات والمودالات (UI Core Fixes)</h5>
+                        <p class="text-secondary small mb-2">إعادة بناء مودال إضافة المفتاح <code>add-key.blade.php</code> وتزويده بالحقول الكاملة (المزود، المفتاح النصي، تاريخ الانتهاء، الأولوية) وتوصيله عبر AJAX مع <code>storeApiKey</code> مع معالجة استثناءات جافاسكريبت في الداش بورد.</p>
+                        <span class="badge badge-success">الأولوية: عاجل جداً</span>
+                    </div>
+
+                    <div class="timeline-step">
+                        <div class="timeline-icon"><i class="fa-solid fa-code-branch"></i></div>
+                        <h5 class="fw-bold text-white mb-1">المرحلة 2: تطوير الـ Multi-Provider Fallback Chain</h5>
+                        <p class="text-secondary small mb-2">تحديث قواعد البيانات لتخزين <code>fallback_chain</code> بدلاً من fallback واحد فقط، وتعديل <code>IntentRoutingEngine.php</code> و <code>CircuitBreaker.php</code> ليدعم المحاولة المتسلسلة على أكثر من مزود.</p>
+                        <span class="badge badge-info">الأولوية: عالية</span>
+                    </div>
+
+                    <div class="timeline-step">
+                        <div class="timeline-icon"><i class="fa-solid fa-chart-line"></i></div>
+                        <h5 class="fw-bold text-white mb-1">المرحلة 3: تتبع استهلاك المفاتيح والـ Scheduling</h5>
+                        <p class="text-secondary small mb-2">إضافة <code>api_key_id</code> لجدول <code>usage_logs</code> لربط التكلفة والتوكنات بأسماء المفاتيح، وتفعيل التدوير الآلي عبر Laravel Scheduler في <code>routes/console.php</code>.</p>
+                        <span class="badge badge-warning">الأولوية: متوسطة</span>
+                    </div>
+
+                    <div class="timeline-step">
+                        <div class="timeline-icon"><i class="fa-solid fa-wifi"></i></div>
+                        <h5 class="fw-bold text-white mb-1">المرحلة 4: الـ Streaming والـ Realtime WebSockets</h5>
+                        <p class="text-secondary small mb-0">إضافة محول SSE في <code>DynamicRestProvider.php</code> لتدفق الإجابات توكن بتوكن، وربط الـ Health Ribbon بـ Laravel Reverb WebSockets.</p>
+                        <span class="badge badge-info">الأولوية: تحسين ممتاز</span>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

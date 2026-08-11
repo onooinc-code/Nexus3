@@ -14,46 +14,57 @@ use App\Models\PeopleConnect\PeopleConnectMessage;
 use App\Models\PeopleConnect\PeopleConnectMessageAnalysis;
 use App\Models\PeopleConnect\PeopleConnectReplyDraft;
 use App\Models\PeopleConnect\PeopleConnectSession;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class PeopleConnectRealtimeBroadcaster
 {
     public function messageReceived(PeopleConnectMessage $message): void
     {
-        event(new MessageReceived($message));
+        $this->safeBroadcast(new MessageReceived($message), 'MessageReceived');
     }
 
     public function messageAnalyzed(PeopleConnectMessage $message, PeopleConnectMessageAnalysis $analysis): void
     {
-        event(new MessageAnalyzed($message, $analysis));
+        $this->safeBroadcast(new MessageAnalyzed($message, $analysis), 'MessageAnalyzed');
     }
 
     public function messageDelivered(PeopleConnectMessage $message): void
     {
-        event(new MessageDelivered($message));
+        $this->safeBroadcast(new MessageDelivered($message), 'MessageDelivered');
     }
 
     public function messageFailed(PeopleConnectMessage $message, string $reason = ''): void
     {
-        event(new MessageFailed($message, $reason));
+        $this->safeBroadcast(new MessageFailed($message, $reason), 'MessageFailed');
     }
 
     public function sessionOpened(PeopleConnectSession $session): void
     {
-        event(new SessionOpened($session));
+        $this->safeBroadcast(new SessionOpened($session), 'SessionOpened');
     }
 
     public function sessionClosed(PeopleConnectSession $session): void
     {
-        event(new SessionClosed($session));
+        $this->safeBroadcast(new SessionClosed($session), 'SessionClosed');
     }
 
     public function replyDraftCreated(PeopleConnectReplyDraft $draft): void
     {
-        event(new ReplyDraftCreated($draft));
+        $this->safeBroadcast(new ReplyDraftCreated($draft), 'ReplyDraftCreated');
     }
 
     public function autopilotBlocked(int $conversationId, string $reason): void
     {
-        event(new AutopilotBlocked($conversationId, $reason));
+        $this->safeBroadcast(new AutopilotBlocked($conversationId, $reason), 'AutopilotBlocked');
+    }
+
+    protected function safeBroadcast(object $event, string $eventName): void
+    {
+        try {
+            event($event);
+        } catch (Throwable $e) {
+            Log::warning("PeopleConnect realtime broadcast failed for [{$eventName}]: {$e->getMessage()}");
+        }
     }
 }

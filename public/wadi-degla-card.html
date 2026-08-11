@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wadi Degla Clubs - Real Membership Card Comparison</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --degla-yellow: #FFC72C;
+            --degla-black: #111111;
+            --border-color: #333333;
+            --card-bg: #141414;
+            --text-light: #FFFFFF;
+            --text-muted: #A0A0A0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            background-color: #0A0A0A;
+            color: var(--text-light);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .no-print {
+            background: #1A1A1A;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 850px;
+            border: 1px solid #333;
+        }
+
+        .btn {
+            background: var(--degla-yellow);
+            color: var(--degla-black);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 800;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .cards-wrapper {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Standard CR80 Card (380px x 240px) */
+        .cr80-card {
+            width: 380px;
+            height: 240px;
+            background: #111111;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1.5px solid #222222;
+        }
+
+        /* Front Header Bar - Replicating Actual Card Header */
+        .card-header {
+            background: var(--degla-yellow);
+            color: var(--degla-black);
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-logo-text {
+            font-size: 17px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+
+        .brand-sub {
+            font-size: 8px;
+            font-weight: 800;
+            display: block;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        .membership-tier-tag {
+            background: var(--degla-black);
+            color: var(--degla-yellow);
+            font-size: 8px;
+            font-weight: 900;
+            padding: 4px 8px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Front Main Layout */
+        .card-body {
+            padding: 12px 16px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        .member-photo-box {
+            width: 85px;
+            height: 105px;
+            border-radius: 8px;
+            border: 2px solid var(--degla-yellow);
+            overflow: hidden;
+            background: #222;
+            flex-shrink: 0;
+        }
+
+        .member-photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .member-details {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .member-name-ar {
+            font-size: 15px;
+            font-weight: 900;
+            color: #FFFFFF;
+            line-height: 1.2;
+        }
+
+        .member-name-en {
+            font-size: 9.5px;
+            font-weight: 700;
+            color: var(--degla-yellow);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 2px;
+        }
+
+        .detail-row span:first-child {
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .detail-row span:last-child {
+            color: #FFFFFF;
+            font-weight: 800;
+            direction: ltr;
+        }
+
+        /* Front Footer */
+        .card-footer {
+            background: #080808;
+            padding: 8px 16px;
+            border-top: 1px solid #222;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 8px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .all-branches-badge {
+            color: var(--degla-yellow);
+            font-weight: 800;
+        }
+
+        /* Back Card Styling */
+        .back-card {
+            background: #111111;
+        }
+
+        .mag-stripe {
+            width: 100%;
+            height: 36px;
+            background: #000000;
+            margin-top: 15px;
+        }
+
+        .back-body {
+            padding: 12px 16px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .back-rules {
+            font-size: 7.5px;
+            color: var(--text-muted);
+            line-height: 1.4;
+            text-align: justify;
+        }
+
+        .back-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-top: 1px solid #222;
+            padding-top: 8px;
+        }
+
+        .qr-box canvas {
+            background: white;
+            padding: 3px;
+            border-radius: 4px;
+        }
+
+        .club-contacts {
+            font-size: 8px;
+            color: #CCCCCC;
+            line-height: 1.4;
+            text-align: left;
+            direction: ltr;
+        }
+
+        @media print {
+            body { background: transparent; padding: 0; }
+            .no-print { display: none !important; }
+            .cards-wrapper { gap: 20px; }
+            .cr80-card { box-shadow: none; border: 1px solid #333; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print">
+        <div>
+            <strong>أندية وادي دجلة — الكارنيه المصمم المطابق للصور الحقيقية</strong><br>
+            <span style="font-size: 12px; color: #A0A0A0;">مراجعة واستنساخ دقيق لـ 4 صور لكارنيهات وادي دجلة الأصلية</span>
+        </div>
+        <button class="btn" onclick="window.print()">طباعة الكارنيه</button>
+    </div>
+
+    <div class="cards-wrapper">
+        
+        <!-- FRONT CARD -->
+        <div class="cr80-card">
+            <div class="card-header">
+                <div>
+                    <div class="brand-logo-text">WADI DEGLA CLUBS</div>
+                    <span class="brand-sub">أندية وادي دجلة - مجتمعات الأبطال</span>
+                </div>
+                <div class="membership-tier-tag">عضوية عامة عاملة</div>
+            </div>
+
+            <div class="card-body">
+                <div class="member-photo-box">
+                    <img src="/hedra.jpg?v=20260803_v2" alt="Hedra Adel Photo">
+                </div>
+
+                <div class="member-details">
+                    <div class="member-name-ar">هدرا عادل شفيق سكلا</div>
+                    <div class="member-name-en">Hedra Adel Shafik Sokla</div>
+
+                    <div class="detail-row">
+                        <span>رقم العضوية:</span>
+                        <span>WD-809421-EGP</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>الفرع الرئيسي:</span>
+                        <span>المعادي / شيراتون</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>نوع العضوية:</span>
+                        <span>عضوية أصلية عاملة</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>تاريخ التجديد:</span>
+                        <span>31 / 12 / 2026</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <span class="all-branches-badge">تسمح بالدخول لكافة فروع الجمهورية</span>
+                <span>الخط الساخن: 16224</span>
+            </div>
+        </div>
+
+        <!-- BACK CARD -->
+        <div class="cr80-card back-card">
+            <div class="mag-stripe"></div>
+
+            <div class="back-body">
+                <div class="back-rules">
+                    <strong>شروط واستخدام العضوية:</strong>
+                    هذا الكارنيه ملك لإدارة أندية وادي دجلة ويستعمل شخصياً بواسطة صاحبه فقط ولا يجوز التنازل عنه للغير. يجب إبراز الكارنيه عند بوابات الدخول ومرافق النادي المختلفة. في حالة العثور عليه يُرجى تسليمه لإدارة أقرب فرع من أندية وادي دجلة.
+                </div>
+
+                <div class="back-bottom">
+                    <div class="qr-box">
+                        <div id="qr-degla"></div>
+                    </div>
+
+                    <div class="club-contacts">
+                        <strong>Wadi Degla Clubs S.A.E</strong><br>
+                        Hotline: 16224 | Web: www.wadidegla.com<br>
+                        Cairo: Maadi, Sheraton, October, New Cairo, Heliopolis
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        window.onload = function() {
+            new QRCode(document.getElementById("qr-degla"), {
+                text: "https://www.wadidegla.com/verify?mem=WD-809421-EGP&name=Hedra+Adel&type=FULL_ACTIVE",
+                width: 50, height: 50, colorDark: "#111111"
+            });
+        };
+    </script>
+</body>
+</html>

@@ -160,8 +160,9 @@ class TaskExecutionService
             return false;
         }
 
-        // Only tasks in todo status can be executed
-        return $task->status === AgentTask::STATUS_TODO;
+        // Tasks in todo status or system tasks in in-progress status can be executed
+        return $task->status === AgentTask::STATUS_TODO
+            || ($task->type === 'system' && $task->status === AgentTask::STATUS_IN_PROGRESS);
     }
 
     /**

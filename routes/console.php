@@ -5,6 +5,9 @@ use App\Jobs\PeopleConnect\ReconcileWahaDeliveryStatusJob;
 use App\Jobs\PeopleConnect\SyncWahaContactsJob;
 use App\Jobs\PeopleConnect\SyncWahaConversationsJob;
 use App\Jobs\PeopleConnect\SyncWahaMessagesJob;
+use App\Jobs\SyncProviderModelsJob;
+use App\Jobs\SyncWahaChatsToFirebaseJob;
+use App\Models\AIProvider;
 use App\Services\TaskSchedulingService;
 use App\Services\Workflows\WorkflowScheduleService;
 use Illuminate\Foundation\Inspiring;
@@ -17,6 +20,7 @@ Artisan::command('inspire', function () {
 
 Schedule::command('ai:poll-health')->everyFiveMinutes();
 Schedule::command('ai:rotate-keys')->daily();
+Schedule::command('ai-hub:rotate-keys')->daily();
 
 Schedule::call(function () {
     app(TaskSchedulingService::class)->processDueTasks();
@@ -45,25 +49,26 @@ Schedule::command('monitor:settings-health')
 Schedule::job(new SyncWahaContactsJob, null, 'peopleconnect')->hourly();
 Schedule::job(new SyncWahaConversationsJob, null, 'peopleconnect')->hourly();
 Schedule::job(new SyncWahaMessagesJob, null, 'peopleconnect')->hourly();
+Schedule::job(new SyncWahaChatsToFirebaseJob, null, 'peopleconnect')->hourly(); // Added for Firebase Sync
 Schedule::job(new ReconcileWahaDeliveryStatusJob, null, 'peopleconnect')->hourly();
 Schedule::job(new CloseInactivePeopleConnectSessionsJob, null, 'peopleconnect')->everyFifteenMinutes();
 
 // Auto-sync providers based on their auto_sync_interval setting
 Schedule::call(function () {
-    \App\Models\AIProvider::where('is_active', true)
+    AIProvider::where('is_active', true)
         ->whereNotNull('auto_sync_interval')
         ->where('auto_sync_interval', '!=', 'never')
         ->get()
         ->each(function ($provider) {
-            $shouldSync = match($provider->auto_sync_interval) {
-                '6h'     => $provider->last_synced_at === null || $provider->last_synced_at->lt(now()->subHours(6)),
-                '12h'    => $provider->last_synced_at === null || $provider->last_synced_at->lt(now()->subHours(12)),
-                '24h'    => $provider->last_synced_at === null || $provider->last_synced_at->lt(now()->subDay()),
+            $shouldSync = match ($provider->auto_sync_interval) {
+                '6h' => $provider->last_synced_at === null || $provider->last_synced_at->lt(now()->subHours(6)),
+                '12h' => $provider->last_synced_at === null || $provider->last_synced_at->lt(now()->subHours(12)),
+                '24h' => $provider->last_synced_at === null || $provider->last_synced_at->lt(now()->subDay()),
                 'weekly' => $provider->last_synced_at === null || $provider->last_synced_at->lt(now()->subWeek()),
-                default  => false,
+                default => false,
             };
             if ($shouldSync) {
-                dispatch(new \App\Jobs\SyncProviderModelsJob($provider->id))->onQueue('ai-sync');
+                dispatch(new SyncProviderModelsJob($provider->id))->onQueue('ai-sync');
             }
         });
 })->hourly()->name('ai-providers:auto-sync');

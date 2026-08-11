@@ -43,4 +43,5 @@
 @include('hubs.partials.ai-hub.providers.filter-bar')
 @include('hubs.partials.ai-hub.providers.cards-grid')
 @include('hubs.partials.ai-hub.providers.drawers.add-edit')
+@include('hubs.partials.ai-hub.providers.drawers.edit-provider')
 @include('hubs.partials.ai-hub.providers.drawers.details-drawer')

@@ -12,6 +12,8 @@ use App\Http\Controllers\AiModelController;
 use App\Http\Controllers\AiProviderController;
 use App\Http\Controllers\AiRequestController;
 use App\Http\Controllers\AiRouteController;
+use App\Http\Controllers\Api\TelemetryController;
+use App\Http\Controllers\Api\V1\DomEventTriggerController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactAliasController;
 use App\Http\Controllers\ContactController;
@@ -41,6 +43,7 @@ use App\Http\Controllers\Monitoring\MetricsController;
 use App\Http\Controllers\NexusDashboardController;
 use App\Http\Controllers\NotificationBroadcastController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PanelController;
 use App\Http\Controllers\PeopleConnect\LiveMsgsController;
 use App\Http\Controllers\PeopleConnect\PeopleConnectController;
 use App\Http\Controllers\ProactiveAIController;
@@ -56,7 +59,9 @@ use App\Http\Controllers\WahaManageController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\WorkflowController;
 use App\Http\Controllers\WorkflowWebhookController;
+use App\Models\Agent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -64,9 +69,17 @@ use Laravel\Sanctum\PersonalAccessToken;
  * API Routes for Nexus Platform
  * All routes are prefixed with /api/v1
  */
+Route::post('/telemetry/upload/{deviceId}', [TelemetryController::class, 'uploadScreenshot']);
+Route::get('/telemetry/screenshot/{deviceId}', [TelemetryController::class, 'getLatestScreenshot']);
+Route::get('/telemetry/screenshots/{deviceId}', [TelemetryController::class, 'getAllScreenshots']);
+// Public Webhook Routes (Legacy no prefix)
+Route::post('/webhooks/waha', [WebhookController::class, 'handleWahaWebhook'])
+    ->name('webhooks.waha.legacy');
 
 // Public routes (no authentication required)
 Route::group(['prefix' => 'v1', 'middleware' => ['api']], function () {
+    Route::post('/webhooks/waha', [WebhookController::class, 'handleWahaWebhook'])
+        ->name('webhooks.waha');
 
     // Health check endpoint
     Route::get('/health', function (Request $request) {
@@ -98,10 +111,6 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api']], function () {
         return $resp;
     });
 
-    // WAHA WhatsApp webhook endpoint
-    Route::post('/webhooks/waha', [WebhookController::class, 'handleWahaWebhook'])
-        ->name('webhooks.waha');
-
     // Workflow webhook endpoint
     Route::post('/webhooks/workflows/{id}', [WorkflowWebhookController::class, 'handle'])
         ->name('webhooks.workflows');
@@ -112,6 +121,17 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api']], function () {
         Route::get('/health/queue', [HealthController::class, 'queue']);
         Route::get('/metrics', [MetricsController::class, 'metrics']);
         Route::get('/metrics/websocket', [MetricsController::class, 'websocket']);
+    });
+
+    Route::prefix('system')->group(function () {
+        Route::get('/routes', [SystemController::class, 'routes'])->name('system.routes');
+        Route::get('/schema', [SystemController::class, 'schema'])->name('system.schema');
+        Route::get('/codebase', [SystemController::class, 'codebase'])->name('system.codebase');
+        Route::get('/docs', [SystemController::class, 'docs'])->name('system.docs');
+        Route::get('/views', [SystemController::class, 'views'])->name('system.views');
+        Route::get('/readme', [SystemController::class, 'readme'])->name('system.readme');
+        Route::get('/queue-details', [SystemController::class, 'queueDetails'])->name('system.queue-details');
+        Route::post('/optimize-and-clear', [SystemController::class, 'optimizeAndClear'])->name('system.optimize-and-clear');
     });
 
     // Sanctum authentication routes
@@ -422,6 +442,12 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'auth:sanctum']], functi
     // Specific action routes (must come before resource)
     Route::get('/tasks/stats', [TaskController::class, 'getStats'])
         ->name('tasks.stats');
+    Route::get('/tasks/stats/by-type', [TaskController::class, 'getStatsByType'])
+        ->name('tasks.stats-by-type');
+    Route::get('/tasks/stats/timeline', [TaskController::class, 'getExecutionTimeline'])
+        ->name('tasks.stats-timeline');
+    Route::get('/tasks/stats/agents', [TaskController::class, 'getAgentPerformance'])
+        ->name('tasks.stats-agents');
     Route::get('/tasks/active', [TaskController::class, 'getActive'])
         ->name('tasks.active');
     Route::get('/tasks/queue-stats', [TaskController::class, 'getQueueStats'])
@@ -452,6 +478,17 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'auth:sanctum']], functi
     Route::get('/tasks/stats/by-type', [TaskController::class, 'getStatsByType'])
         ->name('tasks.stats-by-type');
 
+    // Antigravity Browser Agent Routes
+    Route::get('/agent-tasks/pending', [TaskController::class, 'getPendingBrowserTasks'])
+        ->name('agent-tasks.pending');
+    Route::post('/agent-tasks/{task}/status', [TaskController::class, 'updateStatusWithProof'])
+        ->name('agent-tasks.update-status');
+    Route::post('/agent-tasks', [TaskController::class, 'store'])
+        ->name('agent-tasks.store');
+
+    Route::post('/events/dom-trigger', [DomEventTriggerController::class, 'handle'])
+        ->name('events.dom-trigger');
+
     // Resource routes
     Route::apiResource('tasks', TaskController::class);
 
@@ -462,6 +499,12 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'auth:sanctum']], functi
         ->name('tasks.pause');
     Route::post('/tasks/{task}/resume', [TaskController::class, 'resume'])
         ->name('tasks.resume');
+    Route::post('/tasks/{task}/subtasks', [TaskController::class, 'addSubtask'])
+        ->name('tasks.subtasks.add');
+    Route::patch('/tasks/{task}/subtasks/{subtaskId}', [TaskController::class, 'toggleSubtask'])
+        ->name('tasks.subtasks.toggle');
+    Route::delete('/tasks/{task}/subtasks/{subtaskId}', [TaskController::class, 'deleteSubtask'])
+        ->name('tasks.subtasks.delete');
 
     Route::get('/stats/usage', [StatsController::class, 'usage'])
         ->name('stats.usage');
@@ -947,9 +990,22 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'auth:sanctum']], functi
  * System Management Routes
  */
 Route::group(['prefix' => 'v1', 'middleware' => ['api', 'auth:sanctum']], function () {
+    Route::get('/panels', [PanelController::class, 'index']);
+    Route::post('/panels', [PanelController::class, 'store']);
+    Route::put('/panels/{id}', [PanelController::class, 'update']);
+    Route::delete('/panels/{id}', [PanelController::class, 'destroy']);
+
+    Route::get('/agents/active', function () {
+        return response()->json(Agent::where('is_active', true)->get());
+    });
+
     Route::prefix('admin/system')->group(function () {
         Route::get('/status', [SystemController::class, 'status'])
             ->name('admin.system.status');
+        Route::get('/routes', [SystemController::class, 'routes'])
+            ->name('admin.system.routes');
+        Route::get('/schema', [SystemController::class, 'schema'])
+            ->name('admin.system.schema');
         Route::post('/service/start', [SystemController::class, 'startService'])
             ->name('admin.service.start');
         Route::post('/service/stop', [SystemController::class, 'stopService'])
@@ -987,6 +1043,20 @@ Route::group(['prefix' => 'v1/hedra-soul', 'middleware' => ['api', 'auth:sanctum
     Route::get('/approvals', [HedraSoulController::class, 'getApprovals']);
     Route::get('/notifications', [HedraSoulController::class, 'getNotifications']);
     Route::get('/status', [HedraSoulController::class, 'getStatus']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', function (Request $request) {
+        return response()->json($request->user());
+    });
+    Route::get('/panels', [PanelController::class, 'index']);
+    Route::post('/panels', [PanelController::class, 'store']);
+    Route::put('/panels/{id}', [PanelController::class, 'update']);
+    Route::delete('/panels/{id}', [PanelController::class, 'destroy']);
+
+    Route::get('/agents/active', function () {
+        return response()->json(Agent::where('is_active', true)->get());
+    });
 });
 
 // Fallback route

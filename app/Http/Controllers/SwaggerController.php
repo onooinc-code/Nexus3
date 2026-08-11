@@ -94,4 +94,54 @@ HTML;
         return response($html, 200)
             ->header('Content-Type', 'text/html; charset=UTF-8');
     }
+
+    /**
+     * Display Tasks Hub Swagger UI
+     */
+    public function tasksHubUi()
+    {
+        $path = public_path('tasks-hub-swagger.html');
+        if (! File::exists($path)) {
+            $path = base_path('Documentation/Api/tasks-hub-swagger.html');
+        }
+
+        return response(File::get($path), 200)
+            ->header('Content-Type', 'text/html; charset=UTF-8');
+    }
+
+    /**
+     * Serve Tasks Hub OpenAPI JSON Spec
+     */
+    public function tasksHubSpec()
+    {
+        $path = public_path('tasks-hub-openapi.json');
+        if (! File::exists($path)) {
+            $path = base_path('Documentation/Api/tasks-hub-openapi.json');
+        }
+
+        $spec = json_decode(File::get($path), true);
+        $spec['servers'] = [
+            [
+                'url' => config('app.url').'/api/v1',
+                'description' => 'Current Server',
+            ],
+        ];
+
+        return response()->json($spec)
+            ->header('Access-Control-Allow-Origin', '*')
+            ->header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+            ->header('Access-Control-Allow-Headers', 'Content-Type');
+    }
+
+    /**
+     * Serve Tasks Hub OpenAPI JS Export
+     */
+    public function tasksHubJs()
+    {
+        $path = public_path('tasks-hub-openapi.js');
+
+        return response(File::get($path), 200)
+            ->header('Content-Type', 'application/javascript; charset=UTF-8')
+            ->header('Access-Control-Allow-Origin', '*');
+    }
 }

@@ -65,6 +65,8 @@ class UsageTracker
                 ->where('is_active', true)
                 ->increment('current_spend', $totalCost);
 
+            $this->trackUsageStats($providerId, $inputTokens, $outputTokens, $totalCost);
+
         } catch (\Exception $e) {
             Log::error("Error tracking usage: {$e->getMessage()}");
             // Don't throw exception - usage tracking shouldn't break the main flow
@@ -130,6 +132,28 @@ class UsageTracker
         }
 
         return $query->get();
+/**
+     * Track aggregated usage stats for AI providers
+     */
+    protected function trackUsageStats($providerId, $inputTokens, $outputTokens, $latencyMs = 0)
+    {
+        $windowStart = now()->startOfHour();
+        $windowEnd = now()->endOfHour();
+
+        DB::table('ai_usage_stats')->updateOrInsert(
+            [
+                'ai_provider_id' => $providerId,
+                'window_start' => $windowStart,
+                'window_end' => $windowEnd,
+            ],
+            [
+                'requests_success' => DB::raw('requests_success + 1'),
+                'prompt_tokens' => DB::raw('prompt_tokens + ' . (int)$inputTokens),
+                'completion_tokens' => DB::raw('completion_tokens + ' . (int)$outputTokens),
+                'total_latency_ms' => DB::raw('total_latency_ms + ' . (int)$latencyMs),
+                'updated_at' => now(),
+            ]
+        );
     }
 
     /**

@@ -5,13 +5,16 @@ namespace App\Events\PeopleConnect;
 use App\Models\PeopleConnect\PeopleConnectMessage;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MessageReceived implements ShouldBroadcast
+class MessageReceived implements ShouldBroadcastNow, ShouldQueueAfterCommit
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
+
+    public bool $deleteWhenMissingModels = true;
 
     public function __construct(public PeopleConnectMessage $message) {}
 

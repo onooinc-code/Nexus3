@@ -229,7 +229,7 @@ return [
         ],
         'default-supervisor' => [
             'connection' => 'redis',
-            'queue' => ['default'],
+            'queue' => ['default', 'messages'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 2,

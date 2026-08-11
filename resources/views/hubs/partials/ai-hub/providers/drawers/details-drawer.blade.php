@@ -279,16 +279,19 @@
             tbody.append(`
                 <tr>
                     <td class="text-light fw-semibold">${k.name}</td>
-                    <td class="text-muted" style="font-family: monospace;">${k.key_prefix}...</td>
+                    <td class="text-muted" style="font-family: monospace;">${k.key_prefix || '••••'}...</td>
                     <td class="text-muted" style="font-size: 0.75rem;">${lastUsed}</td>
                     <td>${defBadge}</td>
                     <td>
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-link text-muted p-0" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow">
-                                ${!k.is_default ? `<li><a class="dropdown-item" href="#" onclick="setDefaultKey('${k.id}'); return false;">Set as Default</a></li>` : ''}
-                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteKey('${k.id}'); return false;">Delete</a></li>
-                            </ul>
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-sm btn-outline-info py-0 px-2" onclick="pingSingleKey('${k.id}')" title="Ping Key"><i class="fa-solid fa-plug"></i></button>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-link text-muted p-0" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow">
+                                    ${!k.is_default ? `<li><a class="dropdown-item" href="#" onclick="setDefaultKey('${k.id}'); return false;">Set as Default</a></li>` : ''}
+                                    <li><a class="dropdown-item text-danger" href="#" onclick="deleteKey('${k.id}'); return false;">Delete Key</a></li>
+                                </ul>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -416,6 +419,28 @@
             success: function() {
                 window.Nexus.notify('Default key updated', 'success');
                 $.get(`/api/v1/ai/providers/${pId}/details`, r => renderKeysList(r.data.api_keys));
+            }
+        });
+    };
+
+    window.pingSingleKey = function(keyId) {
+        window.Nexus.showTaskLoader('Testing API key...', 'Pinging provider via key...');
+        $.ajax({
+            url: `{{ route("hub.models.api-keys.store") }}/${keyId}/ping`,
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            success: function(res) {
+                window.Nexus.hideTaskLoader();
+                if (res.success) {
+                    window.Nexus.notify(res.message || 'Key ping successful!', 'success');
+                } else {
+                    window.Nexus.notify(res.message || 'Key ping failed.', 'error');
+                }
+            },
+            error: function(xhr) {
+                window.Nexus.hideTaskLoader();
+                const res = xhr.responseJSON;
+                window.Nexus.notify((res && res.message) ? res.message : 'Key ping failed.', 'error');
             }
         });
     };

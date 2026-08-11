@@ -23,6 +23,8 @@ class PlaygroundChatRequest extends FormRequest
                 'string',
                 Rule::exists('ai_models', 'id')->where(function ($query) {
                     $query->where('provider_id', $this->input('provider_id'));
+                })->or(function ($query) {
+                    $query->where('id', $this->input('model_id'));
                 }),
             ],
             'message' => ['required', 'string'],

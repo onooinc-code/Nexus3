@@ -47,17 +47,20 @@
         
         // Fetch and load dynamic telemetry for dashboard
         fetch('{{ route("hub.models.telemetry") }}')
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP Error ' + res.status);
+                return res.json();
+            })
             .then(json => {
-                if (json.success) {
+                if (json && json.success && json.data) {
                     const data = json.data;
 
                     // Update Card Values
-                    $('#card-total-requests').text(Number(data.total_requests_24h).toLocaleString());
-                    $('#card-success-rate-val').text(data.success_rate + '%');
-                    $('#card-avg-latency').html(data.avg_latency + '<span class="fs-6 text-muted">ms</span>');
-                    $('#card-total-cost').text('$' + Number(data.total_cost_month).toFixed(2));
-                    $('#card-cache-hit-val').text(data.cache_hit_rate + '%');
+                    if ($('#card-total-requests').length) $('#card-total-requests').text(Number(data.total_requests_24h || 0).toLocaleString());
+                    if ($('#card-success-rate-val').length) $('#card-success-rate-val').text((data.success_rate || 100) + '%');
+                    if ($('#card-avg-latency').length) $('#card-avg-latency').html((data.avg_latency || 0) + '<span class="fs-6 text-muted">ms</span>');
+                    if ($('#card-total-cost').length) $('#card-total-cost').text('$' + Number(data.total_cost_month || 0).toFixed(2));
+                    if ($('#card-cache-hit-val').length) $('#card-cache-hit-val').text((data.cache_hit_rate || 0) + '%');
 
                     // Success Rate Doughnut
                     if(document.getElementById('chart-success-rate')) {

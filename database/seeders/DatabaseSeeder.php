@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             SystemAgentSeeder::class,
             Phase02Seeder::class,
             AiProvidersSeeder::class,
+            ErtugrulBrowserAgentSeeder::class,
             // TestDataSeeder::class, // Uncomment this line to generate random test data
         ]);
     }

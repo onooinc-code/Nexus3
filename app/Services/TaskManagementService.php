@@ -35,6 +35,12 @@ class TaskManagementService
             'due_date' => 'nullable|date',
             'type' => 'required|in:manual,agent,system',
             'payload_data' => 'nullable|json',
+            'origin_agent_id' => 'nullable|string|max:255',
+            'target_agent_id' => 'nullable|string|max:255',
+            'task_type' => 'nullable|in:immediate,recurring,event_driven,pipeline',
+            'dynamic_system_instruction' => 'nullable|string',
+            'execution_proof' => 'nullable|array',
+            'dom_event_trigger' => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
@@ -62,6 +68,12 @@ class TaskManagementService
             'progress' => 'sometimes|integer|min:0|max:100',
             'payload_data' => 'sometimes|json',
             'result_data' => 'sometimes|json',
+            'origin_agent_id' => 'sometimes|nullable|string|max:255',
+            'target_agent_id' => 'sometimes|nullable|string|max:255',
+            'task_type' => 'sometimes|nullable|in:immediate,recurring,event_driven,pipeline',
+            'dynamic_system_instruction' => 'sometimes|nullable|string',
+            'execution_proof' => 'sometimes|nullable|array',
+            'dom_event_trigger' => 'sometimes|nullable|array',
         ]);
 
         if ($validator->fails()) {

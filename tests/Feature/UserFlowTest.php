@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Workflow;
 use App\Services\Workflows\WorkflowRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 class UserFlowTest extends TestCase
@@ -144,7 +145,7 @@ class UserFlowTest extends TestCase
 
     public function test_settings_management_flow(): void
     {
-        \Illuminate\Support\Facades\Event::fake();
+        Event::fake();
         $user = User::factory()->create(['is_admin' => true, 'is_super_admin' => true]);
         $this->actingAs($user, 'sanctum');
 

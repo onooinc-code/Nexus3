@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Events\PeopleConnect\MessageAnalyzed;
+use App\Events\PeopleConnect\MessageReceived;
+use App\Events\PeopleConnect\SessionOpened;
 use App\Jobs\SyncMemoryJob;
 use App\Models\AIModel;
 use App\Models\AIProvider;
@@ -31,9 +34,9 @@ class IntegrationTest extends TestCase
     public function test_waha_webhook_receives_and_stores_message(): void
     {
         Event::fake([
-            \App\Events\PeopleConnect\MessageReceived::class,
-            \App\Events\PeopleConnect\MessageAnalyzed::class,
-            \App\Events\PeopleConnect\SessionOpened::class,
+            MessageReceived::class,
+            MessageAnalyzed::class,
+            SessionOpened::class,
         ]);
 
         $response = $this->postJson('/api/v1/webhooks/waha', [
@@ -55,9 +58,9 @@ class IntegrationTest extends TestCase
     public function test_waha_webhook_creates_contact_if_not_exists(): void
     {
         Event::fake([
-            \App\Events\PeopleConnect\MessageReceived::class,
-            \App\Events\PeopleConnect\MessageAnalyzed::class,
-            \App\Events\PeopleConnect\SessionOpened::class,
+            MessageReceived::class,
+            MessageAnalyzed::class,
+            SessionOpened::class,
         ]);
         $this->postJson('/api/v1/webhooks/waha', [
             'event' => 'message',
@@ -160,9 +163,9 @@ class IntegrationTest extends TestCase
     public function test_full_conversation_flow_from_webhook_to_response(): void
     {
         Event::fake([
-            \App\Events\PeopleConnect\MessageReceived::class,
-            \App\Events\PeopleConnect\MessageAnalyzed::class,
-            \App\Events\PeopleConnect\SessionOpened::class,
+            MessageReceived::class,
+            MessageAnalyzed::class,
+            SessionOpened::class,
         ]);
 
         $contact = Contact::factory()->create(['phone' => '1234567890']);

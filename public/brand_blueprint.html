@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrandErp & AI Agents - الهيكل التنظيمي الشامل (v3.0)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #333; }
+        .hero { background: linear-gradient(135deg, #1a2a6c, #11998e, #38ef7d); color: white; padding: 40px 0; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
+        .dept-card { border: none; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 30px; border-top: 5px solid; }
+        .dept-card.exec { border-top-color: #2c3e50; }
+        .dept-card.eng { border-top-color: #2980b9; }
+        .dept-card.ai { border-top-color: #8e44ad; }
+        .dept-card.sales { border-top-color: #27ae60; }
+        .dept-card.marketing { border-top-color: #f39c12; }
+        .dept-card.ops { border-top-color: #e67e22; }
+        .dept-card.finance { border-top-color: #16a085; }
+        .dept-card.legal { border-top-color: #c0392b; }
+        .dept-title { font-size: 1.4rem; font-weight: bold; padding: 15px 20px; background-color: #fff; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; }
+        .section-title { font-size: 1.1rem; font-weight: 700; color: #2c3e50; margin-top: 15px; margin-bottom: 10px; border-right: 3px solid #3498db; padding-right: 10px; }
+        .agent-role { background-color: #f8f0ff; padding: 10px; border-radius: 6px; border: 1px solid #ebd4ff; margin-bottom: 10px; }
+        .human-role { background-color: #f0f7ff; padding: 10px; border-radius: 6px; border: 1px solid #d4e6ff; margin-bottom: 10px; }
+        .context-box { background-color: #fff8e1; border-right: 4px solid #ffc107; padding: 12px; border-radius: 4px; font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <div class="container">
+            <h1 class="display-4 fw-bold"><i class="fas fa-sitemap me-2"></i> BrandErp & AI Agents</h1>
+            <p class="lead">الهيكل التنظيمي الشامل للشركات (الإصدار 3.0 المستخرج من أبحاث DeepSearch & Claude)</p>
+            <p class="small opacity-75">خريطة الإدارات، الأهداف، متطلبات التشغيل البشرية والآلية، والتوظيف للسوق المصري</p>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- الإدارة التنفيذية -->
+        <div class="card dept-card exec">
+            <div class="dept-title text-dark"><i class="fas fa-chess-king text-dark"></i> الإدارة العليا ومكتب الـ CEO</div>
+            <div class="card-body">
+                <div class="section-title">الهدف الاستراتيجي والدور</div>
+                <p>بناء علاقات الثقة والمصداقية مع صانعي القرار (C-level) في المصانع والشركات الكبرى (Class A/B). البيع في مصر يعتمد على بناء العلاقات الشخصية القوية قبل التكنولوجيا.</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="section-title">الأدوار البشرية</div>
+                        <div class="human-role"><strong>CEO / المؤسس:</strong> إدارة العلاقات مع الحسابات الكبرى، تمثيل الشركة في المعارض، وبناء التحالفات.</div>
+                        <div class="human-role"><strong>مجلس المستشارين:</strong> خبراء من قطاعات الصناعة والصحة لفتح الأبواب للشركة (Wasta).</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="section-title">أدوار وكلاء الذكاء الاصطناعي</div>
+                        <div class="agent-role"><strong>Executive Intelligence Agent:</strong> يراقب أخبار السوق، المنافسين، والتغييرات القانونية، ويقدم موجز يومي للـ CEO.</div>
+                        <div class="agent-role"><strong>Board Reporting Agent:</strong> يجمع بيانات الأداء (KPIs) من كل الأقسام تلقائياً لعمل تقارير مجلس الإدارة.</div>
+                    </div>
+                </div>
+
+                <div class="section-title mt-4">سياق السوق المصري (Localization)</div>
+                <div class="context-box">
+                    نجاح الصفقات الكبيرة يتطلب "رأس مال علاقات" قوي مع غرف الصناعة ونقابات الأطباء. كما يجب مراعاة تباطؤ دورة اتخاذ القرار خلال شهر رمضان والاستعداد له استراتيجياً.
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. AI Product & Engineering -->
+        <div class="card dept-card eng">
+            <div class="dept-title text-primary"><i class="fas fa-laptop-code"></i> ١. قسم هندسة المنتجات وتطوير الـ ERP</div>
+            <div class="card-body">
+                <div class="section-title">الهدف الاستراتيجي والدور</div>
+                <p>بناء وصيانة الكود الأساسي لنظام BrandErp (الحسابات، الموارد البشرية، المخازن، إلخ)، وضمان الأداء، قابلية التوسع، وتوفير بيئة قوية لعمل وكلاء الذكاء الاصطناعي.</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="section-title">الأدوار البشرية</div>
+                        <div class="human-role"><strong>Senior Backend/Frontend Engineers:</strong> تطوير الكود، التركيز على واجهات RTL عربية ممتازة (Vue.js/Laravel).</div>
+                        <div class="human-role"><strong>Database Architects:</strong> تصميم قواعد بيانات تدعم الـ Multi-tenancy واللغة العربية بكفاءة عالية.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="section-title">أدوار وكلاء الذكاء الاصطناعي</div>
+                        <div class="agent-role"><strong>Code Review Agent:</strong> مراجعة الأكواد آلياً لاكتشاف الثغرات وتحسين الجودة قبل المراجعة البشرية.</div>
+                        <div class="agent-role"><strong>Bug Triage Agent:</strong> تصنيف بلاغات الأعطال وتوجيهها للمهندس المختص بناءً على درجة الخطورة.</div>
+                    </div>
+                </div>
+
+                <div class="section-title mt-4">سياق السوق المصري (Localization)</div>
+                <div class="context-box">
+                    - <strong>الفاتورة الإلكترونية (ETA):</strong> تكامل إلزامي قانونياً مع نظام الضرائب المصرية.<br>
+                    - <strong>العربية (RTL):</strong> التصميم من اليمين لليسار هو الأساس، وليس تعديلاً لاحقاً. تنسيق الأرقام والعملة (جنيه مصري) يجب أن يكون أصلياً.
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. AI Research & Innovation (R&D) -->
+        <div class="card dept-card ai">
+            <div class="dept-title text-purple" style="color: #8e44ad;"><i class="fas fa-brain"></i> ٢. قسم أبحاث الذكاء الاصطناعي وهندسة الـ Prompts (R&D)</div>
+            <div class="card-body">
+                <div class="section-title">الهدف الاستراتيجي والدور</div>
+                <p>البحث وتطوير عقول الوكلاء الآليين. هذا القسم لا يكتب كود النظام، بل يبحث في أحدث نماذج الذكاء الاصطناعي، ويصمم الـ Prompts الدقيقة لضمان تصرف الوكلاء باحترافية وتحدثهم باللهجة الصحيحة دون "هلوسة".</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="section-title">الأدوار البشرية</div>
+                        <div class="human-role"><strong>Head of Prompt Engineering:</strong> وضع سياسات التخاطب للوكلاء (Guardrails).</div>
+                        <div class="human-role"><strong>AI UX Writer:</strong> صياغة لغة وتوجه الوكيل ليكون مناسباً لثقافة الشركات المصرية.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="section-title">أدوار وكلاء الذكاء الاصطناعي</div>
+                        <div class="agent-role"><strong>Prompt Version Control Agent:</strong> إدارة سجل إصدارات الـ Prompts واختبار الـ A/B.</div>
+                        <div class="agent-role"><strong>Hallucination Detection Agent:</strong> وكيل يراقب ردود الوكلاء الآخرين للتأكد من عدم اختلاقهم لمعلومات مالية أو إدارية.</div>
+                        <div class="agent-role"><strong>Compute Optimization (AI-R) Agent:</strong> مراقبة تكاليف استهلاك النماذج (Tokens) وتقليلها لضبط هوامش الربح.</div>
+                    </div>
+                </div>
+
+                <div class="section-title mt-4">سياق السوق المصري (Localization)</div>
+                <div class="context-box">
+                    فهم الفروق بين اللغة العربية الفصحى (للعقود) والعامية المصرية (للمحادثات اليومية). الوكيل يجب أن يستخدم ألقاب الاحترام المناسبة (يا فندم، باشمهندس) عند التحدث مع المديرين.
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Revenue & Commercial Growth -->
+        <div class="card dept-card sales">
+            <div class="dept-title text-success"><i class="fas fa-hand-holding-usd"></i> ٣. قسم المبيعات والنمو التجاري (Revenue & Sales)</div>
+            <div class="card-body">
+                <div class="section-title">الهدف الاستراتيجي والدور</div>
+                <p>إدارة دورة المبيعات الطويلة للشركات الكبرى (B2B)، والتي تعتمد بشكل كبير على المقابلات الشخصية، بالإضافة إلى إدارة الشركاء (Resellers) وتقديم التوقعات المالية (Forecasting).</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="section-title">الأدوار البشرية</div>
+                        <div class="human-role"><strong>Enterprise Account Executives:</strong> تنفيذ المقابلات، العروض (Demos)، والتفاوض المباشر.</div>
+                        <div class="human-role"><strong>Account Managers (Farmers):</strong> الحفاظ على العلاقات بعد البيع (عزومات رمضان، هدايا الأعياد) لضمان تجديد العقود.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="section-title">أدوار وكلاء الذكاء الاصطناعي</div>
+                        <div class="agent-role"><strong>Lead Research Agent:</strong> تجميع معلومات دقيقة عن الشركة المستهدفة قبل المقابلة (من لينكدإن والأخبار).</div>
+                        <div class="agent-role"><strong>Proposal Generator Agent:</strong> صياغة العروض الفنية والمالية (Proposals) باللغتين العربية والإنجليزية بناءً على متطلبات العميل.</div>
+                    </div>
+                </div>
+
+                <div class="section-title mt-4">سياق السوق المصري (Localization)</div>
+                <div class="context-box">
+                    - <strong>دورة المبيعات:</strong> قد تمتد من 3 إلى 18 شهراً. صناعة القرار تتم في مستوى الـ C-Level.<br>
+                    - <strong>أنظمة الدفع:</strong> الشركات تطلب نظام دفع على دفعات (Installments). يجب إضافة بنود لحماية السعر من تقلبات الجنيه المصري مقابل الدولار (بسبب تكاليف استضافة الـ LLM).
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Marketing & Brand -->
+        <div class="card dept-card marketing">
+            <div class="dept-title text-warning"><i class="fas fa-bullhorn text-dark"></i> ٤. قسم التسويق والعلامة التجارية (Marketing & Brand)</div>
+            <div class="card-body">
+                <div class="section-title">الهدف الاستراتيجي والدور</div>
+                <p>بناء صورة BrandErp كـ "المرجعية الأولى في التحول الرقمي بالذكاء الاصطناعي في مصر". توليد عملاء محتملين (Leads) ذوي جودة عالية عبر المحتوى والإعلانات.</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="section-title">الأدوار البشرية</div>
+                        <div class="human-role"><strong>Content Strategist:</strong> مراجعة المحتوى وضمان جودته وصحته المهنية (بالعربية والإنجليزية).</div>
+                        <div class="human-role"><strong>Paid Media Specialist:</strong> إدارة إعلانات LinkedIn و Google لضمان الوصول للـ C-Level.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="section-title">أدوار وكلاء الذكاء الاصطناعي</div>
+                        <div class="agent-role"><strong>First-Draft Content Agent:</strong> كتابة المسودات الأولى للمقالات والمنشورات.</div>
+                        <div class="agent-role"><strong>Email Nurture Agent:</strong> إدارة حملات المتابعة عبر الإيميل والواتساب لتثقيف العميل على مدار أشهر.</div>
+                    </div>
+                </div>
+
+                <div class="section-title mt-4">سياق السوق المصري (Localization)</div>
+                <div class="context-box">
+                    نقص المحتوى العربي التقني القوي في مجال الـ B2B يعتبر فرصة ممتازة للظهور كقائد للسوق. يجب التركيز على LinkedIn كمنصة أساسية لاصطياد أصحاب الشركات، والواتساب للتواصل المباشر.
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Customer Success & Education -->
+        <div class="card dept-card ops">
+            <div class="dept-title text-dark"><i class="fas fa-graduation-cap text-warning"></i> ٥. قسم نجاح العملاء، التشغيل، وإدارة التغيير</div>
+            <div class="card-body">
+                <div class="section-title">الهدف الاستراتيجي والدور</div>
+                <p>تقليل مقاومة الموظفين للنظام الجديد (Change Management)، تدريبهم، تقديم دعم فني 24/7، ونقل البيانات القديمة (Legacy Data Migration) للعميل الجديد.</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="section-title">الأدوار البشرية</div>
+                        <div class="human-role"><strong>Change Management Specialists:</strong> التعامل النفسي والعملي مع الموظفين الخائفين من أن يحل الـ AI مكانهم.</div>
+                        <div class="human-role"><strong>L2/L3 Support Engineers:</strong> التدخل في المشاكل التقنية المعقدة التي يعجز الوكيل الآلي عن حلها.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="section-title">أدوار وكلاء الذكاء الاصطناعي</div>
+                        <div class="agent-role"><strong>L1 Support Agent (WhatsApp):</strong> وكيل يرد 24/7 على أسئلة التشغيل البسيطة، يقرأ رسايل الواتس الصوتية العامية ويترجمها لحلول.</div>
+                        <div class="agent-role"><strong>Legacy Data Parsing Agent:</strong> وكيل يستخرج البيانات من الفواتير والأوراق القديمة (OCR) لإدخالها للنظام الجديد.</div>
+                    </div>
+                </div>
+
+                <div class="section-title mt-4">سياق السوق المصري (Localization)</div>
+                <div class="context-box">
+                    البيانات القديمة في المصانع المصرية غالباً مشتتة أو غير موثقة (دفاتر ورقية/Excel). كما أن تدريب الموظفين يجب أن يعتمد على الفيديوهات القصيرة (3 دقائق) بالعامية، لأنهم لا يقرأون الكتيبات الطويلة.
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Legal, Privacy & Compliance -->
+        <div class="card dept-card legal">
+            <div class="dept-title text-danger"><i class="fas fa-balance-scale"></i> ٦. قسم الشؤون القانونية، حماية البيانات، والامتثال (Zero-Trust)</div>
+            <div class="card-body">
+                <div class="section-title">الهدف الاستراتيجي والدور</div>
+                <p>حماية الشركة من المخاطر القانونية، صياغة العقود، وضمان الامتثال لقوانين حماية البيانات المصرية، وحماية بيانات العملاء من الهجمات السيبرانية أو هلوسات الذكاء الاصطناعي.</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="section-title">الأدوار البشرية</div>
+                        <div class="human-role"><strong>Data Protection Officer (DPO):</strong> مسؤول قانون حماية البيانات (PDPL).</div>
+                        <div class="human-role"><strong>Legal Counsel:</strong> صياغة عقود التشغيل واتفاقيات مستوى الخدمة (SLA).</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="section-title">أدوار وكلاء الذكاء الاصطناعي</div>
+                        <div class="agent-role"><strong>PII Redaction Agent:</strong> وكيل يمسح البيانات الشخصية الحساسة من قواعد البيانات قبل تدريب نماذج الذكاء الاصطناعي.</div>
+                        <div class="agent-role"><strong>Contract Review Agent:</strong> يراجع العقود الواردة ويكتشف البنود غير المعتادة ليراجعها المحامي.</div>
+                    </div>
+                </div>
+
+                <div class="section-title mt-4">سياق السوق المصري (Localization)</div>
+                <div class="context-box">
+                    - <strong>قانون حماية البيانات (PDPL رقم 151 لسنة 2020):</strong> يمنع نقل بيانات العملاء لخوادم خارجية دون موافقة. يجب توفير استضافة محلية (Data Localization) للجهات الحكومية والطبية.<br>
+                    - العقود الملزمة في مصر يجب أن تكون باللغة العربية.
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. Vertical-Specific Engineering (الأقسام المتخصصة) -->
+        <div class="card dept-card">
+            <div class="dept-title text-white bg-secondary"><i class="fas fa-industry"></i> ٧. قسم الهندسة الصناعية والطبية المتخصصة (Verticals)</div>
+            <div class="card-body">
+                <div class="section-title">الهدف الاستراتيجي والدور</div>
+                <p>تخصيص النظام ليناسب قطاعات بعينها بدقة شديدة (المستشفيات، المصانع الكبرى)، وربطه بالأجهزة الطبية أو ماكينات المصانع.</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="section-title">الأدوار البشرية</div>
+                        <div class="human-role"><strong>Healthcare Informatics Leads:</strong> ضمان توافق النظام مع معايير المستشفيات (GAHAR/JCI).</div>
+                        <div class="human-role"><strong>IoT/SCADA Engineers:</strong> ربط النظام بمستشعرات ماكينات المصانع.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="section-title">أدوار وكلاء الذكاء الاصطناعي</div>
+                        <div class="agent-role"><strong>Medical Data Structuring Agent:</strong> وكيل يفهم المصطلحات الطبية لتنظيم بيانات المرضى (ممنوع عليه الهلوسة نهائياً).</div>
+                        <div class="agent-role"><strong>Predictive Maintenance Agent:</strong> وكيل يراقب أداء ماكينات المصنع ويطلب الصيانة قبل العطل.</div>
+                    </div>
+                </div>
+
+                <div class="section-title mt-4">سياق السوق المصري (Localization)</div>
+                <div class="context-box">
+                    تطبيق معايير هيئة الاعتماد والرقابة الصحية (GAHAR) أمر إلزامي لدخول سوق المستشفيات الخاصة (Class A) في مصر.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

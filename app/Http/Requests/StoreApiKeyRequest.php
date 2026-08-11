@@ -25,9 +25,13 @@ class StoreApiKeyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'provider' => ['required', 'string'],
+            'provider_id' => ['nullable', 'string'],
+            'provider' => ['nullable', 'string'],
             'api_key' => ['required', 'string'],
             'name' => ['nullable', 'string', 'max:255'],
+            'expires_at' => ['nullable', 'date'],
+            'priority' => ['nullable', 'integer'],
+            'is_default' => ['nullable', 'boolean'],
         ];
     }
 }

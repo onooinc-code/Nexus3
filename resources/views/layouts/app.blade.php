@@ -7,7 +7,7 @@
     @auth
         <meta name="user-id" content="{{ auth()->id() }}">
     @endauth
-    <title>@yield('page_title', 'Nexus Hub') — Nexus V2</title>
+    <title>@yield('page_title', 'Nexus Hub') — Nexus V3</title>
 
     <!-- Local Vendor Styles (Offline-first) -->
     <link rel="stylesheet" href="{{ asset('vendor/jquery-ui/css/jquery-ui.min.css') }}">
@@ -26,12 +26,40 @@
         }
         body { font-family: var(--font-sans); }
         .font-mono, [style*="JetBrains Mono"] { font-family: var(--font-mono) !important; }
+
+        /* Ensure Notification Center floats above ALL page elements across all hubs */
+        #main-topbar, .navbar {
+            position: relative !important;
+            z-index: 99990 !important;
+            overflow: visible !important;
+        }
+        #page-content-wrapper {
+            position: relative !important;
+            z-index: 1030 !important;
+            overflow: visible !important;
+        }
+        #notification-hub {
+            position: relative !important;
+            z-index: 99995 !important;
+            overflow: visible !important;
+        }
+        #notification-dropdown {
+            position: absolute !important;
+            top: calc(100% + 8px) !important;
+            right: 0 !important;
+            z-index: 999999 !important;
+        }
     </style>
 
     @stack('styles')
 </head>
 <body>
-
+    <script>
+        // Immediately restore main sidebar state before render to prevent FOUC
+        if (localStorage.getItem('nexus_main_sidebar_toggled') === '1') {
+            document.body.classList.add('toggled');
+        }
+    </script>
     <!-- ── Autopilot Warning Banner (Hidden) ── -->
     <div id="autopilot-banner" class="autopilot-warning-banner nx-autopilot-warning-pulse" style="display: none;">
         <i class="fa-solid fa-triangle-exclamation me-2"></i>
@@ -63,7 +91,7 @@
                     <i class="fa-solid fa-network-wired"></i>
                 </div>
                 <span>Nexus</span>
-                <span class="brand-version">V2</span>
+                <span class="brand-version">V3</span>
             </div>
 
             <!-- Navigation -->
@@ -145,6 +173,12 @@
 
                 <div class="nav-section-label mt-2">System</div>
 
+                <a href="{{ route('hub.credentials') }}"
+                   class="list-group-item list-group-item-action {{ request()->is('hub/credentials*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-key"></i>
+                    <span>Credentials Hub</span>
+                </a>
+
                 <a href="{{ url('/hub/logs') }}"
                    class="list-group-item list-group-item-action {{ request()->is('hub/logs') ? 'active' : '' }}">
                     <i class="fa-solid fa-terminal"></i>
@@ -205,22 +239,41 @@
                 </div>
 
                 <div class="ms-auto d-flex align-items-center gap-3">
-                    <!-- Queue Status Pill -->
-                    <div id="queue-status-pill" class="d-none d-md-flex align-items-center gap-2 px-3 py-1 rounded-pill"
-                         style="background: var(--nexus-teal-dim); border: 1px solid hsla(174,90%,41%,0.3); font-size: 0.72rem; font-family: 'JetBrains Mono';">
-                        <span class="agent-status-orb busy" style="width: 6px; height: 6px;"></span>
+                    <!-- Queue Status Pill (Clickable link to Horizon) -->
+                    <a href="/horizon" target="_blank" id="queue-status-pill" class="d-none d-md-flex align-items-center gap-2 px-3 py-1 rounded-pill text-decoration-none"
+                         style="background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); font-size: 0.72rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; transition: all 0.2s ease;"
+                         title="Click to view Laravel Horizon Queue Dashboard">
+                        <span id="queue-status-orb" class="agent-status-orb online" style="width: 6px; height: 6px;"></span>
                         <span id="queue-status-text" class="text-light">Queue Active</span>
-                    </div>
+                    </a>
 
                     <!-- Notifications Hub -->
                     @include('components.notification-hub')
 
-                    <!-- Horizon Link -->
-                    <a href="/horizon" target="_blank" class="btn btn-sm d-none d-md-flex align-items-center gap-2"
-                       style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: var(--text-secondary); font-size: 0.78rem; padding: 6px 12px; text-decoration: none;">
-                        <i class="fa-solid fa-gauge" style="font-size: 0.75rem;"></i>
+                    <!-- Horizon Dashboard Link -->
+                    <a href="/horizon" target="_blank" id="horizon-btn" class="btn btn-sm d-none d-md-flex align-items-center gap-2"
+                       style="background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.3); border-radius: 8px; color: #a5b4fc; font-size: 0.78rem; padding: 6px 12px; text-decoration: none; transition: all 0.2s ease;"
+                       title="Open Laravel Horizon Dashboard">
+                        <i class="fa-solid fa-gauge-high text-primary" style="font-size: 0.8rem;"></i>
                         <span>Horizon</span>
+                        <span id="horizon-status-dot" class="agent-status-orb online" style="width: 6px; height: 6px;"></span>
                     </a>
+
+                    <!-- Quick Clear Fast Action Button (No Modal) -->
+                    <button type="button" id="quick-clear-btn" class="btn btn-sm d-flex align-items-center gap-1.5"
+                            style="background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.35); border-radius: 8px; color: #fef08a; font-size: 0.78rem; padding: 6px 10px; transition: all 0.2s ease;"
+                            title="Quick Clear Cache & Hard Refresh (One-Click Silent Mode)">
+                        <i class="fa-solid fa-bolt text-warning" style="font-size: 0.78rem;"></i>
+                        <span class="d-none d-xl-inline fw-medium">Quick Clear</span>
+                    </button>
+
+                    <!-- System Optimize & Clear Cache Button (Modal Mode) -->
+                    <button type="button" id="system-optimize-btn" class="btn btn-sm d-flex align-items-center gap-2"
+                            style="background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(168,85,247,0.25)); border: 1px solid rgba(168,85,247,0.4); border-radius: 8px; color: #e2e8f0; font-size: 0.78rem; padding: 6px 12px; transition: all 0.2s ease;"
+                            title="System Full Optimization & Cache Clear (Detailed Modal Mode)">
+                        <i class="fa-solid fa-broom text-warning" style="font-size: 0.8rem;"></i>
+                        <span class="d-none d-md-inline fw-medium">Clear & Optimize</span>
+                    </button>
 
                     <!-- User -->
                     <div class="dropdown">
@@ -230,7 +283,7 @@
                             <div style="width: 22px; height: 22px; background: var(--nexus-blue-dim); border: 1px solid var(--nexus-blue-glow); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
                                 <i class="fa-solid fa-user" style="font-size: 0.6rem; color: var(--nexus-blue);"></i>
                             </div>
-                            Admin
+                            {{ auth()->user()->name ?? 'Admin' }}
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" style="background: rgba(9,15,25,0.97); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 8px;">
                             <li><a class="dropdown-item rounded" href="{{ route('hub.settings') }}" style="color: var(--text-secondary); font-size: 0.83rem; padding: 8px 12px;"><i class="fa-regular fa-user me-2"></i>Profile</a></li>
@@ -352,12 +405,9 @@
     </script>
 
     <script>
-        // Initialize Pusher & Laravel Echo (graceful degradation if Reverb is offline)
-        // laravel-echo@2.x IIFE exposes Echo.default — resolve the real constructor first
+        // Enable Reverb/Pusher
         try {
             window.Pusher = Pusher;
-
-            // Resolve the Echo constructor (v1 = Echo directly, v2 = Echo.default)
             const EchoConstructor = (typeof Echo !== 'undefined')
                 ? (Echo && typeof Echo.default === 'function' ? Echo.default : Echo)
                 : null;
@@ -370,9 +420,9 @@
                 broadcaster: 'reverb',
                 key: '{{ config("broadcasting.connections.reverb.key") }}',
                 wsHost: '{{ config("broadcasting.connections.reverb.options.host", "") }}' || window.location.hostname,
-                wsPort: {{ config("broadcasting.connections.reverb.options.port", 8080) }},
-                wssPort: {{ config("broadcasting.connections.reverb.options.port", 8080) }},
-                forceTLS: {{ config("broadcasting.connections.reverb.options.scheme", "http") === "https" ? "true" : "false" }},
+                wsPort: 443,
+                wssPort: 443,
+                forceTLS: true,
                 enabledTransports: ['ws', 'wss'],
                 auth: {
                     headers: {
@@ -382,7 +432,6 @@
                 },
             });
         } catch (echoErr) {
-            // Reverb not running — real-time features disabled, rest of app works fine
             window.Echo = null;
         }
 
@@ -458,6 +507,19 @@
 
         $('#menu-toggle').on('click', function() {
             $('body').toggleClass('toggled');
+            const isToggled = $('body').hasClass('toggled');
+            localStorage.setItem('nexus_main_sidebar_toggled', isToggled ? '1' : '0');
+        });
+
+        // Global Keyboard Shortcut: Shift + 1 to toggle main Nexus sidebar
+        $(document).on('keydown', function(e) {
+            if (e.shiftKey && (e.key === '!' || e.key === '1' || e.code === 'Digit1')) {
+                const targetTag = e.target ? e.target.tagName.toLowerCase() : '';
+                if (targetTag !== 'input' && targetTag !== 'textarea') {
+                    e.preventDefault();
+                    $('#menu-toggle').trigger('click');
+                }
+            }
         });
 
         (function() {
@@ -469,7 +531,79 @@
                 }
             });
         })();
-</script>
+
+        // Dynamic Live Statusbar & System Telemetry Updater
+        (function updateLiveTelemetry() {
+            function updateClock() {
+                const clock = document.getElementById('sb-time');
+                if (clock) {
+                    const now = new Date();
+                    clock.innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+            }
+            updateClock();
+            setInterval(updateClock, 30000);
+
+            async function fetchMetrics() {
+                try {
+                    const res = await fetch('/hub/dashboard/health', {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data) {
+                            const memEl = document.getElementById('sb-memory');
+                            if (memEl && (data.memory_usage_mb || data.memory)) {
+                                memEl.innerText = (data.memory_usage_mb || data.memory) + ' MB';
+                            }
+                            
+                            const jobs = data.queue_jobs || data.active_jobs || 0;
+                            const queueEl = document.getElementById('sb-queue-count');
+                            if (queueEl) queueEl.innerText = jobs + ' Jobs';
+
+                            const qText = document.getElementById('queue-status-text');
+                            const qOrb = document.getElementById('queue-status-orb');
+                            const qPill = document.getElementById('queue-status-pill');
+                            const hDot = document.getElementById('horizon-status-dot');
+
+                            if (qText) {
+                                if (jobs > 0) {
+                                    qText.innerText = `Queue Active (${jobs} Jobs)`;
+                                    if (qOrb) qOrb.className = 'agent-status-orb busy';
+                                    if (hDot) hDot.className = 'agent-status-orb busy';
+                                    if (qPill) {
+                                        qPill.style.background = 'rgba(234,179,8,0.15)';
+                                        qPill.style.borderColor = 'rgba(234,179,8,0.4)';
+                                    }
+                                } else {
+                                    qText.innerText = 'Queue Idle (0 Jobs)';
+                                    if (qOrb) qOrb.className = 'agent-status-orb online';
+                                    if (hDot) hDot.className = 'agent-status-orb online';
+                                    if (qPill) {
+                                        qPill.style.background = 'rgba(34,197,94,0.12)';
+                                        qPill.style.borderColor = 'rgba(34,197,94,0.3)';
+                                    }
+                                }
+                            }
+                            
+                            const wahaEl = document.getElementById('sb-waha-status');
+                            if (wahaEl && data.waha_status) {
+                                wahaEl.innerText = 'WAHA ' + (data.waha_status.toUpperCase());
+                            }
+                        }
+                    }
+                } catch(e) {}
+            }
+            fetchMetrics();
+            setInterval(fetchMetrics, 30000);
+        })();
+    </script>
+
+    <!-- System Full Optimize & Cache Clear Modal -->
+    @include('components.system-optimize-modal')
+
+    <!-- Queue & Workers Telemetry Modal -->
+    @include('components.queue-details-modal')
 
     @stack('scripts')
 </body>

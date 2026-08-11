@@ -39,7 +39,7 @@ return new class extends Migration
                 'circuit_breaker_threshold',
                 'request_timeout_ms',
                 'max_retries',
-                'monthly_budget_cap'
+                'monthly_budget_cap',
             ]);
         });
     }

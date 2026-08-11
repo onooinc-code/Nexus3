@@ -13,6 +13,7 @@ class WahaMessageDispatcher
     {
         $wahaUrl = app(SettingCacheService::class)->get('waha_url', config('services.waha.url', 'http://waha:3000'));
         $wahaSecret = app(SettingCacheService::class)->get('waha_api_key', config('services.waha.api_key', ''));
+        $wahaSession = app(SettingCacheService::class)->get('waha_session', config('services.waha.session', 'default'));
 
         $conversation = $message->conversation;
         $chatId = $conversation->provider_conversation_id;
@@ -26,8 +27,9 @@ class WahaMessageDispatcher
         try {
             $response = Http::withHeaders([
                 'Authorization' => "Bearer {$wahaSecret}",
+                'X-Api-Key' => $wahaSecret,
             ])->post("{$wahaUrl}/api/sendText", [
-                'session' => 'default',
+                'session' => $wahaSession,
                 'chatId' => $chatId,
                 'text' => $message->body,
             ]);

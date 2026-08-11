@@ -1,0 +1,12 @@
+graph TD
+    A[WAHA Webhook / WhatsApp] -->|HMAC Verified Event| B[WahaWebhookIngestionService]
+    B -->|Raw Event Storage| C[(MySQL: Raw Provider Events)]
+    B -->|Dispatch Job| D[ProcessWahaWebhookJob]
+    D -->|Resolve| E[Contact & Conversation Services]
+    D -->|Persist| F[(MySQL: Conversations & Msgs)]
+    D -->|Sync Real-time| G[FirestoreSyncService]
+    G -->|Stream| H[(Google Cloud Firestore)]
+    D -->|Analyze| I[AnalyzePeopleConnectMessageJob]
+    I -->|3-Tier AI Fallback & Key Rotation| J[AI Engine: OpenAI / Gemini / Anthropic / DeepSeek]
+    F -->|SSR & DB Fallback| K[PeopleConnect Command Center UI]
+    H -->|Live Stream| K

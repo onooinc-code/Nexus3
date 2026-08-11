@@ -19,9 +19,13 @@ class StoreProviderRequest extends FormRequest
             'id' => ['required', 'string', 'unique:ai_providers,id'],
             'name' => ['required', 'string', 'max:255'],
             'base_url' => ['nullable', 'url', function ($attribute, $value, $fail) {
-                if (!$value) return;
+                if (! $value) {
+                    return;
+                }
                 $host = parse_url($value, PHP_URL_HOST);
-                if (!$host) return $fail("The $attribute is invalid.");
+                if (! $host) {
+                    return $fail("The $attribute is invalid.");
+                }
                 if (in_array(strtolower($host), ['localhost', '127.0.0.1', '::1'])) {
                     return $fail("The $attribute cannot be a local address.");
                 }

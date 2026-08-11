@@ -699,6 +699,81 @@ paths:
         '200':
           description: Task execution started
 
+  /v1/tasks/{task}/subtasks:
+    post:
+      tags:
+        - Tasks
+      summary: Add sub-task to task
+      operationId: addSubTask
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: task
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                  example: Design database schema
+      responses:
+        '201':
+          description: Sub-task added successfully
+
+  /v1/tasks/{task}/subtasks/{subtask}:
+    patch:
+      tags:
+        - Tasks
+      summary: Toggle sub-task status
+      operationId: toggleSubTask
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: task
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: subtask
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sub-task status toggled successfully
+
+    delete:
+      tags:
+        - Tasks
+      summary: Delete sub-task
+      operationId: deleteSubTask
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: task
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: subtask
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sub-task deleted successfully
+
   /v1/workflows:
     get:
       tags:

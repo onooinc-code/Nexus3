@@ -22,6 +22,8 @@ class AIApiKey extends BaseModel
         'last_rotated_at',
         'workspace_id',
         'last_used_at',
+        'cooldown_until',
+        'error_count',
     ];
 
     protected $casts = [
@@ -30,6 +32,8 @@ class AIApiKey extends BaseModel
         'expires_at' => 'datetime',
         'last_rotated_at' => 'datetime',
         'last_used_at' => 'datetime',
+        'cooldown_until' => 'datetime',
+        'error_count' => 'integer',
     ];
 
     public function scopeDefault($query)

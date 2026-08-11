@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXtCARE - Medical Insurance Card</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --nextcare-blue: #003366;
+            --nextcare-red: #E30613;
+            --gold-accent: #D4AF37;
+            --dark-bg: #0F172A;
+            --card-bg: #FFFFFF;
+            --border-color: #CBD5E0;
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-dark);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .no-print {
+            background: #1E293B;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            border: 1px solid #334155;
+        }
+
+        .btn {
+            background: var(--nextcare-red);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .cards-wrapper {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* CR80 Standard ID Card Dimensions (Horizontal CR80: 325px x 205px) */
+        .cr80-card {
+            width: 380px;
+            height: 240px;
+            background: var(--card-bg);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Front Header Bar */
+        .card-header {
+            background: linear-gradient(135deg, #002244 0%, #003366 100%);
+            color: white;
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--nextcare-red);
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-text-nextcare {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: white;
+            line-height: 1;
+        }
+
+        .logo-text-nextcare span {
+            color: var(--nextcare-red);
+        }
+
+        .allianz-tag {
+            font-size: 7.5px;
+            color: #94A3B8;
+            font-weight: 600;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .card-type-badge {
+            background: linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7);
+            color: #3A2500;
+            font-size: 9px;
+            font-weight: 900;
+            padding: 4px 10px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Card Main Details */
+        .card-body {
+            padding: 12px 18px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .member-name {
+            font-size: 15px;
+            font-weight: 900;
+            color: var(--nextcare-blue);
+            text-transform: uppercase;
+            margin-bottom: 2px;
+            letter-spacing: 0.3px;
+        }
+
+        .company-name {
+            font-size: 10.5px;
+            font-weight: 800;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 12px;
+            font-size: 9.5px;
+        }
+
+        .detail-item label {
+            display: block;
+            font-size: 7.5px;
+            color: var(--text-muted);
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 1px;
+        }
+
+        .detail-item span {
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        /* Front Footer */
+        .card-footer {
+            background: #F8FAFC;
+            padding: 8px 18px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 8px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .hotline-badge {
+            color: var(--nextcare-red);
+            font-weight: 900;
+            font-size: 9.5px;
+        }
+
+        /* Back Card */
+        .back-card {
+            background: #FAFBFC;
+        }
+
+        .mag-stripe {
+            width: 100%;
+            height: 38px;
+            background: #1E1E1E;
+            margin-top: 15px;
+        }
+
+        .back-body {
+            padding: 12px 18px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .instructions {
+            font-size: 7.5px;
+            color: var(--text-muted);
+            line-height: 1.35;
+            text-align: justify;
+        }
+
+        .back-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 8px;
+        }
+
+        .qr-box canvas {
+            background: white;
+            padding: 2px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .contact-details {
+            font-size: 8px;
+            color: var(--text-dark);
+            line-height: 1.4;
+            text-align: right;
+        }
+
+        @media print {
+            body { background: transparent; padding: 0; }
+            .no-print { display: none !important; }
+            .cards-wrapper { gap: 20px; }
+            .cr80-card { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print">
+        <div>
+            <strong>NEXtCARE — Official Medical Insurance Card (Gold Category)</strong><br>
+            <span style="font-size: 12px; color: #94A3B8;">Healthcare Network Card for Integrant Inc. Employees</span>
+        </div>
+        <button class="btn" onclick="window.print()">Print Insurance Card</button>
+    </div>
+
+    <div class="cards-wrapper">
+        
+        <!-- FRONT CARD -->
+        <div class="cr80-card">
+            <div class="card-header">
+                <div class="logo-group">
+                    <div>
+                        <div class="logo-text-nextcare">NEX<span>t</span>CARE</div>
+                        <span class="allianz-tag">A company of Allianz</span>
+                    </div>
+                </div>
+                <div class="card-type-badge">GOLD NETWORK</div>
+            </div>
+
+            <div class="card-body">
+                <div>
+                    <div class="member-name">HEDRA ADEL SHAFIK SOKLA</div>
+                    <div class="company-name">Payer: INTEGRANT INC. (EGYPT ODC)</div>
+                </div>
+
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <label>Member ID / Code</label>
+                        <span>800/1904/01/EGP</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>National ID</label>
+                        <span>29110012705831</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Effective Date</label>
+                        <span>01 / 05 / 2026</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Expiry Date</label>
+                        <span>30 / 04 / 2027</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Network / Tier</label>
+                        <span>GN-01 (Premium Plus)</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Inpatient / Outpatient</label>
+                        <span>100% / 90% Covered</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <span>Underwritten by: ALLIANZ EGYPT</span>
+                <span>24/7 Medical Hotline: <span class="hotline-badge">19982</span></span>
+            </div>
+        </div>
+
+        <!-- BACK CARD -->
+        <div class="cr80-card back-card">
+            <div class="mag-stripe"></div>
+
+            <div class="back-body">
+                <div class="instructions">
+                    <strong>Medical Service Conditions:</strong> This card is non-transferable and remains the property of NEXtCARE Egypt. Must be presented with official Egyptian ID / National ID at accredited medical providers, hospitals (Dar Al Fouad, Al Salam, As-Salam International), and laboratories. For emergency pre-authorization, call 19982 immediately.
+                </div>
+
+                <div class="back-bottom">
+                    <div class="qr-box">
+                        <div id="qr-nextcare"></div>
+                    </div>
+
+                    <div class="contact-details">
+                        <strong>NEXtCARE Egypt TPA S.A.E</strong><br>
+                        Building 3, Sector 1, Fifth Settlement, New Cairo<br>
+                        Claims & Approvals: claims-egypt@nextcarehealth.com<br>
+                        Official Portal: www.nextcarehealth.com
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        window.onload = function() {
+            new QRCode(document.getElementById("qr-nextcare"), {
+                text: "https://www.nextcarehealth.com/verify?member=800/1904/01/EGP&payer=INTEGRANT+INC&status=ACTIVE",
+                width: 50, height: 50, colorDark: "#003366"
+            });
+        };
+    </script>
+</body>
+</html>

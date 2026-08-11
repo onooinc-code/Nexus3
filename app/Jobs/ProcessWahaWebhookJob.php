@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Exceptions\PeopleConnect\DuplicateMessageException;
 use App\Jobs\PeopleConnect\AnalyzePeopleConnectMessageJob;
 use App\Models\PeopleConnect\PeopleConnectRawProviderEvent;
+use App\Services\PeopleConnect\FirestoreSyncService;
 use App\Services\PeopleConnect\PeopleConnectContactResolver;
 use App\Services\PeopleConnect\PeopleConnectConversationService;
 use App\Services\PeopleConnect\PeopleConnectMessageService;
@@ -43,23 +44,51 @@ class ProcessWahaWebhookJob implements ShouldQueue
         PeopleConnectConversationService $conversationService,
         PeopleConnectSessionService $sessionService,
         PeopleConnectMessageService $messageService,
-        PeopleConnectRealtimeBroadcaster $broadcaster
+        PeopleConnectRealtimeBroadcaster $broadcaster,
+        FirestoreSyncService $firestoreSyncService
     ): void {
+        $event = $this->payload['event'] ?? 'unknown';
+
+        if ($event === 'session.status') {
+            $firestoreSyncService->syncSession($this->payload['payload']);
+            $this->markRawEventStatus('processed');
+
+            return;
+        }
+        $isFromMe = (bool) ($this->payload['payload']['fromMe'] ?? false);
         $chatId = $this->payload['payload']['chatId'] ?? null;
-        $phone = $this->payload['payload']['from'] ?? null;
-        $pushName = $this->payload['payload']['pushname'] ?? '';
+
+        // Fallback for chatId if missing from WAHA payload (e.g., WEBJS engine)
+        if (! $chatId) {
+            $chatId = $isFromMe
+                ? ($this->payload['payload']['to'] ?? null)
+                : ($this->payload['payload']['from'] ?? null);
+        }
+
+        // Determine raw phone identifier
+        $rawPhone = $isFromMe
+            ? ($this->payload['payload']['to'] ?? $chatId)
+            : ($this->payload['payload']['from'] ?? $chatId);
+
+        $pushName = $this->payload['payload']['pushname']
+            ?? $this->payload['payload']['_data']['notifyName']
+            ?? '';
         $body = $this->payload['payload']['body'] ?? '';
         $timestamp = $this->payload['payload']['timestamp'] ?? time();
         $wahaMessageId = $this->payload['payload']['id'] ?? null;
 
-        if (! $chatId || ! $phone) {
+        if (! $chatId || ! $rawPhone) {
             $this->markRawEventStatus('error');
 
             return;
         }
 
-        // Strip @c.us suffix if present for phone and chatId
-        $phone = str_replace('@c.us', '', $phone);
+        // Strip WhatsApp suffixes (@c.us, @g.us, @lid, @broadcast) cleanly
+        $phone = preg_replace('/@(c\.us|g\.us|lid|broadcast|s\.whatsapp\.net)$/i', '', (string) $rawPhone);
+        $phone = trim($phone);
+        if ($phone === '' && $chatId) {
+            $phone = preg_replace('/@(c\.us|g\.us|lid|broadcast|s\.whatsapp\.net)$/i', '', (string) $chatId);
+        }
 
         // 1. Resolve Contact
         $contact = $contactResolver->resolve($chatId, $phone, $pushName);
@@ -76,8 +105,8 @@ class ProcessWahaWebhookJob implements ShouldQueue
                 'conversation_id' => $conversation->id,
                 'session_id' => $session->id,
                 'contact_id' => $contact->id,
-                'sender_type' => 'contact',
-                'direction' => 'inbound',
+                'sender_type' => $isFromMe ? 'user' : 'contact',
+                'direction' => $isFromMe ? 'outbound' : 'inbound',
                 'body' => $body,
                 'status' => 'delivered',
                 'waha_message_id' => $wahaMessageId,
@@ -88,7 +117,7 @@ class ProcessWahaWebhookJob implements ShouldQueue
             // Update conversation last message preview
             $conversation->update([
                 'last_message_at' => Carbon::createFromTimestamp($timestamp),
-                'last_message_preview' => substr($body, 0, 100),
+                'last_message_preview' => mb_substr($body, 0, 100),
                 'unread_count' => $conversation->unread_count + 1,
             ]);
 
@@ -97,6 +126,34 @@ class ProcessWahaWebhookJob implements ShouldQueue
 
             // 5. Dispatch AnalyzePeopleConnectMessageJob
             AnalyzePeopleConnectMessageJob::dispatch($message);
+
+            // 6. Push to Firestore
+            $isFromMe = ($this->payload['payload']['fromMe'] ?? false);
+
+            // Sync Conversation Overview
+            $firestoreSyncService->syncConversationOverview($chatId, [
+                'id' => $chatId,
+                'name' => $contact->name ?? $phone,
+                'picture' => $contact->avatar_url,
+                'unreadCount' => $conversation->unread_count,
+                'lastMessage' => [
+                    'body' => mb_substr($body, 0, 100),
+                    'timestamp' => $timestamp * 1000,
+                    'fromMe' => $isFromMe,
+                ],
+                'timestamp' => $timestamp * 1000,
+            ]);
+
+            // Sync Message
+            $firestoreSyncService->syncMessage($chatId, $wahaMessageId, [
+                'id' => $wahaMessageId,
+                'timestamp' => $timestamp * 1000,
+                'body' => $body,
+                'fromMe' => $isFromMe,
+                'hasMedia' => isset($this->payload['payload']['hasMedia']) ? $this->payload['payload']['hasMedia'] : false,
+                'type' => $this->payload['payload']['type'] ?? 'chat',
+                'ack' => $this->payload['payload']['ack'] ?? 1,
+            ]);
 
             // 6. Realtime Broadcasting
             $broadcaster->messageReceived($message);

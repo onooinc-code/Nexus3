@@ -4,6 +4,7 @@ namespace App\Listeners;
 
 use App\Events\ContactCreated;
 use App\Events\MessageReceived;
+use App\Events\PeopleConnect\MessageReceived as PeopleConnectMessageReceived;
 use App\Models\Workflow;
 use App\Services\WorkflowExecutor;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -33,7 +34,7 @@ class TriggerWorkflowsForEvent implements ShouldQueue
     {
         return match (true) {
             $event instanceof ContactCreated => 'contact.created',
-            $event instanceof MessageReceived => 'message.received',
+            $event instanceof MessageReceived || $event instanceof PeopleConnectMessageReceived => 'message.received',
             default => Str::of(class_basename($event))->snake('.')->toString(),
         };
     }
@@ -55,6 +56,16 @@ class TriggerWorkflowsForEvent implements ShouldQueue
                 'message_id' => $event->messageId,
                 'agent_id' => $event->agentId,
                 'response_data' => $event->responseData,
+            ];
+        }
+
+        if ($event instanceof PeopleConnectMessageReceived) {
+            return [
+                'event' => 'message.received',
+                'conversation_id' => $event->message->conversation_id,
+                'message_id' => $event->message->id,
+                'body' => $event->message->body,
+                'direction' => $event->message->direction,
             ];
         }
 

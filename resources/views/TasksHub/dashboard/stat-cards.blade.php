@@ -42,9 +42,9 @@ document.addEventListener('DOMContentLoaded', function() {
         TaskAPI.get('/tasks/stats').done(function(res) {
             if(res.data) {
                 animateValue('stat-total', res.data.total || 0);
-                animateValue('stat-running', res.data.in_progress || 0);
-                animateValue('stat-pending', res.data.todo || 0);
-                animateValue('stat-blocked', res.data.blocked || 0);
+                animateValue('stat-running', res.data.running ?? res.data.in_progress ?? 0);
+                animateValue('stat-pending', res.data.pending ?? res.data.todo ?? 0);
+                animateValue('stat-blocked', res.data.paused ?? res.data.blocked ?? 0);
                 animateValue('stat-completed', res.data.completed || 0);
                 animateValue('stat-failed', res.data.failed || 0);
                 animateValue('stat-cancelled', res.data.cancelled || 0);

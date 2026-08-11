@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrant Inc. - Employee Identification Card</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --brand-dark: #0A192F;
+            --brand-navy: #1E293B;
+            --brand-accent: #2563EB;
+            --brand-light: #F8FAFC;
+            --border-color: #E2E8F0;
+            --text-dark: #0F172A;
+            --text-muted: #64748B;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0F172A;
+            color: var(--text-dark);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .no-print {
+            background: #1E293B;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            border: 1px solid #334155;
+        }
+
+        .btn {
+            background: var(--brand-accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .cards-wrapper {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* CR80 Standard ID Card Dimensions (85.6mm x 53.98mm) at 300 DPI scale */
+        .id-card {
+            width: 325px;
+            height: 500px;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Lanyard Hole Mockup */
+        .lanyard-slot {
+            width: 50px;
+            height: 10px;
+            background: #0F172A;
+            border-radius: 5px;
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        /* Front Card Header */
+        .card-header {
+            background: white;
+            padding: 25px 20px 12px 20px;
+            text-align: center;
+            color: var(--brand-dark);
+            position: relative;
+            border-bottom: 2px solid var(--brand-dark);
+        }
+
+        .card-header img {
+            width: 175px;
+            height: auto;
+            margin-bottom: 4px;
+        }
+
+        .card-header .dept-badge {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: var(--brand-accent);
+            text-transform: uppercase;
+        }
+
+        /* Photo Area */
+        .photo-container {
+            text-align: center;
+            margin-top: -15px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .photo-box {
+            width: 110px;
+            height: 130px;
+            border-radius: 12px;
+            border: 3px solid white;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            margin: 0 auto;
+            object-fit: cover;
+            background: #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Employee Details */
+        .details-section {
+            padding: 10px 20px;
+            text-align: center;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .emp-name {
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--brand-dark);
+            margin-bottom: 2px;
+        }
+
+        .emp-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--brand-accent);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .info-table {
+            width: 100%;
+            font-size: 10px;
+            border-collapse: collapse;
+            margin-top: 5px;
+        }
+
+        .info-table td {
+            padding: 4px 0;
+            text-align: left;
+        }
+
+        .info-table td:first-child {
+            color: var(--text-muted);
+            font-weight: 600;
+            width: 45%;
+        }
+
+        .info-table td:last-child {
+            color: var(--text-dark);
+            font-weight: 800;
+            width: 55%;
+        }
+
+        /* Card Footer */
+        .card-footer {
+            background: var(--brand-light);
+            padding: 12px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chip-icon {
+            width: 32px;
+            height: 24px;
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            border-radius: 4px;
+            border: 1px solid #d4af37;
+        }
+
+        /* Back Card Styling */
+        .back-card {
+            padding: 30px 20px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: #FAFBFC;
+        }
+
+        .back-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--brand-dark);
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--brand-dark);
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+
+        .policy-text {
+            font-size: 8.5px;
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .qr-center {
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .qr-center canvas {
+            padding: 5px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .contact-block {
+            font-size: 8px;
+            color: var(--text-dark);
+            line-height: 1.4;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+        }
+
+        @media print {
+            body { background: transparent; padding: 0; }
+            .no-print { display: none; }
+            .cards-wrapper { gap: 20px; }
+            .id-card { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print">
+        <div>
+            <strong>Integrant Inc. — Official Company ID Card</strong><br>
+            <span style="font-size: 12px; color: #94A3B8;">Upload photo to: <code>/www/wwwroot/Nexus/core/Nexus3/public/hedra.jpg</code></span>
+        </div>
+        <button class="btn" onclick="window.print()">Print ID Card</button>
+    </div>
+
+    <div class="cards-wrapper">
+        
+        <!-- FRONT SIDE -->
+        <div class="id-card">
+            <div class="lanyard-slot"></div>
+            
+            <div class="card-header">
+                <img src="/integrant-logo.svg" alt="Integrant Logo">
+                <div class="dept-badge">AI Platform & Infrastructure</div>
+            </div>
+
+            <div class="photo-container">
+                <div class="photo-box">
+                    <!-- Photo path configured as requested -->
+                    <img src="/hedra.jpg?v=20260803_v2" alt="Hedra Adel Photo">
+                </div>
+            </div>
+
+            <div class="details-section">
+                <div class="emp-name">Hedra Adel</div>
+                <div class="emp-title">Lead AI Platform Engineer</div>
+
+                <table class="info-table">
+                    <tr>
+                        <td>Employee Code:</td>
+                        <td>INT-EG-1904</td>
+                    </tr>
+                    <tr>
+                        <td>National ID:</td>
+                        <td>29110012705831</td>
+                    </tr>
+                    <tr>
+                        <td>Access Level:</td>
+                        <td>Tier-1 / AI Cluster & ODC</td>
+                    </tr>
+                    <tr>
+                        <td>Issue Date:</td>
+                        <td>01 / 05 / 2026</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="card-footer">
+                <div class="chip-icon"></div>
+                <span style="font-size: 9px; font-weight: 800; color: var(--brand-dark);">Cairo ODC Center</span>
+            </div>
+        </div>
+
+        <!-- BACK SIDE -->
+        <div class="id-card back-card">
+            <div class="lanyard-slot"></div>
+
+            <div>
+                <div class="back-title">Official Identity & Security Policy</div>
+                <div class="policy-text">
+                    This card is the property of <strong>Integrant Inc.</strong> and must be worn visibly at all times while on company premises. It is non-transferable and grants authorized access to Cairo Maadi Technology Park ODC and secure AI server clusters.
+                </div>
+
+                <div class="qr-center">
+                    <div id="qr-id"></div>
+                    <span style="font-size: 8px; color: var(--text-muted); font-weight: 700; display: block; margin-top: 4px;">SCAN FOR EMP VERIFICATION</span>
+                </div>
+            </div>
+
+            <div class="contact-block">
+                <strong>Integrant Inc. (Egypt ODC)</strong><br>
+                Building 250, Sector 2, Maadi Technology Park, Cairo, Egypt<br>
+                HR Verification Desk: +20 2 2517 8890 | hr-verify@integrant.com<br>
+                If found, please return to any Integrant Inc. office or security desk.
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        window.onload = function() {
+            new QRCode(document.getElementById("qr-id"), {
+                text: "https://verify.integrant.com/emp?id=INT-EG-1904&name=Hedra+Adel&role=Lead+AI+Platform+Engineer",
+                width: 75, height: 75, colorDark: "#0A192F"
+            });
+        };
+    </script>
+</body>
+</html>

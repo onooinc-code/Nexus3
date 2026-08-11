@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HedraSoul — Interactive Code Audit & UI Enhancement Portal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome & Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Outfit:wght@300;400;600;700;800;900&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'Cairo', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        nexus: {
+                            dark: '#030712',
+                            panel: '#0b0f19',
+                            border: 'rgba(255, 255, 255, 0.08)',
+                            accent: '#8b5cf6',
+                            cyan: '#06b6d4',
+                            emerald: '#10b981',
+                            rose: '#f43f5e',
+                            amber: '#f59e0b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #030712;
+            background-image: 
+                radial-gradient(#1e1b4b 1px, transparent 1px), 
+                radial-gradient(#0f172a 1px, transparent 1px);
+            background-size: 36px 36px;
+            background-position: 0 0, 18px 18px;
+            color: #f3f4f6;
+            font-family: 'Outfit', 'Cairo', sans-serif;
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(11, 15, 25, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card-hover:hover {
+            border-color: rgba(139, 92, 246, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px -10px rgba(139, 92, 246, 0.25);
+        }
+
+        .glow-purple { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+        .glow-cyan { box-shadow: 0 0 20px rgba(6, 182, 212, 0.3); }
+        .glow-emerald { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+        .glow-amber { box-shadow: 0 0 20px rgba(245, 158, 11, 0.3); }
+        .glow-rose { box-shadow: 0 0 20px rgba(244, 63, 94, 0.3); }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(3, 7, 18, 0.6); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.5); }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.2));
+            border-color: rgba(139, 92, 246, 0.5);
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+        }
+
+        /* Pulse aura animation */
+        @keyframes aura-pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.02); }
+        }
+        .animate-aura { animation: aura-pulse 4s infinite ease-in-out; }
+    </style>
+</head>
+<body class="antialiased selection:bg-purple-500 selection:text-white pb-16">
+
+    <!-- Ambient Glow Header Line -->
+    <div id="ambient-mood-bar" class="h-1.5 w-full bg-gradient-to-r from-purple-600 via-cyan-500 via-emerald-500 to-indigo-600 shadow-lg shadow-purple-500/50 transition-all duration-700"></div>
+
+    <!-- Header Section -->
+    <header class="sticky top-0 z-50 glass-card border-b border-white/10 px-6 py-4 mb-8">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-cyan-500 p-[1px] glow-purple">
+                    <div class="w-full h-full bg-black/80 rounded-[15px] flex items-center justify-center text-white">
+                        <i class="fa-solid fa-ghost text-xl text-purple-400"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-3">
+                        <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-gray-100 to-purple-300 bg-clip-text text-transparent">
+                            HEDRASOUL
+                        </h1>
+                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                            v2.4 Neural Operating Hub
+                        </span>
+                    </div>
+                    <p class="text-xs text-gray-400">Interactive Audit Report &amp; UI Modernization Blueprint • Created for Hedra &amp; Souly</p>
+                </div>
+            </div>
+
+            <!-- Global Architecture Stats -->
+            <div class="flex flex-wrap items-center gap-3 text-xs">
+                <div class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 flex items-center space-x-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="text-gray-400">Database Models:</span>
+                    <strong class="text-white font-mono">14 Tables</strong>
+                </div>
+                <div class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 flex items-center space-x-2">
+                    <span class="text-purple-400"><i class="fa-solid fa-gears"></i></span>
+                    <span class="text-gray-400">Services:</span>
+                    <strong class="text-white font-mono">14 Classes</strong>
+                </div>
+                <div class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 flex items-center space-x-2">
+                    <span class="text-cyan-400"><i class="fa-solid fa-network-wired"></i></span>
+                    <span class="text-gray-400">API Endpoints:</span>
+                    <strong class="text-white font-mono">50+ Routes</strong>
+                </div>
+                <div class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 flex items-center space-x-2">
+                    <span class="text-amber-400"><i class="fa-solid fa-bolt"></i></span>
+                    <span class="text-gray-400">Capabilities:</span>
+                    <strong class="text-white font-mono">30 Features</strong>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-6 space-y-8">
+
+        <!-- Navigation Tabs Bar -->
+        <nav class="flex flex-wrap items-center justify-between gap-3 p-1.5 glass-card rounded-2xl border border-white/10">
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="switchTab('audit')" id="tab-btn-audit" class="tab-btn active px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all border border-transparent">
+                    <i class="fa-solid fa-chart-pie text-purple-400"></i>
+                    <span>1. Executive Audit</span>
+                </button>
+                <button onclick="switchTab('explorer')" id="tab-btn-explorer" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all border border-transparent">
+                    <i class="fa-solid fa-cubes text-cyan-400"></i>
+                    <span>2. Codebase Explorer</span>
+                </button>
+                <button onclick="switchTab('matrix')" id="tab-btn-matrix" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all border border-transparent">
+                    <i class="fa-solid fa-bolt text-amber-400"></i>
+                    <span>3. 30 Proactive Features</span>
+                </button>
+                <button onclick="switchTab('proposals')" id="tab-btn-proposals" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all border border-transparent">
+                    <i class="fa-solid fa-lightbulb text-emerald-400"></i>
+                    <span>4. UI Improvement Blueprint</span>
+                </button>
+                <button onclick="switchTab('simulator')" id="tab-btn-simulator" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all border border-transparent">
+                    <i class="fa-solid fa-gamepad text-rose-400"></i>
+                    <span>5. Live UI Simulator</span>
+                </button>
+            </div>
+
+            <!-- Quick Search Bar -->
+            <div class="relative min-w-[220px]">
+                <input type="text" id="global-search" oninput="handleGlobalSearch(this.value)" placeholder="Search features, services, routes..." 
+                       class="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-9 pr-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-500 text-xs"></i>
+            </div>
+        </nav>
+
+        <!-- SECTION 1: EXECUTIVE AUDIT -->
+        <section id="sec-audit" class="space-y-6">
+            <div class="glass-card p-6 rounded-3xl border border-white/10">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-brain text-purple-400"></i>
+                            <span>HedraSoul Architecture Overview — "The Neural Bridge"</span>
+                        </h2>
+                        <p class="text-xs text-gray-400 mt-0.5">Autonomous intelligence ecosystem linking Hedra's cognitive intent with Souly execution agents.</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        Status: Active & Operational
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                    <div class="glass-card p-4 rounded-2xl border border-purple-500/20 bg-purple-500/5">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-purple-300">Database Models & Tables</span>
+                            <span class="text-xs font-mono text-purple-400 font-bold">14 Tables</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-3">Structured tables managing conversation sessions, reasoning traces, context snapshots, approval requests, notifications, and memories.</p>
+                        <div class="text-[11px] font-mono text-purple-300 bg-black/40 p-2 rounded-xl border border-white/5 space-y-1">
+                            <div>• <code class="text-purple-400">hedrasoul_sessions</code> &amp; <code class="text-purple-400">messages</code></div>
+                            <div>• <code class="text-cyan-400">souly_action_traces</code> &amp; <code class="text-cyan-400">policies</code></div>
+                            <div>• <code class="text-amber-400">hedra_clone_sources</code> &amp; <code class="text-amber-400">facts</code></div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-4 rounded-2xl border border-cyan-500/20 bg-cyan-500/5">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-cyan-300">Services & Business Logic</span>
+                            <span class="text-xs font-mono text-cyan-400 font-bold">14 Services</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-3">Encapsulated service layers handling token context limits, memory maintenance (decay &amp; deduplication), command routing, and safety gating.</p>
+                        <div class="text-[11px] font-mono text-cyan-300 bg-black/40 p-2 rounded-xl border border-white/5 space-y-1">
+                            <div>• <code class="text-cyan-400">SoulyContextAssembler.php</code></div>
+                            <div>• <code class="text-emerald-400">HedraMemoryMaintenanceService.php</code></div>
+                            <div>• <code class="text-purple-400">HedraSoulRealtimeBroadcaster.php</code></div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-4 rounded-2xl border border-amber-500/20 bg-amber-500/5">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-amber-300">API Controllers & Routing</span>
+                            <span class="text-xs font-mono text-amber-400 font-bold">10 Controllers / 50+ Routes</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-3">Complete REST API layer under <code class="text-amber-300">/api/hedrasoul</code> providing endpoints for sessions, autonomy modes, approvals, instructions, and facts.</p>
+                        <div class="text-[11px] font-mono text-amber-300 bg-black/40 p-2 rounded-xl border border-white/5 space-y-1">
+                            <div>• <code class="text-amber-400">SoulyControlController.php</code></div>
+                            <div>• <code class="text-rose-400">HedraSoulApprovalController.php</code></div>
+                            <div>• <code class="text-emerald-400">SoulyInstructionController.php</code></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Architectural Component Breakdown -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Data Model Architecture -->
+                <div class="glass-card p-6 rounded-3xl border border-white/10 space-y-4">
+                    <h3 class="text-sm font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-database text-purple-400"></i>
+                        <span>1. Database Schema &amp; Eloquent Models (14)</span>
+                    </h3>
+                    <div class="space-y-2 text-xs">
+                        <div class="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                            <div>
+                                <strong class="text-purple-300 font-mono block">HedrasoulSession &amp; HedrasoulMessage</strong>
+                                <span class="text-gray-400 text-[11px]">Primary conversational threads and message histories with token usage tracking.</span>
+                            </div>
+                            <span class="px-2 py-1 rounded bg-purple-500/20 text-purple-400 text-[10px] font-mono font-bold">Core Chat</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                            <div>
+                                <strong class="text-cyan-300 font-mono block">SoulyActionTrace &amp; SoulyActionPolicy</strong>
+                                <span class="text-gray-400 text-[11px]">Reasoning step logs, tool invocation outputs, and autonomy execution rules.</span>
+                            </div>
+                            <span class="px-2 py-1 rounded bg-cyan-500/20 text-cyan-400 text-[10px] font-mono font-bold">Reasoning</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                            <div>
+                                <strong class="text-amber-300 font-mono block">HedrasoulContextSnapshot</strong>
+                                <span class="text-gray-400 text-[11px]">Point-in-time state capture when context exceeds token thresholds (8000 tokens).</span>
+                            </div>
+                            <span class="px-2 py-1 rounded bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold">Memory Gating</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                            <div>
+                                <strong class="text-rose-300 font-mono block">HedrasoulApprovalRequest &amp; HedrasoulNotification</strong>
+                                <span class="text-gray-400 text-[11px]">Human-in-the-loop permission request queue (High, Medium, Low risk levels).</span>
+                            </div>
+                            <span class="px-2 py-1 rounded bg-rose-500/20 text-rose-400 text-[10px] font-mono font-bold">Safety</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                            <div>
+                                <strong class="text-emerald-300 font-mono block">HedraCloneSource &amp; HedraProfileFact</strong>
+                                <span class="text-gray-400 text-[11px]">Personal knowledge sources (WhatsApp, docs) and user identity personality facts.</span>
+                            </div>
+                            <span class="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold">Personality</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backend Services Ecosystem -->
+                <div class="glass-card p-6 rounded-3xl border border-white/10 space-y-4">
+                    <h3 class="text-sm font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-microchip text-cyan-400"></i>
+                        <span>2. High-Performance Service Layer (14)</span>
+                    </h3>
+                    <div class="space-y-2 text-xs">
+                        <div class="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                            <div>
+                                <strong class="text-cyan-300 font-mono block">SoulyContextAssembler.php</strong>
+                                <span class="text-gray-400 text-[11px]">Calculates real-time token usage, truncates old history over 8k tokens, logs snapshot.</span>
+                            </div>
+                            <span class="px-2 py-1 rounded bg-cyan-500/20 text-cyan-400 text-[10px] font-mono font-bold">Context Engine</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                            <div>
+                                <strong class="text-emerald-300 font-mono block">HedraMemoryMaintenanceService.php</strong>
+                                <span class="text-gray-400 text-[11px]">Handles memory decay schedules, vector deduplication, and embedding recomputations.</span>
+                            </div>
+                            <span class="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold">Memory Care</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                            <div>
+                                <strong class="text-purple-300 font-mono block">SoulyCommandRouter.php</strong>
+                                <span class="text-gray-400 text-[11px]">Parses chat instructions for direct command directives and routes to background jobs.</span>
+                            </div>
+                            <span class="px-2 py-1 rounded bg-purple-500/20 text-purple-400 text-[10px] font-mono font-bold">Command Dispatch</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                            <div>
+                                <strong class="text-amber-300 font-mono block">SoulyInstructionVersionService.php</strong>
+                                <span class="text-gray-400 text-[11px]">System prompt version control, test execution, active versioning, and instant rollbacks.</span>
+                            </div>
+                            <span class="px-2 py-1 rounded bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold">Prompt Versioning</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                            <div>
+                                <strong class="text-rose-300 font-mono block">SoulyActionPolicyService.php</strong>
+                                <span class="text-gray-400 text-[11px]">Evaluates action permissions based on selected autonomy level (Chat, Copilot, Operator, Autopilot).</span>
+                            </div>
+                            <span class="px-2 py-1 rounded bg-rose-500/20 text-rose-400 text-[10px] font-mono font-bold">Autonomy Policy</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: CODEBASE EXPLORER -->
+        <section id="sec-explorer" class="space-y-6 hidden">
+            <div class="glass-card p-6 rounded-3xl border border-white/10">
+                <h2 class="text-lg font-bold text-white mb-2 flex items-center space-x-2">
+                    <i class="fa-solid fa-folder-tree text-cyan-400"></i>
+                    <span>Interactive Codebase &amp; Route Matrix</span>
+                </h2>
+                <p class="text-xs text-gray-400 mb-6">Filter through all 50+ REST endpoints and backend service implementations.</p>
+
+                <!-- Filter Pills -->
+                <div class="flex flex-wrap gap-2 mb-6" id="explorer-filters">
+                    <button onclick="filterExplorer('all')" class="exp-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/40">All Items (50+)</button>
+                    <button onclick="filterExplorer('sessions')" class="exp-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 text-gray-400 hover:text-white border border-white/10">Sessions &amp; Messages</button>
+                    <button onclick="filterExplorer('autonomy')" class="exp-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 text-gray-400 hover:text-white border border-white/10">Autonomy &amp; Control</button>
+                    <button onclick="filterExplorer('instructions')" class="exp-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 text-gray-400 hover:text-white border border-white/10">Instructions &amp; Prompts</button>
+                    <button onclick="filterExplorer('memories')" class="exp-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 text-gray-400 hover:text-white border border-white/10">Memories &amp; Facts</button>
+                    <button onclick="filterExplorer('approvals')" class="exp-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 text-gray-400 hover:text-white border border-white/10">Approvals &amp; Notifications</button>
+                </div>
+
+                <!-- Explorer Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="explorer-grid">
+                    <!-- Session Endpoint Card -->
+                    <div class="exp-card glass-card p-4 rounded-2xl border border-white/10 space-y-2" data-cat="sessions">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-500/20 text-blue-400">GET</span>
+                            <span class="text-[10px] font-mono text-gray-500">HedraSoulSessionController</span>
+                        </div>
+                        <code class="text-xs text-purple-300 font-mono block">/api/hedrasoul/sessions</code>
+                        <p class="text-xs text-gray-400">Retrieves active conversational sessions sorted by latest activity with task counts.</p>
+                    </div>
+
+                    <div class="exp-card glass-card p-4 rounded-2xl border border-white/10 space-y-2" data-cat="sessions">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-400">POST</span>
+                            <span class="text-[10px] font-mono text-gray-500">HedraSoulSessionController</span>
+                        </div>
+                        <code class="text-xs text-purple-300 font-mono block">/api/hedrasoul/sessions/{session}/messages</code>
+                        <p class="text-xs text-gray-400">Submits user instruction, triggers <code class="text-cyan-300">SoulyContextAssembler</code>, queues AI reply job.</p>
+                    </div>
+
+                    <div class="exp-card glass-card p-4 rounded-2xl border border-white/10 space-y-2" data-cat="autonomy">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-400">PATCH</span>
+                            <span class="text-[10px] font-mono text-gray-500">SoulyControlController</span>
+                        </div>
+                        <code class="text-xs text-cyan-300 font-mono block">/api/hedrasoul/souly/autonomy</code>
+                        <p class="text-xs text-gray-400">Updates Souly autonomy level (<code class="text-gray-300">chat_only</code>, <code class="text-gray-300">copilot</code>, <code class="text-gray-300">operator</code>, <code class="text-gray-300">autopilot</code>).</p>
+                    </div>
+
+                    <div class="exp-card glass-card p-4 rounded-2xl border border-white/10 space-y-2" data-cat="autonomy">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/20 text-rose-400">POST</span>
+                            <span class="text-[10px] font-mono text-gray-500">SoulyControlController</span>
+                        </div>
+                        <code class="text-xs text-rose-300 font-mono block">/api/hedrasoul/souly/quarantine</code>
+                        <p class="text-xs text-gray-400">Emergency lockdown trigger for Souly AI. Instantly pauses background command execution.</p>
+                    </div>
+
+                    <div class="exp-card glass-card p-4 rounded-2xl border border-white/10 space-y-2" data-cat="instructions">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-400">POST</span>
+                            <span class="text-[10px] font-mono text-gray-500">SoulyInstructionController</span>
+                        </div>
+                        <code class="text-xs text-amber-300 font-mono block">/api/hedrasoul/instructions/{v}/activate</code>
+                        <p class="text-xs text-gray-400">Activates a specific system prompt version and updates active instructions globally.</p>
+                    </div>
+
+                    <div class="exp-card glass-card p-4 rounded-2xl border border-white/10 space-y-2" data-cat="memories">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-500/20 text-purple-400">POST</span>
+                            <span class="text-[10px] font-mono text-gray-500">HedraMemoryController</span>
+                        </div>
+                        <code class="text-xs text-emerald-300 font-mono block">/api/hedrasoul/memory-maintenance</code>
+                        <p class="text-xs text-gray-400">Triggers decay calculation, deduplication check, and embedding vector recomputations.</p>
+                    </div>
+
+                    <div class="exp-card glass-card p-4 rounded-2xl border border-white/10 space-y-2" data-cat="approvals">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-400">POST</span>
+                            <span class="text-[10px] font-mono text-gray-500">HedraSoulApprovalController</span>
+                        </div>
+                        <code class="text-xs text-rose-300 font-mono block">/api/hedrasoul/approvals/{id}/approve</code>
+                        <p class="text-xs text-gray-400">Approves a pending high/medium risk action request submitted by an autonomous agent.</p>
+                    </div>
+
+                    <div class="exp-card glass-card p-4 rounded-2xl border border-white/10 space-y-2" data-cat="approvals">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-500/20 text-blue-400">GET</span>
+                            <span class="text-[10px] font-mono text-gray-500">HedraSoulNotificationController</span>
+                        </div>
+                        <code class="text-xs text-cyan-300 font-mono block">/api/hedrasoul/notifications</code>
+                        <p class="text-xs text-gray-400">Lists active system notifications and pending human approval alerts for mobile/web UI.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: 30 PROACTIVE CAPABILITIES MATRIX -->
+        <section id="sec-matrix" class="space-y-6 hidden">
+            <div class="glass-card p-6 rounded-3xl border border-white/10">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-bolt text-amber-400"></i>
+                            <span>The 30 Hyper-Proactive Capabilities Matrix</span>
+                        </h2>
+                        <p class="text-xs text-gray-400">Comprehensive inventory of HedraSoul proactive capabilities categorized into 5 master pillars.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Category 1: Perception & Memory -->
+                    <div class="space-y-3">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-purple-400 flex items-center space-x-2">
+                            <i class="fa-solid fa-diagram-project"></i>
+                            <span>Pillar 1: Perception &amp; Cognitive Memory (6)</span>
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">1. Memory Constellation</strong>
+                                <span class="text-gray-400 text-[11px]">Vector-graph visualization of facts, relationship nodes, and user preferences.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">2. Subconscious Shadow</strong>
+                                <span class="text-gray-400 text-[11px]">Background idle processing for memory consolidation and pattern discovery.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">3. Cross-Session Bridge</strong>
+                                <span class="text-gray-400 text-[11px]">Injects context from previous related conversations into active session.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">4. Auto-Skill Trigger</strong>
+                                <span class="text-gray-400 text-[11px]">Automatically activates domain skills (`/skills/*`) based on prompt context.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">5. Memory Friction Guard</strong>
+                                <span class="text-gray-400 text-[11px]">Detects conflicting facts or instructions and prompts user for resolution.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">6. Quantum Feeder</strong>
+                                <span class="text-gray-400 text-[11px]">Streams real-time updates from WhatsApp, webhooks, and local system logs.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category 2: Operations Management -->
+                    <div class="space-y-3">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center space-x-2">
+                            <i class="fa-solid fa-list-check"></i>
+                            <span>Pillar 2: Operations &amp; Task Pipeline Management (6)</span>
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-cyan-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">7. Task Dependency Tree</strong>
+                                <span class="text-gray-400 text-[11px]">Hierarchical breakdown of complex goals into sequential sub-tasks.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-cyan-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">8. Auto-Step Runner</strong>
+                                <span class="text-gray-400 text-[11px]">Executes approved multi-step plans autonomously with progress updates.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-cyan-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">9. Multi-Agent Debate Arena</strong>
+                                <span class="text-gray-400 text-[11px]">Simulates debate between specialized AI personas before executing high-stakes code.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-cyan-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">10. Sandbox Visualizer</strong>
+                                <span class="text-gray-400 text-[11px]">Pre-renders HTML/UI changes in an isolated sandbox environment before commit.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-cyan-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">11. Context Entropy Gauge</strong>
+                                <span class="text-gray-400 text-[11px]">Real-time token usage indicator that warns when approaching context limits.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-cyan-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">12. Live Terminal Console</strong>
+                                <span class="text-gray-400 text-[11px]">Embedded terminal showing background Artisan, Git, and test execution output.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category 3: Communication & Relationships -->
+                    <div class="space-y-3">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center space-x-2">
+                            <i class="fa-solid fa-comments"></i>
+                            <span>Pillar 3: Relationships &amp; Omnichannel Communication (6)</span>
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-emerald-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">13. Omnichannel Adviser</strong>
+                                <span class="text-gray-400 text-[11px]">Unified messaging advisory across Telegram, WhatsApp (WAHA), and Web.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-emerald-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">14. Ghost Cursor</strong>
+                                <span class="text-gray-400 text-[11px]">Visual representation of active AI background agents operating on code.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-emerald-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">15. Notification Center</strong>
+                                <span class="text-gray-400 text-[11px]">Real-time FCM push alert hub for mobile Android and Desktop approval alerts.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-emerald-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">16. Swarm Controller</strong>
+                                <span class="text-gray-400 text-[11px]">Orchestrates parallel worker agents assigned to background subtasks.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-emerald-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">17. Interactive Slate</strong>
+                                <span class="text-gray-400 text-[11px]">Live markdown rendering surface for real-time document editing and review.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-emerald-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">18. WhatsApp Direct Gateway</strong>
+                                <span class="text-gray-400 text-[11px]">Direct integration with WAHA for receiving commands and broadcasting status.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category 4 & 5: Mood & Infrastructure -->
+                    <div class="space-y-3">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center space-x-2">
+                            <i class="fa-solid fa-sliders"></i>
+                            <span>Pillars 4 &amp; 5: Customization, Mood &amp; Infrastructure Engineering (12)</span>
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-amber-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">19. Typing Cadence Sensor</strong>
+                                <span class="text-gray-400 text-[11px]">Analyzes user input speed and tone to adapt AI response verbosity.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-amber-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">20. Time-Travel History Slider</strong>
+                                <span class="text-gray-400 text-[11px]">Rewinds session context snapshots to restore earlier conversation states.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-amber-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">21. Spatial Island Matrix</strong>
+                                <span class="text-gray-400 text-[11px]">Organizes workspace modules into discrete, draggable grid islands.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-amber-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">22. Shadow Simulator</strong>
+                                <span class="text-gray-400 text-[11px]">Simulates proposed system changes in dry-run mode before actual execution.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-amber-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">23. Executive Focus Mode</strong>
+                                <span class="text-gray-400 text-[11px]">Filters out background noise and non-critical widgets for focused coding.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-amber-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">24. Daily Mood Chronicle</strong>
+                                <span class="text-gray-400 text-[11px]">Logs daily interaction sentiment and productivity trends.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-amber-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">25. Multi-DB Visual Commander</strong>
+                                <span class="text-gray-400 text-[11px]">Inspects local SQLite, MySQL, and Redis states visually in real-time.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-amber-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">26. Markdown-to-Code Transpiler</strong>
+                                <span class="text-gray-400 text-[11px]">Transpiles markdown implementation plans into executable backend diffs.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-amber-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">27. Live Step Tracker</strong>
+                                <span class="text-gray-400 text-[11px]">Displays active step status bar for ongoing autonomous tasks.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-amber-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">28. Vaultwarden Credential Vault</strong>
+                                <span class="text-gray-400 text-[11px]">Encrypted credential manager interface integrated with Vaultwarden.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-amber-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">29. Input Box Autocomplete Copilot</strong>
+                                <span class="text-gray-400 text-[11px]">Suggests prompt completions, file mentions, and command tags as you type.</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-amber-500/30 transition text-xs">
+                                <strong class="text-white block font-semibold">30. Auto-Recovery Switch</strong>
+                                <span class="text-gray-400 text-[11px]">Monitors server health and automatically restarts failed AI/Reverb queues.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: UI IMPROVEMENT BLUEPRINT -->
+        <section id="sec-proposals" class="space-y-6 hidden">
+            <div class="glass-card p-6 rounded-3xl border border-white/10">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-lightbulb text-emerald-400"></i>
+                            <span>Comprehensive HedraSoul UI/UX Improvement Proposals</span>
+                        </h2>
+                        <p class="text-xs text-gray-400">Actionable design and functional suggestions to upgrade HedraSoul into a world-class AI Command Center.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Proposal 1: Workspace Architecture -->
+                    <div class="glass-card p-5 rounded-2xl border border-purple-500/20 bg-purple-500/5 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-purple-300 flex items-center space-x-2">
+                                <i class="fa-solid fa-table-cells"></i>
+                                <span>1. Grid-Canvas Hybrid Workspace</span>
+                            </h3>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-500/20 text-purple-400">High Impact</span>
+                        </div>
+                        <ul class="text-xs text-gray-300 space-y-2 list-disc list-inside">
+                            <li><strong class="text-white">Gridstack.js 12-Column Layout:</strong> Enable user to drag, drop, minimize, and dock widgets into floating quick-action buttons.</li>
+                            <li><strong class="text-white">Figma-like Dot Grid Canvas Mode:</strong> Toggle with 1 click between standard grid layout and infinite scrollable dot-canvas (`scale 70%` to `150%`).</li>
+                            <li><strong class="text-white">Dynamic Neon Mood Aura:</strong> Update top mood indicator bar dynamically based on system state:
+                                <ul class="pl-4 mt-1 space-y-1 text-gray-400">
+                                    <li>• <span class="text-purple-400 font-semibold">Focus Mode:</span> Purple glow (`#8b5cf6`) for deep programming.</li>
+                                    <li>• <span class="text-blue-400 font-semibold">Planning Mode:</span> Blue glow (`#3b82f6`) for requirements and roadmaps.</li>
+                                    <li>• <span class="text-rose-400 font-semibold">Critical Mode:</span> Red glow (`#f43f5e`) for emergency alerts &amp; failed queues.</li>
+                                    <li>• <span class="text-emerald-400 font-semibold">Empathy Mode:</span> Emerald glow (`#10b981`) for casual chat &amp; mental break.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Proposal 2: Chat & Thought Reasoning -->
+                    <div class="glass-card p-5 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-cyan-300 flex items-center space-x-2">
+                                <i class="fa-solid fa-brain"></i>
+                                <span>2. Interactive Reasoning &amp; Context Gauge</span>
+                            </h3>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-400">High Impact</span>
+                        </div>
+                        <ul class="text-xs text-gray-300 space-y-2 list-disc list-inside">
+                            <li><strong class="text-white">SoulyActionTrace Expander:</strong> Render collapsible step-by-step reasoning steps (`Thinking...` → `Searching file X` → `Validating syntax`) inside chat bubbles.</li>
+                            <li><strong class="text-white">Live Context Token Bar:</strong> Display real-time token count meter (e.g. `4,210 / 8,000 tokens`) driven by `SoulyContextAssembler` with visual warning before auto-snapshotting.</li>
+                            <li><strong class="text-white">Inline Code Action Cards:</strong> Code blocks generated in chat should feature a 1-click <span class="text-emerald-400 font-semibold">"Apply to Codebase"</span> button that fires backend file updates directly.</li>
+                            <li><strong class="text-white">Multi-Agent Debate Renderer:</strong> When multi-agent debate mode is triggered, render response as side-by-side agent avatars (e.g. Architect vs Security Reviewer).</li>
+                        </ul>
+                    </div>
+
+                    <!-- Proposal 3: Safety & Autonomy Gating -->
+                    <div class="glass-card p-5 rounded-2xl border border-rose-500/20 bg-rose-500/5 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-rose-300 flex items-center space-x-2">
+                                <i class="fa-solid fa-shield-halved"></i>
+                                <span>3. Human-in-the-Loop Approval Drawer</span>
+                            </h3>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/20 text-rose-400">Critical Safety</span>
+                        </div>
+                        <ul class="text-xs text-gray-300 space-y-2 list-disc list-inside">
+                            <li><strong class="text-white">Emergency Stop Switch:</strong> Top header button to instantly halt all running background jobs and put Souly into Quarantine mode.</li>
+                            <li><strong class="text-white">Risk-Leveled Approvals Drawer:</strong> Slide-over drawer surfacing pending `HedrasoulApprovalRequest` items color-coded by risk:
+                                <ul class="pl-4 mt-1 space-y-1 text-gray-400">
+                                    <li>• <span class="text-rose-400 font-semibold">HIGH RISK (Red):</span> Database drop, file deletion, server reboot.</li>
+                                    <li>• <span class="text-amber-400 font-semibold">MEDIUM RISK (Yellow):</span> Package install, API key modification.</li>
+                                    <li>• <span class="text-emerald-400 font-semibold">LOW RISK (Green):</span> File read, test execution (auto-approved in Operator mode).</li>
+                                </ul>
+                            </li>
+                            <li><strong class="text-white">Instant Autonomy Mode Switcher:</strong> Quick toggle dropdown in right sidebar for switching modes seamlessly.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Proposal 4: Memory Constellation & Personality -->
+                    <div class="glass-card p-5 rounded-2xl border border-amber-500/20 bg-amber-500/5 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-amber-300 flex items-center space-x-2">
+                                <i class="fa-solid fa-database"></i>
+                                <span>4. Memory Constellation &amp; Clone Manager</span>
+                            </h3>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-400">Core Feature</span>
+                        </div>
+                        <ul class="text-xs text-gray-300 space-y-2 list-disc list-inside">
+                            <li><strong class="text-white">Visual Memory Node Graph:</strong> Interactive canvas mapping active memories with confidence sliders (0.0 to 1.0) and decay status.</li>
+                            <li><strong class="text-white">Hedra Profile Facts Manager:</strong> Inline editor to view, edit, or delete personal preferences and system conventions.</li>
+                            <li><strong class="text-white">Clone Source Upload UI:</strong> Drag-and-drop file/chat ingest box for fine-tuning Hedra's AI clone profile.</li>
+                            <li><strong class="text-white">1-Click Memory Maintenance:</strong> Button to trigger deduplication and vector re-embedding manually with feedback log.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: LIVE INTERACTIVE UI SIMULATOR -->
+        <section id="sec-simulator" class="space-y-6 hidden">
+            <div class="glass-card p-6 rounded-3xl border border-white/10">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-gamepad text-rose-400"></i>
+                            <span>HedraSoul Modernized UI Command Center — Live Simulator</span>
+                        </h2>
+                        <p class="text-xs text-gray-400">Interactive preview of the proposed UI updates. Test mood glows, autonomy switching, and reasoning trace expansion in real-time.</p>
+                    </div>
+                </div>
+
+                <!-- Live Mockup Box -->
+                <div class="rounded-2xl border border-white/10 overflow-hidden bg-black/60 shadow-2xl flex flex-col h-[650px]">
+                    <!-- Simulator Header -->
+                    <div class="h-14 border-b border-white/10 px-4 flex items-center justify-between bg-white/5">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-xl bg-purple-600 flex items-center justify-center text-white">
+                                <i class="fa-solid fa-ghost text-sm"></i>
+                            </div>
+                            <div>
+                                <span class="font-bold text-xs text-white tracking-wider block">HEDRASOUL COMMAND CENTER</span>
+                                <span class="text-[10px] font-mono text-emerald-400 block" id="sim-status-text">SYSTEM READY • SOULY ACTIVE</span>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Simulator Controls -->
+                        <div class="flex items-center space-x-3">
+                            <div class="flex items-center space-x-1 bg-black/50 p-1 rounded-xl border border-white/10 text-xs">
+                                <button onclick="simSetMood('focus')" id="sim-mood-focus" class="px-2.5 py-1 rounded-lg font-semibold text-purple-400 bg-purple-500/20">Focus</button>
+                                <button onclick="simSetMood('planning')" id="sim-mood-planning" class="px-2.5 py-1 rounded-lg font-semibold text-gray-400 hover:text-blue-400">Planning</button>
+                                <button onclick="simSetMood('critical')" id="sim-mood-critical" class="px-2.5 py-1 rounded-lg font-semibold text-gray-400 hover:text-rose-400">Critical</button>
+                                <button onclick="simSetMood('empathy')" id="sim-mood-empathy" class="px-2.5 py-1 rounded-lg font-semibold text-gray-400 hover:text-emerald-400">Empathy</button>
+                            </div>
+
+                            <button onclick="simTriggerEmergency()" class="px-3 py-1 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center space-x-1 shadow-lg shadow-rose-600/30">
+                                <i class="fa-solid fa-stop"></i>
+                                <span>Emergency Pause</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Simulator Main Grid -->
+                    <div class="flex-1 flex overflow-hidden">
+                        <!-- Left Session List -->
+                        <div class="w-60 border-r border-white/10 bg-black/40 flex flex-col">
+                            <div class="p-3 border-b border-white/10">
+                                <button class="w-full py-1.5 rounded-lg bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 text-xs font-semibold border border-purple-500/40 flex items-center justify-center space-x-1">
+                                    <i class="fa-solid fa-plus"></i>
+                                    <span>New Session</span>
+                                </button>
+                            </div>
+                            <div class="flex-1 overflow-y-auto p-2 space-y-1">
+                                <div class="p-2.5 rounded-xl bg-purple-500/15 border border-purple-500/30 text-xs cursor-pointer">
+                                    <div class="font-semibold text-white truncate">API Integration Debug</div>
+                                    <div class="text-[10px] text-purple-300 font-mono mt-0.5">2m ago • 4 Tasks</div>
+                                </div>
+                                <div class="p-2.5 rounded-xl hover:bg-white/5 text-xs text-gray-400 cursor-pointer">
+                                    <div class="font-semibold text-gray-300 truncate">Memory Deduplication</div>
+                                    <div class="text-[10px] text-gray-500 font-mono mt-0.5">1h ago • 12 Facts</div>
+                                </div>
+                                <div class="p-2.5 rounded-xl hover:bg-white/5 text-xs text-gray-400 cursor-pointer">
+                                    <div class="font-semibold text-gray-300 truncate">WAHA Gateway Webhooks</div>
+                                    <div class="text-[10px] text-gray-500 font-mono mt-0.5">Yesterday</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Center Chat Panel -->
+                        <div class="flex-1 flex flex-col bg-slate-950/40">
+                            <!-- Context Token Gauge Bar -->
+                            <div class="px-4 py-2 bg-white/5 border-b border-white/10 flex items-center justify-between text-xs">
+                                <span class="text-gray-400">Context Window (SoulyContextAssembler):</span>
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-32 bg-black/60 h-2 rounded-full overflow-hidden border border-white/10">
+                                        <div class="bg-gradient-to-r from-purple-500 to-cyan-400 h-full rounded-full" style="width: 52%;"></div>
+                                    </div>
+                                    <span class="font-mono text-purple-300 font-bold">4,160 / 8,000 Tokens (52%)</span>
+                                </div>
+                            </div>
+
+                            <!-- Chat Messages Stream -->
+                            <div class="flex-1 overflow-y-auto p-4 space-y-4 text-xs" id="sim-chat-stream">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-7 h-7 rounded-lg bg-purple-600 flex items-center justify-center text-white shrink-0">
+                                        <i class="fa-solid fa-robot"></i>
+                                    </div>
+                                    <div class="space-y-2 max-w-[85%]">
+                                        <div class="p-3 rounded-2xl rounded-tl-none bg-white/5 border border-white/10 text-gray-200">
+                                            <p class="font-semibold text-[10px] text-purple-400 mb-1">SOULY AI (Operator Mode)</p>
+                                            <p>I inspected the Stripe webhook handler. The payload missing key signature. Would you like me to fix the `.env` secret or test via tinker?</p>
+                                        </div>
+
+                                        <!-- Interactive Reasoning Trace Accordion -->
+                                        <div class="rounded-xl border border-cyan-500/30 bg-cyan-500/10 p-2.5 space-y-2">
+                                            <button onclick="toggleSimTrace()" class="w-full flex items-center justify-between text-cyan-300 font-mono text-[11px]">
+                                                <span class="flex items-center space-x-1.5">
+                                                    <i class="fa-solid fa-microchip"></i>
+                                                    <span>SoulyActionTrace — Reasoning Steps (3)</span>
+                                                </span>
+                                                <i id="sim-trace-chevron" class="fa-solid fa-chevron-down text-[10px]"></i>
+                                            </button>
+                                            <div id="sim-trace-content" class="space-y-1 font-mono text-[10px] text-gray-300 border-t border-cyan-500/20 pt-2">
+                                                <div>[Step 1] Ingested user message from Session #419</div>
+                                                <div>[Step 2] Ran `SoulyContextAssembler` → Token estimate: 4,160. Within limit.</div>
+                                                <div>[Step 3] Evaluated `SoulyActionPolicy` → Action `ReadFile` auto-approved.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-start space-x-3 justify-end">
+                                    <div class="p-3 rounded-2xl rounded-tr-none bg-purple-600/20 border border-purple-500/30 text-white max-w-[80%]">
+                                        <p class="font-semibold text-[10px] text-purple-300 mb-1">HEDRA</p>
+                                        <p>Go ahead and execute the test via tinker and verify output.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chat Composer Input -->
+                            <div class="p-3 border-t border-white/10 bg-black/60">
+                                <div class="relative">
+                                    <textarea rows="2" id="sim-input" placeholder="Instruct Souly... (Press Enter to send)" 
+                                              class="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-3 pr-10 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 resize-none"></textarea>
+                                    <button onclick="simSendMessage()" class="absolute right-3 bottom-3 text-purple-400 hover:text-purple-300">
+                                        <i class="fa-solid fa-paper-plane text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Control & Approvals Panel -->
+                        <div class="w-64 border-l border-white/10 bg-black/40 p-3 space-y-4 overflow-y-auto">
+                            <div>
+                                <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1.5">Autonomy Mode</label>
+                                <select onchange="simChangeAutonomy(this.value)" class="w-full bg-black border border-white/10 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-purple-500">
+                                    <option value="chat_only">Chat Only (No Exec)</option>
+                                    <option value="copilot">Copilot (Ask First)</option>
+                                    <option value="operator" selected>Operator (Auto Safe)</option>
+                                    <option value="autopilot">Autopilot (Full Auto)</option>
+                                </select>
+                            </div>
+
+                            <!-- Risk Approval Box -->
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Pending Approval (1)</label>
+                                <div class="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs space-y-1.5">
+                                    <div class="flex items-center justify-between">
+                                        <span class="px-1.5 py-0.5 rounded bg-rose-500/30 text-rose-300 font-mono text-[9px] font-bold">HIGH RISK</span>
+                                        <span class="text-[9px] text-gray-400 font-mono">#APP-92</span>
+                                    </div>
+                                    <p class="text-white text-[11px] font-medium">Update `.env` file with new webhook secret</p>
+                                    <div class="flex gap-1.5 pt-1">
+                                        <button onclick="simApproveRequest()" class="flex-1 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px]">Approve</button>
+                                        <button onclick="simRejectRequest()" class="flex-1 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white font-bold text-[10px]">Reject</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Interactive Scripts -->
+    <script>
+        // Tab switching logic
+        function switchTab(tabId) {
+            const tabs = ['audit', 'explorer', 'matrix', 'proposals', 'simulator'];
+            tabs.forEach(t => {
+                document.getElementById('sec-' + t).classList.add('hidden');
+                document.getElementById('tab-btn-' + t).classList.remove('active');
+            });
+            document.getElementById('sec-' + tabId).classList.remove('hidden');
+            document.getElementById('tab-btn-' + tabId).classList.add('active');
+        }
+
+        // Explorer filtering
+        function filterExplorer(cat) {
+            const btns = document.querySelectorAll('.exp-filter-btn');
+            btns.forEach(b => b.classList.remove('bg-purple-500/20', 'text-purple-300', 'border-purple-500/40'));
+            event.target.classList.add('bg-purple-500/20', 'text-purple-300', 'border-purple-500/40');
+
+            const cards = document.querySelectorAll('.exp-card');
+            cards.forEach(c => {
+                if (cat === 'all' || c.getAttribute('data-cat') === cat) {
+                    c.classList.remove('hidden');
+                } else {
+                    c.classList.add('hidden');
+                }
+            });
+        }
+
+        // Global search filtering
+        function handleGlobalSearch(query) {
+            const q = query.toLowerCase().trim();
+            if (!q) return;
+
+            // Auto-switch to explorer or matrix tab if user types
+            switchTab('explorer');
+            const cards = document.querySelectorAll('.exp-card');
+            cards.forEach(c => {
+                const text = c.innerText.toLowerCase();
+                if (text.includes(q)) {
+                    c.classList.remove('hidden');
+                } else {
+                    c.classList.add('hidden');
+                }
+            });
+        }
+
+        // Simulator Logic
+        function simSetMood(mood) {
+            const moodBar = document.getElementById('ambient-mood-bar');
+            const btns = ['focus', 'planning', 'critical', 'empathy'];
+            btns.forEach(b => {
+                const btn = document.getElementById('sim-mood-' + b);
+                btn.className = "px-2.5 py-1 rounded-lg font-semibold text-gray-400 hover:text-white";
+            });
+
+            const activeBtn = document.getElementById('sim-mood-' + mood);
+
+            if (mood === 'focus') {
+                moodBar.className = "h-1.5 w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-800 shadow-lg shadow-purple-500/50 transition-all duration-700";
+                activeBtn.className = "px-2.5 py-1 rounded-lg font-semibold text-purple-400 bg-purple-500/20";
+            } else if (mood === 'planning') {
+                moodBar.className = "h-1.5 w-full bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-800 shadow-lg shadow-blue-500/50 transition-all duration-700";
+                activeBtn.className = "px-2.5 py-1 rounded-lg font-semibold text-blue-400 bg-blue-500/20";
+            } else if (mood === 'critical') {
+                moodBar.className = "h-1.5 w-full bg-gradient-to-r from-rose-600 via-red-500 to-rose-800 shadow-lg shadow-rose-500/50 transition-all duration-700";
+                activeBtn.className = "px-2.5 py-1 rounded-lg font-semibold text-rose-400 bg-rose-500/20";
+            } else if (mood === 'empathy') {
+                moodBar.className = "h-1.5 w-full bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-800 shadow-lg shadow-emerald-500/50 transition-all duration-700";
+                activeBtn.className = "px-2.5 py-1 rounded-lg font-semibold text-emerald-400 bg-emerald-500/20";
+            }
+        }
+
+        function simTriggerEmergency() {
+            const statusText = document.getElementById('sim-status-text');
+            statusText.innerText = "SYSTEM QUARANTINED • EMERGENCY LOCKDOWN";
+            statusText.className = "text-[10px] font-mono text-rose-400 font-bold block animate-pulse";
+            alert("Emergency Pause Triggered: Souly AI put into quarantine mode.");
+        }
+
+        function toggleSimTrace() {
+            const content = document.getElementById('sim-trace-content');
+            content.classList.toggle('hidden');
+        }
+
+        function simSendMessage() {
+            const input = document.getElementById('sim-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const stream = document.getElementById('sim-chat-stream');
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            const userBubble = `
+                <div class="flex items-start space-x-3 justify-end">
+                    <div class="p-3 rounded-2xl rounded-tr-none bg-purple-600/20 border border-purple-500/30 text-white max-w-[80%]">
+                        <p class="font-semibold text-[10px] text-purple-300 mb-1">HEDRA (${time})</p>
+                        <p>${text}</p>
+                    </div>
+                </div>
+            `;
+            stream.insertAdjacentHTML('beforeend', userBubble);
+            input.value = '';
+            stream.scrollTop = stream.scrollHeight;
+
+            setTimeout(() => {
+                const agentBubble = `
+                    <div class="flex items-start space-x-3">
+                        <div class="w-7 h-7 rounded-lg bg-purple-600 flex items-center justify-center text-white shrink-0">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div class="p-3 rounded-2xl rounded-tl-none bg-white/5 border border-white/10 text-gray-200 max-w-[85%]">
+                            <p class="font-semibold text-[10px] text-purple-400 mb-1">SOULY AI (${time})</p>
+                            <p>Received directive: "${text}". Instruction processed via SoulyCommandRouter.</p>
+                        </div>
+                    </div>
+                `;
+                stream.insertAdjacentHTML('beforeend', agentBubble);
+                stream.scrollTop = stream.scrollHeight;
+            }, 600);
+        }
+
+        function simChangeAutonomy(mode) {
+            alert("Autonomy mode updated to: " + mode.toUpperCase());
+        }
+
+        function simApproveRequest() {
+            alert("Request #APP-92 APPROVED. Souly is updating .env file.");
+        }
+
+        function simRejectRequest() {
+            alert("Request #APP-92 REJECTED. Action cancelled.");
+        }
+    </script>
+</body>
+</html>

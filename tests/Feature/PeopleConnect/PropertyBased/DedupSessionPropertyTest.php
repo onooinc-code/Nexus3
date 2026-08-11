@@ -2,9 +2,11 @@
 
 namespace Tests\Feature\PeopleConnect\PropertyBased;
 
+use App\Jobs\PeopleConnect\AnalyzePeopleConnectMessageJob;
 use App\Models\Contact;
 use App\Services\PeopleConnect\WahaWebhookIngestionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class DedupSessionPropertyTest extends TestCase
@@ -16,6 +18,9 @@ class DedupSessionPropertyTest extends TestCase
      */
     public function test_idempotency_property_for_deduplication(): void
     {
+        config(['queue.default' => 'sync']);
+        Queue::fake([AnalyzePeopleConnectMessageJob::class]);
+
         $contact = Contact::factory()->create([
             'whatsapp_number' => '1234567890',
         ]);

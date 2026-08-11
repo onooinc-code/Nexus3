@@ -1,6 +1,6 @@
 {{-- Providers Cards Grid --}}
 <div id="providers-cards-view">
-    <div class="row g-4" id="sortable-providers-list">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 my-3" id="sortable-providers-list">
         @forelse($providers as $provider)
             @php
                 $logoUrl = 'https://ui-avatars.com/api/?name='.urlencode($provider->name).'&background=1a1f2e&color=58a6ff&size=40&font-size=0.4&bold=true';
@@ -15,8 +15,7 @@
                     $logoUrl = 'https://mistral.ai/images/news/mistral-logo-black.png';
                 }
 
-                // Enriched properties from HubController
-                $healthStatus = $provider->health_status ?? 'no_ping'; // 'healthy', 'degraded', 'offline', 'no_ping', 'disabled'
+                $healthStatus = $provider->health_status ?? 'no_ping';
                 $healthColor = match($healthStatus) {
                     'healthy'  => 'success',
                     'degraded' => 'warning',
@@ -39,7 +38,7 @@
                 
                 $isFav = $provider->is_favorite ? 1 : 0;
             @endphp
-            <div class="col-md-6 col-xl-4 provider-card-wrapper"
+            <div class="col provider-card-wrapper mb-4"
                  data-id="{{ $provider->id }}"
                  data-status="{{ $provider->is_active ? 'active' : 'disabled' }}"
                  data-health="{{ $healthStatus }}"
@@ -68,14 +67,16 @@
                                             <i class="fa-{{ $isFav ? 'solid' : 'regular' }} fa-star"></i>
                                         </button>
                                     </h5>
-                                    <div class="d-flex align-items-center gap-2" style="font-size: 0.75rem;">
-                                        <span class="badge bg-{{ $healthColor }} bg-opacity-25 text-{{ $healthColor }} border border-{{ $healthColor }} border-opacity-25 rounded-pill px-2 py-1">
+                                     <div class="d-flex align-items-center gap-2" style="font-size: 0.75rem;">
+                                        <span id="provider-health-badge-{{ $provider->id }}" class="badge bg-{{ $healthColor }} bg-opacity-25 text-{{ $healthColor }} border border-{{ $healthColor }} border-opacity-25 rounded-pill px-2 py-1">
                                             <i class="fa-solid fa-circle text-{{ $healthColor }} me-1" style="font-size: 0.4rem;"></i>{{ $healthLabel }}
                                         </span>
-                                        @if($provider->last_ping)
-                                            <span class="text-muted"><i class="fa-solid fa-bolt text-warning opacity-75 me-1"></i>{{ $provider->last_ping->latency_ms }}ms</span>
-                                        @endif
-                                    </div>
+                                        <span id="provider-latency-{{ $provider->id }}">
+                                            @if($provider->last_ping)
+                                                <span class="text-muted"><i class="fa-solid fa-bolt text-warning opacity-75 me-1"></i>{{ $provider->last_ping->latency_ms }}ms</span>
+                                            @endif
+                                        </span>
+                                     </div>
                                 </div>
                             </div>
                             
@@ -88,6 +89,11 @@
                                     <li>
                                         <a class="dropdown-item d-flex align-items-center py-2" href="#" onclick="openProviderDetails('{{ $provider->id }}'); return false;">
                                             <i class="fa-solid fa-sliders fa-fw me-3 text-primary"></i> Configure
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center py-2" href="#" onclick="openEditProviderDrawer('{{ $provider->id }}'); return false;">
+                                            <i class="fa-solid fa-pen-to-square fa-fw me-3 text-warning"></i> Edit Provider
                                         </a>
                                     </li>
                                     <li>
@@ -176,9 +182,14 @@
                                     <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-3 py-2"><i class="fa-solid fa-triangle-exclamation me-1"></i> Missing Key</span>
                                 @endif
                             </div>
-                            <button class="btn btn-sm btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm" onclick="openProviderDetails('{{ $provider->id }}')" style="transition: all 0.2s ease;">
-                                Configure <i class="fa-solid fa-arrow-right ms-2" style="font-size: 0.75rem;"></i>
-                            </button>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-info rounded-pill px-3 py-2 fw-semibold shadow-sm" onclick="openProviderDetails('{{ $provider->id }}')" title="Quick Drawer">
+                                    <i class="fa-solid fa-sliders me-1"></i> Drawer
+                                </button>
+                                <a href="{{ route('hub.providers.show', $provider->id) }}" class="btn btn-sm btn-primary rounded-pill px-3 py-2 fw-semibold shadow-sm">
+                                    Full Page <i class="fa-solid fa-arrow-right ms-1" style="font-size: 0.75rem;"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -266,7 +277,10 @@
                                 <button class="btn btn-outline-secondary" onclick="syncModels('{{ $provider->id }}')" title="Sync Models">
                                     <i class="fa-solid fa-rotate"></i>
                                 </button>
-                                <button class="btn btn-outline-info" onclick="openProviderDetails('{{ $provider->id }}')" title="Details">
+                                <button class="btn btn-outline-warning" onclick="openEditProviderDrawer('{{ $provider->id }}')" title="Edit Provider">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-outline-info" onclick="openProviderDetails('{{ $provider->id }}')" title="Details & Settings">
                                     <i class="fa-solid fa-sliders"></i>
                                 </button>
                                 <button class="btn btn-outline-danger" onclick="deleteProvider('{{ $provider->id }}', '{{ addslashes($provider->name) }}')" title="Delete">
@@ -309,10 +323,8 @@
 </div>
 
 @push('scripts')
-{{-- Include SortableJS and Chart.js --}}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
     // ─── Bulk Actions Logic ───────────────────────────────────────────────────
     $(document).ready(function() {
@@ -462,11 +474,18 @@
             data: JSON.stringify({}),
             success: function(res) {
                 window.Nexus.hideTaskLoader();
+                const latency = res.data && res.data.latency ? res.data.latency : '';
                 if (res.success) {
-                    const latency = res.data && res.data.latency ? res.data.latency : '';
                     window.Nexus.notify(res.message + (latency ? ` (${latency}ms)` : ''), 'success');
+                    $(`#provider-health-badge-${id}`)
+                        .attr('class', 'badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 rounded-pill px-2 py-1')
+                        .html(`<i class="fa-solid fa-circle text-success me-1" style="font-size: 0.4rem;"></i>Healthy`);
+                    $(`#provider-latency-${id}`).html(`<span class="text-muted"><i class="fa-solid fa-bolt text-warning opacity-75 me-1"></i>${latency}ms</span>`);
                 } else {
                     window.Nexus.notify(res.message || 'Ping failed.', 'error');
+                    $(`#provider-health-badge-${id}`)
+                        .attr('class', 'badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 rounded-pill px-2 py-1')
+                        .html(`<i class="fa-solid fa-circle text-danger me-1" style="font-size: 0.4rem;"></i>Unreachable`);
                 }
             },
             error: function(xhr) {
@@ -530,6 +549,34 @@
             error: function() {
                 window.Nexus.hideTaskLoader();
                 window.Nexus.notify('Failed to load provider details.', 'error');
+            }
+        });
+    };
+
+    // ─── Open Edit Drawer ─────────────────────────────────────────────────────
+    window.openEditProviderDrawer = function(id) {
+        window.Nexus.showTaskLoader('Loading...', 'Fetching provider data...');
+        $.ajax({
+            url: `/api/v1/ai/providers/${id}/details`,
+            method: 'GET',
+            success: function(res) {
+                window.Nexus.hideTaskLoader();
+                if (res.success && res.data) {
+                    $('#editProviderId').val(res.data.id);
+                    $('#editProviderName').val(res.data.name);
+                    $('#editProviderBaseUrl').val(res.data.base_url);
+                    $('#editProviderModelsEndpoint').val(res.data.models_fetch_endpoint || '/models');
+                    $('#editProviderAuthFormat').val(res.data.auth_header_format || 'Bearer {key}');
+                    $('#editProviderApiKey').val('');
+                    const offcanvas = new bootstrap.Offcanvas(document.getElementById('editProviderOffcanvas'));
+                    offcanvas.show();
+                } else {
+                    window.Nexus.notify('Failed to load provider data.', 'error');
+                }
+            },
+            error: function() {
+                window.Nexus.hideTaskLoader();
+                window.Nexus.notify('Failed to load provider data.', 'error');
             }
         });
     };

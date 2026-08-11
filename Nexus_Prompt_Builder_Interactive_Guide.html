@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus3 — التوثيق التفاعلي لهندسة بناء التلقين (AI Prompt Builder Architecture)</title>
+    
+    <!-- Google Fonts: Cairo & Fira Code for clean Arabic & Code -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Mermaid JS for Interactive Diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Alpine.js for interactive state & micro-animations -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Cairo', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        nexus: {
+                            dark: '#0a0d14',
+                            card: '#121723',
+                            border: '#1e2638',
+                            primary: '#6366f1',
+                            accent: '#06b6d4',
+                            glow: '#3b82f6',
+                            success: '#10b981',
+                            warning: '#f59e0b',
+                            danger: '#ef4444'
+                        }
+                    },
+                    boxShadow: {
+                        'glow-primary': '0 0 25px -5px rgba(99, 102, 241, 0.4)',
+                        'glow-accent': '0 0 25px -5px rgba(6, 182, 212, 0.4)',
+                        'glow-success': '0 0 25px -5px rgba(16, 185, 129, 0.4)',
+                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #0a0d14;
+            color: #e2e8f0;
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+        
+        .glass-panel {
+            background: rgba(18, 23, 35, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(30, 38, 56, 0.8);
+        }
+
+        .glass-card {
+            background: rgba(26, 32, 48, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 12px 25px -10px rgba(99, 102, 241, 0.3);
+        }
+
+        .code-dir {
+            direction: ltr;
+            text-align: left;
+            font-family: 'Fira Code', monospace;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0d14;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e2638;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b82f6;
+        }
+
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+        }
+        .animate-pulse-slow {
+            animation: pulse-slow 4s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen selection:bg-indigo-500 selection:text-white" x-data="{ activeTab: 'overview' }">
+
+    <!-- Glowing Background Artifacts -->
+    <div class="fixed top-20 right-20 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none animate-pulse-slow"></div>
+    <div class="fixed bottom-10 left-20 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none animate-pulse-slow" style="animation-delay: 2s;"></div>
+
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-nexus-border py-4 px-6 mb-8 shadow-2xl">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center shadow-glow-primary">
+                    <i data-lucide="cpu" class="w-7 h-7 text-white animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black bg-gradient-to-l from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
+                        NexusV3 AI Prompt Engine
+                    </h1>
+                    <p class="text-xs text-slate-400 font-medium">الهندسة المعمارية لمنظومة صياغة التلقين الذكي وتوليد السياق</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex flex-wrap items-center gap-1 bg-nexus-dark/60 p-1.5 rounded-2xl border border-nexus-border/80">
+                <button @click="activeTab = 'overview'" 
+                        :class="activeTab === 'overview' ? 'bg-indigo-600 text-white shadow-glow-primary font-bold' : 'text-slate-400 hover:text-white hover:bg-white/5'" 
+                        class="px-4 py-2 rounded-xl text-sm transition-all duration-200 flex items-center gap-2">
+                    <i data-lucide="layers" class="w-4 h-4"></i>
+                    <span>نظرة عامة والخدمات الـ 4</span>
+                </button>
+
+                <button @click="activeTab = 'pipeline'" 
+                        :class="activeTab === 'pipeline' ? 'bg-indigo-600 text-white shadow-glow-primary font-bold' : 'text-slate-400 hover:text-white hover:bg-white/5'" 
+                        class="px-4 py-2 rounded-xl text-sm transition-all duration-200 flex items-center gap-2">
+                    <i data-lucide="git-merge" class="w-4 h-4"></i>
+                    <span>مخطط خط الإنتاج (Pipeline)</span>
+                </button>
+
+                <button @click="activeTab = 'engines'" 
+                        :class="activeTab === 'engines' ? 'bg-indigo-600 text-white shadow-glow-primary font-bold' : 'text-slate-400 hover:text-white hover:bg-white/5'" 
+                        class="px-4 py-2 rounded-xl text-sm transition-all duration-200 flex items-center gap-2">
+                    <i data-lucide="code-2" class="w-4 h-4"></i>
+                    <span>التشريح البرمجي للمحركات</span>
+                </button>
+
+                <button @click="activeTab = 'simulator'" 
+                        :class="activeTab === 'simulator' ? 'bg-cyan-600 text-white shadow-glow-accent font-bold' : 'text-slate-400 hover:text-white hover:bg-white/5'" 
+                        class="px-4 py-2 rounded-xl text-sm transition-all duration-200 flex items-center gap-2 border border-cyan-500/20">
+                    <i data-lucide="play-circle" class="w-4 h-4 text-cyan-400"></i>
+                    <span class="text-cyan-300">محاكي التلقين اللحظي</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-6 pb-20">
+
+        <!-- TAB 1: OVERVIEW & THE 4 ENGINES -->
+        <section x-show="activeTab === 'overview'" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+            
+            <div class="glass-panel p-8 rounded-3xl relative overflow-hidden mb-10 border border-indigo-500/20">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-cyan-500 to-emerald-500"></div>
+                <div class="max-w-3xl">
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 inline-block mb-3">
+                        ⚡ الهندسة المعمارية لـ NexusV3
+                    </span>
+                    <h2 class="text-3xl font-extrabold text-white mb-4 leading-tight">
+                        لماذا لا يوجد ملف بسيط اسمه <span class="text-indigo-400 underline decoration-indigo-500/50">AiPromptBuilder.php</span>؟
+                    </h2>
+                    <p class="text-slate-300 leading-relaxed text-base">
+                        في النظم التفاعلية فائقة التطور مثل <b class="text-white">NexusV3</b>، بناء التلقين (Prompt Engineering) ليس مجرد ربط سلسلتين نصيتين معاً! لو اعتمدنا على فئة واحدة بسيطة، لحدث انهيار في أداء النماذج وتداخل بين شخصيات الوكلاء وميزانية الـ Tokens.
+                        لذلك تم تقسيم وظيفة "بناء التلقين" إلى <b class="text-cyan-400">4 محركات متخصصة (4 Specialized Pipelines)</b> تعمل بتناغم مطلق وتتكامل مع الـ 15 Hubs المعتمدة في النظام.
+                    </p>
+                </div>
+            </div>
+
+            <!-- The 4 Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Card 1 -->
+                <div class="glass-card p-6 rounded-2xl relative group">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center mb-4 text-purple-400 group-hover:scale-110 transition-transform">
+                        <i data-lucide="blocks" class="w-6 h-6"></i>
+                    </div>
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xl font-bold text-white">1. خط تجميع السياق العام</h3>
+                        <span class="text-xs px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-300 border border-purple-500/20">Pipeline</span>
+                    </div>
+                    <p class="text-sm font-mono text-purple-400 mb-3 code-dir">ContextAssemblyPipeline.php</p>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                        المتعهد الرسمي بتوليد الـ Prompts لمهام التوجيه العام والاتصال بالخدمات. يقوم بدمج أحدث 10 ذكريات (Memories) من قاعدة البيانات الدلالية، وأحدث 20 رسالة من أرشيف المحادثة، ويرصعها في قالب Markdown منظم للغاية.
+                    </p>
+                    <div class="bg-nexus-dark/80 p-3 rounded-xl border border-nexus-border text-xs text-slate-300">
+                        <b class="text-indigo-300">الدوال المحورية:</b> <span class="font-mono text-cyan-300">assemble()</span> ➔ <span class="font-mono text-emerald-400">buildPrompt()</span>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="glass-card p-6 rounded-2xl relative group border-indigo-500/30 shadow-glow-primary/20">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center mb-4 text-indigo-400 group-hover:scale-110 transition-transform">
+                        <i data-lucide="brain-circuit" class="w-6 h-6"></i>
+                    </div>
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xl font-bold text-white">2. مٌجَمِّع سياق النواة الإدراكية</h3>
+                        <span class="text-xs px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold">Hedra Soul</span>
+                    </div>
+                    <p class="text-sm font-mono text-indigo-400 mb-3 code-dir">SoulyContextAssembler.php</p>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                        القلب النابض للمستشار الذكي (Souly). لا يكتفي بالتجميع بل يطبق خوارزمية **إدارة ميزانية الـ Tokens (حد أقصى 8000 Token)**، يقلم الرسائل بذكاء إذا زاد الحجم، ويحقن حقائق الملف الشخصي (Profile Facts) ويصنف المخاطر الأمنية للحوار.
+                    </p>
+                    <div class="bg-nexus-dark/80 p-3 rounded-xl border border-nexus-border text-xs text-slate-300 flex items-center justify-between">
+                        <div><b class="text-amber-400">الحماية:</b> Risk Classifier (Low / Med / High)</div>
+                        <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 rounded text-2xs font-mono">TOKEN_BUDGET = 8000</span>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="glass-card p-6 rounded-2xl relative group">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-4 text-emerald-400 group-hover:scale-110 transition-transform">
+                        <i data-lucide="user-cog" class="w-6 h-6"></i>
+                    </div>
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xl font-bold text-white">3. محرك تخصيص النبرة والشخصية</h3>
+                        <span class="text-xs px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">System Prompt</span>
+                    </div>
+                    <p class="text-sm font-mono text-emerald-400 mb-3 code-dir">PersonaToneEngine.php</p>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                        المسؤول الحصري عن إنشاء التوجيه السلوكّي (System Prompt). يفحص شخصية المستفيد (Contact) ويُفصّل التوجيه حسب قوالب متخصصة: مهني (Default)، خبير (Expert)، حميم ودود (Friendly)، موجز (Concise)، أو عاطفي متفهم (Empathetic).
+                    </p>
+                    <div class="bg-nexus-dark/80 p-3 rounded-xl border border-nexus-border text-xs text-slate-300">
+                        <b class="text-emerald-400">الوظيفة الأساسية:</b> <span class="font-mono text-white">buildSystemPrompt()</span>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="glass-card p-6 rounded-2xl relative group border-cyan-500/30">
+                    <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mb-4 text-cyan-400 group-hover:scale-110 transition-transform">
+                        <i data-lucide="bot" class="w-6 h-6"></i>
+                    </div>
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xl font-bold text-white">4. مهندس التلقين لوكيل المتصفح</h3>
+                        <span class="text-xs px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">ReAct Engine</span>
+                    </div>
+                    <p class="text-sm font-mono text-cyan-400 mb-3 code-dir">ReActAgentEngine.php</p>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                        المصمم العبقري لتلقين إضافة الكروم (Ertugrul Extension). يُلزم النموذج بالرد بنسق JSON متجانس لإنتاج دورة (Thought ➔ Plan ➔ Action ➔ Observation). يحقن قائمة المهام الحية ويمنع التكرار اللانهائي بحدود 15 خطوة.
+                    </p>
+                    <div class="bg-nexus-dark/80 p-3 rounded-xl border border-nexus-border text-xs text-slate-300">
+                        <b class="text-cyan-300">الاتصال الفوري:</b> يعمل عبر بوابة <span class="text-indigo-400 font-mono">LiteLLM (Gemini 3.5 Flash)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: PIPELINE & MERMAID DIAGRAMS -->
+        <section x-show="activeTab === 'pipeline'" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+            <div class="glass-panel p-8 rounded-3xl border border-nexus-border mb-8">
+                <h2 class="text-2xl font-black text-white mb-2 flex items-center gap-3">
+                    <i data-lucide="git-commit" class="text-cyan-400 w-6 h-6"></i>
+                    <span>مخطط تدفق البيانات وصناعة التلقين النهائي (Prompt Pipeline Flow)</span>
+                </h2>
+                <p class="text-slate-400 text-sm mb-6">
+                    يوضح المخطط التالي كيف تتضافر الخدمات والـ Hubs في NexusV3 لتحويل طلب المستخدم التفاعلي أو أمر الوكيل الآلي إلى حزمة Prompt فائقة الذكاء قبل إرسالها لـ LLMs.
+                </p>
+
+                <!-- Mermaid Container -->
+                <div class="bg-nexus-dark/90 p-6 rounded-2xl border border-nexus-border flex justify-center overflow-x-auto shadow-inner" dir="ltr">
+                    <div class="mermaid text-center w-full max-w-5xl">
+                        graph TD
+                            classDef start fill:#312e81,stroke:#6366f1,stroke-width:2px,color:#fff,rx:10px
+                            classDef engine fill:#134e4a,stroke:#14b8a6,stroke-width:2px,color:#fff,rx:10px
+                            classDef soul fill:#4c1d95,stroke:#a78bfa,stroke-width:2px,color:#fff,rx:10px
+                            classDef react fill:#075985,stroke:#38bdf8,stroke-width:2px,color:#fff,rx:10px
+                            classDef result fill:#166534,stroke:#22c55e,stroke-width:2px,color:#fff,rx:10px
+
+                            REQ["🚀 User Query or Autonomous Task Trigger"] ::: start
+
+                            subgraph Persona & Tone Engine
+                                P1["PersonaToneEngine.php<br>Select Traits: Expert / Friendly / Default"] ::: engine
+                                P2["buildSystemPrompt()<br>Create System Instructions"] ::: engine
+                                P1 --> P2
+                            end
+
+                            subgraph Context & Memory Assembly
+                                C1["ContextAssemblyPipeline.php"] ::: soul
+                                C2["Inject Top 10 Semantic Memories"] ::: soul
+                                C3["Inject Recent 20 Messages"] ::: soul
+                                C1 --> C2 --> C3
+                            end
+
+                            subgraph Hedra Soul Advanced Safeguard
+                                S1["SoulyContextAssembler.php"] ::: soul
+                                S2["Token Budget Auditor<br>(Max 8,000 Tokens)"] ::: soul
+                                S3["Risk Classification<br>(Low / Med / High + WAHA access)"] ::: soul
+                                S4["Save Context Snapshot to DB"] ::: soul
+                                S1 --> S2 --> S3 --> S4
+                            </subgraph>
+
+                            subgraph ReAct Browser Agent
+                                R1["ReActAgentEngine.php"] ::: react
+                                R2["Inject Dynamic Checklist & DOM Observation"] ::: react
+                                R3["Enforce JSON Action Format<br>(navigate, click, type)"] ::: react
+                                R1 --> R2 --> R3
+                            </subgraph>
+
+                            REQ --> P1
+                            REQ --> C1
+                            REQ --> S1
+                            REQ --> R1
+
+                            P2 --> OUT["🔥 Master Structured Prompt Payload"] ::: result
+                            C3 --> OUT
+                            S4 --> OUT
+                            R3 --> OUT
+
+                            OUT --> LLM["🌐 LiteLLM / AI Models Hub<br>(OpenAI / Claude / Gemini 3.5)"] ::: start
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Timeline Steps -->
+            <div class="space-y-4">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i data-lucide="check-circle-2" class="text-emerald-400 w-5 h-5"></i>
+                    <span>مراحل فلترة وبناء الـ Prompt (خطوة بخطوة):</span>
+                </h3>
+
+                <div class="glass-card p-5 rounded-2xl border-l-4 border-l-purple-500 flex items-start gap-4">
+                    <div class="w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 font-black flex items-center justify-center flex-shrink-0 mt-1">1</div>
+                    <div>
+                        <h4 class="text-base font-bold text-white">استجواب التفضيلات والنبرة (Tone & Persona Extraction)</h4>
+                        <p class="text-slate-400 text-sm mt-1">عند انطلاق الحدث، يراجع الخادم هل لدى العميل (Contact) تفضيل مسبق لشخصية معينة. يتم استخدام دالة <code class="text-indigo-400 bg-nexus-dark px-1.5 py-0.5 rounded code-dir">buildSystemPrompt()</code> لصهر التوجيه الأساسي للنموذج لضبط سلوكه.</p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-5 rounded-2xl border-l-4 border-l-indigo-500 flex items-start gap-4">
+                    <div class="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 font-black flex items-center justify-center flex-shrink-0 mt-1">2</div>
+                    <div>
+                        <h4 class="text-base font-bold text-white">الاستحواذ على الذاكرة الدلالية (Vector Memory & History)</h4>
+                        <p class="text-slate-400 text-sm mt-1">عبر <code class="text-cyan-400 bg-nexus-dark px-1.5 py-0.5 rounded code-dir">ContextAssemblyPipeline</code> يتم حقن السياق بقالب Markdown مقسم. هذا يمنح النموذج قدرة خرافية على تذكر المحادثات القديمة دون إرباك مسار السؤال الحالي.</p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-5 rounded-2xl border-l-4 border-l-emerald-500 flex items-start gap-4">
+                    <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 font-black flex items-center justify-center flex-shrink-0 mt-1">3</div>
+                    <div>
+                        <h4 class="text-base font-bold text-white">الحكامة والتقليم الأمني (Token Budgeting & Risk Audit)</h4>
+                        <p class="text-slate-400 text-sm mt-1">يتولى <code class="text-emerald-400 bg-nexus-dark px-1.5 py-0.5 rounded code-dir">SoulyContextAssembler</code> حساب التكلفة (Token Estimate) بالوقت الحقيقي. لو تجاوز السياق 8000 Token، يتم قص الرسائل القديمة وحظرها بذكاء مع تسجيل تصنيف الأمان (Low/High) وحفظه في جدول <code class="text-amber-300 bg-nexus-dark px-1.5 py-0.5 rounded code-dir">hedrasoul_context_snapshots</code>.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: DEEP DIVE ENGINES CODE ANALYSIS -->
+        <section x-show="activeTab === 'engines'" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+            
+            <!-- Engine 1: ContextAssemblyPipeline -->
+            <div class="glass-panel p-8 rounded-3xl mb-8 border border-indigo-500/30">
+                <div class="flex flex-col lg:flex-row gap-8 items-start">
+                    <div class="w-full lg:w-5/12">
+                        <span class="text-xs px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 mb-3 inline-block font-bold">1. المحرك العام</span>
+                        <h3 class="text-2xl font-black text-white mb-2">ContextAssemblyPipeline</h3>
+                        <p class="text-sm font-mono text-indigo-400 mb-4 code-dir">app/Services/Pipelines/ContextAssemblyPipeline.php</p>
+                        <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                            صُمّم هذا الكائن ليكون مجمعاً نظيفاً (Clean Assembler) يعتمد على تمرير البيانات عبر 3 قنوات أساسية: 
+                            <ul class="list-disc list-inside mt-2 space-y-1.5 text-slate-400">
+                                <li><b class="text-white">loadMemories():</b> جلب استنتاجات الذكاء الاصطناعي السابقة عن جهة الاتصال.</li>
+                                <li><b class="text-white">loadHistory():</b> فرز الرسائل ترتيباً تصاعدياً ليفهم النموذج التسلسل الزمني.</li>
+                                <li><b class="text-white">buildPrompt():</b> تجميع كل العناصر في سلسلة Markdown موحدة.</li>
+                            </ul>
+                        </p>
+                    </div>
+                    <div class="w-full lg:w-7/12 bg-nexus-dark p-5 rounded-2xl border border-nexus-border shadow-2xl overflow-x-auto code-dir">
+<pre><code class="text-xs text-slate-300 font-mono"><span class="text-indigo-400">public function</span> <span class="text-cyan-300">buildPrompt</span>(array <span class="text-amber-400">$context</span>, string <span class="text-amber-400">$userMessage</span>): string
+{
+    <span class="text-amber-400">$parts</span> = [];
+
+    <span class="text-slate-500">// 1. إدراج الذكريات التلقائية إن وجدت</span>
+    <span class="text-indigo-400">if</span> (! <span class="text-cyan-300">empty</span>(<span class="text-amber-400">$context</span>[<span class="text-emerald-300">'summary'</span>])) {
+        <span class="text-amber-400">$parts</span>[] = <span class="text-emerald-300">"## Relevant Context\n"</span> . <span class="text-amber-400">$context</span>[<span class="text-emerald-300">'summary'</span>];
+    }
+
+    <span class="text-slate-500">// 2. رصف أرشيف المحادثة السلس</span>
+    <span class="text-indigo-400">if</span> (! <span class="text-cyan-300">empty</span>(<span class="text-amber-400">$context</span>[<span class="text-emerald-300">'history'</span>])) {
+        <span class="text-amber-400">$parts</span>[] = <span class="text-emerald-300">'## Conversation History'</span>;
+        <span class="text-indigo-400">foreach</span> (<span class="text-amber-400">$context</span>[<span class="text-emerald-300">'history'</span>] <span class="text-indigo-400">as</span> <span class="text-amber-400">$msg</span>) {
+            <span class="text-amber-400">$role</span> = <span class="text-amber-400">$msg</span>->sender_type === <span class="text-emerald-300">'user'</span> ? <span class="text-emerald-300">'User'</span> : <span class="text-emerald-300">'Assistant'</span>;
+            <span class="text-amber-400">$parts</span>[] = <span class="text-emerald-300">"</span>{<span class="text-amber-400">$role</span>}<span class="text-emerald-300">: "</span> . <span class="text-amber-400">$msg</span>->content;
+        }
+    }
+
+    <span class="text-slate-500">// 3. إضافة رسالة المستخدم الجديدة في الذيل</span>
+    <span class="text-amber-400">$parts</span>[] = <span class="text-emerald-300">"## Current Message\n"</span> . <span class="text-amber-400">$userMessage</span>;
+
+    <span class="text-indigo-400">return</span> <span class="text-cyan-300">implode</span>(<span class="text-emerald-300">"\n\n"</span>, <span class="text-amber-400">$parts</span>);
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Engine 2: SoulyContextAssembler -->
+            <div class="glass-panel p-8 rounded-3xl mb-8 border border-purple-500/30">
+                <div class="flex flex-col lg:flex-row gap-8 items-start">
+                    <div class="w-full lg:w-5/12">
+                        <span class="text-xs px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 mb-3 inline-block font-bold">2. العقل الإدراكي</span>
+                        <h3 class="text-2xl font-black text-white mb-2">SoulyContextAssembler</h3>
+                        <p class="text-sm font-mono text-purple-400 mb-4 code-dir">app/Services/HedraSoul/SoulyContextAssembler.php</p>
+                        <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                            هذا الكلاس يمثل قمة الهندسة الأمنية في التلقين. يدير ميزانية الـ Tokens لمنع الانفجار السعري عند الاستدعاءات الخارجية.
+                            <br><br>
+                            <b class="text-amber-400">تقييم المخاطر (Risk Audit):</b> يمنع الوكيل من إرسال رسائل خارجية عبر الواتساب (WAHA) إذا كان التلقين يحتوي على إشارات (Mentions) مجهولة، حمايةً للمعلومات من التسريب!
+                        </p>
+                    </div>
+                    <div class="w-full lg:w-7/12 bg-nexus-dark p-5 rounded-2xl border border-nexus-border shadow-2xl overflow-x-auto code-dir">
+<pre><code class="text-xs text-slate-300 font-mono"><span class="text-indigo-400">const</span> TOKEN_BUDGET = <span class="text-amber-400">8000</span>; <span class="text-slate-500">// حد الميزانية الصارم</span>
+
+<span class="text-slate-500">// التقدير التقريبي للحجم: 1 Token ≈ 4 Characters</span>
+<span class="text-amber-400">$jsonPayload</span> = <span class="text-cyan-300">json_encode</span>(<span class="text-amber-400">$payload</span>);
+<span class="text-amber-400">$tokenEstimate</span> = <span class="text-cyan-300">strlen</span>(<span class="text-amber-400">$jsonPayload</span>) / <span class="text-amber-400">4</span>;
+
+<span class="text-slate-500">// لو تم تخطي الميزانية، اقتطع القديم للحفاظ على كفاءة الخصومة</span>
+<span class="text-indigo-400">if</span> (<span class="text-amber-400">$tokenEstimate</span> > self::TOKEN_BUDGET) {
+    <span class="text-amber-400">$payload</span>[<span class="text-emerald-300">'recent_messages'</span>] = <span class="text-cyan-300">array_slice</span>(<span class="text-amber-400">$payload</span>[<span class="text-emerald-300">'recent_messages'</span>], -<span class="text-amber-400">10</span>);
+    <span class="text-amber-400">$excludedItems</span>[] = [
+        <span class="text-emerald-300">'key'</span> => <span class="text-emerald-300">'older_messages'</span>,
+        <span class="text-emerald-300">'reason'</span> => <span class="text-emerald-300">'Exceeded token budget (limit: 8000)'</span>,
+    ];
+}
+
+<span class="text-slate-500">// حساب الخطورة الأمنية للـ Prompt قبل الإرسال</span>
+<span class="text-amber-400">$risk</span> = <span class="text-emerald-300">'low'</span>;
+<span class="text-indigo-400">if</span> (<span class="text-amber-400">$payload</span>[<span class="text-emerald-300">'external_messaging_access'</span>] && !<span class="text-cyan-300">empty</span>(<span class="text-amber-400">$payload</span>[<span class="text-emerald-300">'mentions'</span>])) {
+    <span class="text-amber-400">$risk</span> = <span class="text-emerald-300">'high'</span>; <span class="text-slate-500">// حماية ضد التسريب الخارجي عبر WAHA</span>
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Engine 3 & 4 Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Persona Engine -->
+                <div class="glass-panel p-6 rounded-3xl border border-emerald-500/30">
+                    <span class="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 mb-3 inline-block font-bold">3. صانع النبرات والشخصيات</span>
+                    <h4 class="text-xl font-bold text-white mb-1">PersonaToneEngine</h4>
+                    <p class="text-xs font-mono text-emerald-400 mb-3 code-dir">app/Services/Engines/PersonaToneEngine.php</p>
+                    <p class="text-slate-400 text-sm mb-4">يعطى للـ AI طابعاً بشرياً متناسقاً. يقوم بقص التلميح وتوليد صلب تعليمات النظام وفق مصفوفة traits معقدة.</p>
+                    <div class="bg-nexus-dark p-4 rounded-xl border border-nexus-border overflow-x-auto code-dir text-xs text-slate-300 font-mono">
+<pre><span class="text-indigo-400">protected function</span> <span class="text-cyan-300">buildSystemPrompt</span>(array <span class="text-amber-400">$config</span>): string
+{
+    <span class="text-amber-400">$parts</span> = [
+        <span class="text-emerald-300">"You are a "</span>.<span class="text-amber-400">$config</span>[<span class="text-emerald-300">'name'</span>].<span class="text-emerald-300">" assistant."</span>,
+        <span class="text-amber-400">$config</span>[<span class="text-emerald-300">'description'</span>],
+        <span class="text-emerald-300">'Traits: '</span>.<span class="text-cyan-300">implode</span>(<span class="text-emerald-300">', '</span>, <span class="text-amber-400">$config</span>[<span class="text-emerald-300">'traits'</span>]),
+    ];
+    <span class="text-indigo-400">return</span> <span class="text-cyan-300">implode</span>(<span class="text-emerald-300">' '</span>, <span class="text-amber-400">$parts</span>);
+}</pre>
+                    </div>
+                </div>
+
+                <!-- ReAct Agent Engine -->
+                <div class="glass-panel p-6 rounded-3xl border border-cyan-500/30">
+                    <span class="text-xs px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 mb-3 inline-block font-bold">4. عقل متصفح الويب الآلي</span>
+                    <h4 class="text-xl font-bold text-white mb-1">ReActAgentEngine</h4>
+                    <p class="text-xs font-mono text-cyan-400 mb-3 code-dir">app/Services/ReActAgentEngine.php</p>
+                    <p class="text-slate-400 text-sm mb-4">يصنع الـ Prompt المعقد الذي يدفع إضافة الكروم للتنقل بين الروابط، قراءة DOM، وحظر الفناء (15 Loop Max Limit).</p>
+                    <div class="bg-nexus-dark p-4 rounded-xl border border-nexus-border overflow-x-auto code-dir text-xs text-slate-300 font-mono">
+<pre><span class="text-indigo-400">if</span> (<span class="text-cyan-300">count</span>(<span class="text-amber-400">$proofs</span>) >= <span class="text-amber-400">15</span>) {
+    <span class="text-amber-400">$task</span>-><span class="text-cyan-300">update</span>([<span class="text-emerald-300">'status'</span> => <span class="text-emerald-300">'failed'</span>]);
+    <span class="text-indigo-400">return</span>; <span class="text-slate-500">// Stop Infinite Hallucination</span>
+}
+<span class="text-amber-400">$prompt</span> = <span class="text-emerald-300">"You are an autonomous Browser Agent Executor.
+Your overarching goal is: \"</span>{<span class="text-amber-400">$goal</span>}<span class="text-emerald-300">\".
+You MUST update and return the full 'plan' array..."</span>;</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: INTERACTIVE PROMPT SIMULATOR -->
+        <section x-show="activeTab === 'simulator'" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+                 x-data="{
+                     persona: 'expert',
+                     includeMemory: true,
+                     includeHistory: true,
+                     userMessage: 'هل يمكنك استخراج رقم هاتف العميل من آخر رسالة له وإرسال إيميل تأكيد؟',
+                     risk: 'low',
+                     tokens: 142,
+                     updateRisk() {
+                         if (this.userMessage.includes('إيميل') || this.userMessage.includes('واتس') || this.userMessage.includes('رقم')) {
+                             this.risk = 'high';
+                         } else {
+                             this.risk = 'low';
+                         }
+                         this.tokens = 120 + (this.includeMemory ? 450 : 0) + (this.includeHistory ? 680 : 0) + Math.round(this.userMessage.length * 1.5);
+                     }
+                 }"
+                 x-init="updateRisk()">
+
+            <div class="glass-panel p-8 rounded-3xl border border-cyan-500/30 shadow-glow-accent/20">
+                <div class="mb-6">
+                    <span class="px-3 py-1 rounded-full text-xs font-black bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 inline-block mb-2">
+                        🎮 المختبر التفاعلي اللحظي
+                    </span>
+                    <h2 class="text-3xl font-black text-white">محاكي توليد التلقين في NexusV3</h2>
+                    <p class="text-slate-400 text-sm mt-1">جرّب بنفسك تغيير إعدادات المحرك وشاهده كيف يتفاعل ويبني نص الـ Prompt بالوقت الحقيقي!</p>
+                </div>
+
+                <!-- Simulator Controls & Preview Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    
+                    <!-- Controls Left Panel -->
+                    <div class="lg:col-span-5 space-y-6 bg-nexus-dark/70 p-6 rounded-2xl border border-nexus-border">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-300 mb-2">اختر الشخصية والنبرة (Persona):</label>
+                            <select x-model="persona" @change="updateRisk()" class="w-full bg-nexus-card border border-slate-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-cyan-500 font-bold">
+                                <option value="expert">👑 الخبير التقني (Expert - Technical & Precise)</option>
+                                <option value="friendly">😊 الودود الحميمي (Friendly - Warm & Conversational)</option>
+                                <option value="concise">⚡ الموجز المباشر (Concise - Efficient & Short)</option>
+                                <option value="default">🛡️ المساعد القياسي (Default - Professional)</option>
+                            </select>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label class="block text-sm font-bold text-slate-300">مكونات الذاكرة والسياق المدمجة:</label>
+                            <label class="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+                                <input type="checkbox" x-model="includeMemory" @change="updateRisk()" class="w-5 h-5 rounded border-slate-600 text-cyan-600 focus:ring-0">
+                                <span class="text-sm text-slate-300 font-medium">حقن الذاكرة الدلالية (Top 10 Memories)</span>
+                            </label>
+
+                            <label class="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+                                <input type="checkbox" x-model="includeHistory" @change="updateRisk()" class="w-5 h-5 rounded border-slate-600 text-cyan-600 focus:ring-0">
+                                <span class="text-sm text-slate-300 font-medium">إرفاق أرشيف الرسائل السابقة (Top 20 History)</span>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-slate-300 mb-2">رسالة المستخدم أو المهمة المطلوبة:</label>
+                            <textarea x-model="userMessage" @input="updateRisk()" rows="3" class="w-full bg-nexus-card border border-slate-700 text-white rounded-xl p-3 text-sm focus:outline-none focus:border-cyan-500"></textarea>
+                            <p class="text-2xs text-slate-500 mt-1.5">💡 تلميح: جرب إزالة كلمات "إيميل" أو "رقم" ولاحظ تغير تصنيف الخطورة الأمني!</p>
+                        </div>
+
+                        <!-- Stats Box -->
+                        <div class="grid grid-cols-2 gap-3 pt-4 border-t border-slate-800">
+                            <div class="bg-black/40 p-3 rounded-xl border border-slate-800 text-center">
+                                <span class="block text-xs text-slate-400">تقدير ميزانية الـ Tokens</span>
+                                <span class="text-lg font-mono font-black text-cyan-400" x-text="tokens + ' / 8000'"></span>
+                            </div>
+                            <div class="bg-black/40 p-3 rounded-xl border border-slate-800 text-center">
+                                <span class="block text-xs text-slate-400">تصنيف الخطورة الأمني</span>
+                                <span class="text-sm font-black px-2.5 py-0.5 rounded uppercase mt-1 inline-block"
+                                      :class="risk === 'high' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'"
+                                      x-text="risk === 'high' ? 'High Risk ⚠️' : 'Low Risk 🟢'"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Rendered Prompt Right Panel -->
+                    <div class="lg:col-span-7 bg-nexus-dark p-6 rounded-2xl border border-slate-800 shadow-2xl code-dir relative">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                            <span class="text-xs font-mono text-cyan-400">🔥 Compiled Master Prompt (Ready for LiteLLM / Horizon Queue)</span>
+                            <span class="px-2 py-0.5 bg-slate-800 text-slate-300 rounded text-2xs font-mono">Payload Preview</span>
+                        </div>
+
+                        <div class="font-mono text-xs text-slate-300 space-y-4 max-h-[460px] overflow-y-auto pr-2">
+                            
+                            <!-- System Prompt block -->
+                            <div>
+                                <div class="text-purple-400 font-bold mb-1">=== SYSTEM PROMPT [PersonaToneEngine] ===</div>
+                                <div class="p-3 bg-purple-950/20 rounded-xl border border-purple-800/30 text-purple-200">
+                                    <span x-show="persona === 'expert'">You are an Expert assistant. Deep domain knowledge, authoritative. Traits: authoritative, detailed, precise. Do not guess schemas or logs.</span>
+                                    <span x-show="persona === 'friendly'">You are a Friendly assistant. Warm, approachable assistant. Traits: warm, encouraging, conversational.</span>
+                                    <span x-show="persona === 'concise'">You are a Concise assistant. Brief, to-the-point responses. Traits: brief, direct, efficient.</span>
+                                    <span x-show="persona === 'default'">You are a Default assistant. Standard helpful assistant. Traits: helpful, clear, concise.</span>
+                                </div>
+                            </div>
+
+                            <!-- Memory Block -->
+                            <div x-show="includeMemory" x-transition>
+                                <div class="text-indigo-400 font-bold mb-1">=== RELEVANT CONTEXT [ContextAssemblyPipeline] ===</div>
+                                <div class="p-3 bg-indigo-950/20 rounded-xl border border-indigo-800/30 text-indigo-200 space-y-1">
+                                    <div>[preference] User strictly speaks Egyptian Arabic with engineering terms.</div>
+                                    <div>[fact] Contact phone is +201012345678, verified via WAHA synchronization.</div>
+                                    <div>[decision] Always verify changes via PHPUnit 11 and pint formatting before committing.</div>
+                                </div>
+                            </div>
+
+                            <!-- History Block -->
+                            <div x-show="includeHistory" x-transition>
+                                <div class="text-emerald-400 font-bold mb-1">=== CONVERSATION HISTORY (Last 20 Messages) ===</div>
+                                <div class="p-3 bg-emerald-950/20 rounded-xl border border-emerald-800/30 text-emerald-200 space-y-1">
+                                    <div><b class="text-white">User:</b> مساء الخير يا سولي، محتاجين نعمل فحص سريع للعملاء.</div>
+                                    <div><b class="text-white">Assistant:</b> أهلاً بيك! أنا جاهز تماماً، قدرت أصل لبيانات الـ Contacts Hub عبر أتمتة ReAct، اتفضل إيه المطلوب؟</div>
+                                </div>
+                            </div>
+
+                            <!-- Current Message Block -->
+                            <div>
+                                <div class="text-cyan-400 font-bold mb-1">=== CURRENT USER TRIGGER MESSAGE ===</div>
+                                <div class="p-3 bg-cyan-950/20 rounded-xl border border-cyan-800/30 text-cyan-200 font-sans font-semibold text-right" dir="rtl" x-text="userMessage"></div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+        <!-- FOOTER & AUTHOR NOTICE -->
+        <footer class="mt-16 text-center text-slate-500 text-xs border-t border-slate-800/60 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+                تم إعداد هذا التوثيق البصري والتفاعلي خصيصاً للمهندس <span class="text-cyan-400 font-black underline">Hedra</span> بواسطة مساعده الذكي <span class="text-indigo-400 font-bold">Antigravity (Gemini 3.1 Pro)</span>
+            </div>
+            <div class="flex items-center gap-2 text-slate-400">
+                <span>NexusV3 Monolithic Platform</span>
+                <span>•</span>
+                <span class="text-emerald-400 font-mono">Laravel 13 + Tailwind + Vite</span>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        // Initialize Lucide Icons & Mermaid
+        lucide.createIcons();
+        mermaid.initialize({ startOnLoad: true, theme: 'dark', fontFamily: 'Cairo' });
+    </script>
+</body>
+</html>

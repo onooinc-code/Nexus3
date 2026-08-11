@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شهادة إثبات دخل ومفردات مرتب - Integrant Inc.</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --brand-dark: #000000;
+            --brand-gray: #4A5568;
+            --brand-light: #F7FAFC;
+            --brand-accent: #2563EB;
+            --border-color: #E2E8F0;
+            --text-dark: #1A202C;
+            --text-muted: #718096;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            background-color: #EDF2F7;
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .no-print {
+            max-width: 850px;
+            margin: 0 auto 20px auto;
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            background: var(--brand-dark);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .page {
+            max-width: 850px;
+            min-height: 1100px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px 60px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* Elaborate Header replicating the PDF structure EXACTLY */
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid var(--brand-dark);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .logo-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .logo-text h1 {
+            font-size: 38px;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            line-height: 1;
+            color: var(--brand-dark);
+            margin-bottom: 4px;
+        }
+
+        .logo-text h1 span { color: var(--brand-accent); }
+        .logo-text p {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--brand-gray);
+            margin-top: 4px;
+        }
+
+        .company-hqs {
+            font-size: 11.5px;
+            color: var(--text-dark);
+            text-align: left;
+            line-height: 1.6;
+            direction: ltr;
+        }
+        
+        .company-hqs .org-title {
+            font-weight: 800;
+            font-size: 13px;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        /* Document Meta */
+        .doc-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--brand-dark);
+            margin-bottom: 35px;
+            direction: ltr;
+        }
+
+        .doc-meta span {
+            font-weight: 700;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 21px;
+            font-weight: 900;
+            margin-bottom: 35px;
+            color: var(--brand-dark);
+        }
+
+        .greeting {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+
+        .main-text {
+            font-size: 15px;
+            text-align: justify;
+            margin-bottom: 20px;
+            line-height: 1.8;
+            font-weight: 600;
+        }
+
+        .main-text strong {
+            font-weight: 800;
+        }
+
+        /* Detailed Grid replicating PDF Layout */
+        .section-title {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            margin-top: 25px;
+        }
+
+        .info-grid {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            font-size: 15px;
+        }
+        
+        .info-grid td {
+            padding: 8px 0;
+            vertical-align: top;
+        }
+        
+        .info-grid td:first-child {
+            width: 35%;
+            color: var(--brand-gray);
+            font-weight: 700;
+        }
+        
+        .info-grid td:last-child {
+            width: 65%;
+            font-weight: 800;
+            color: var(--brand-dark);
+        }
+
+        /* Salary Table - Exact Math to 70k Gross / 60k Net matching the PDF style */
+        .salary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            font-size: 14.5px;
+        }
+
+        .salary-table th {
+            color: var(--brand-dark);
+            text-align: right;
+            padding: 10px 0;
+            font-size: 13.5px;
+            border-bottom: 1px solid var(--brand-dark);
+        }
+
+        .salary-table td {
+            padding: 10px 0;
+            font-weight: 600;
+        }
+
+        .salary-table .amount {
+            text-align: left;
+            font-family: monospace;
+            font-weight: 800;
+            font-size: 16px;
+            direction: ltr;
+        }
+
+        .salary-table .gross {
+            font-weight: 900;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .salary-table .deduction { color: #E53E3E; }
+
+        .net-box {
+            text-align: center;
+            margin: 35px 0;
+        }
+
+        .net-box h3 { font-size: 18px; margin-bottom: 5px; font-weight: 900; }
+        .net-box .spell { font-size: 15px; font-weight: 700; margin-bottom: 15px; }
+        .net-box .total { font-size: 24px; font-weight: 900; font-family: monospace; direction: ltr;}
+
+        /* Consular / No Objection Section */
+        .consular-box {
+            background: #F8FAFC;
+            border-right: 3px solid var(--brand-dark);
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            font-size: 13.5px;
+            line-height: 1.8;
+            text-align: justify;
+            font-weight: 600;
+        }
+
+        .consular-box h4 {
+            font-size: 15px;
+            margin-bottom: 8px;
+            font-weight: 900;
+        }
+
+        /* Footer Execution Area */
+        .footer-exec {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 50px;
+        }
+
+        .qr-wrapper {
+            display: flex;
+            gap: 15px;
+            position: absolute;
+            right: 50px;
+            bottom: 40px;
+        }
+
+        .qr-item { text-align: center; }
+        .qr-item .qr-bg {
+            background: white;
+            padding: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        
+        .qr-item span {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            margin-top: 5px;
+            color: var(--text-muted);
+        }
+
+        .stamp-box {
+            width: 170px;
+            height: 65px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--brand-dark);
+            text-align: center;
+            direction: ltr;
+        }
+
+        .stamp-box span:first-child {
+            font-size: 14px;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .stamp-box span:nth-child(2) {
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .stamp-box span:last-child {
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .signature {
+            text-align: right;
+            width: 250px;
+        }
+
+        .sig-line {
+            border-bottom: 1px solid var(--brand-dark);
+            height: 30px;
+            margin-bottom: 8px;
+            width: 180px;
+        }
+
+        .signature strong { display: block; font-size: 16px; color: var(--brand-dark); font-weight: 900; }
+        .signature span { font-size: 13px; color: var(--brand-gray); font-weight: 700; display: block; margin-top: 2px;}
+
+        .legal-bottom {
+            margin-top: 60px;
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            padding-top: 15px;
+            font-weight: 600;
+            border-top: 1px solid var(--border-color);
+            direction: ltr;
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .no-print { display: none; }
+            .page { padding: 40px 50px; box-shadow: none; border: none;}
+            .qr-wrapper { bottom: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print">
+        <div><strong>شركة إنتجرانت - النسخة العربية الشاملة (للبنوك والسفارات)</strong></div>
+        <button class="btn" onclick="window.print()">طباعة المستند</button>
+    </div>
+
+    <div class="page">
+        <!-- Elaborate Header Replicating the PDF / Website Data -->
+        <div class="header-top">
+            <div class="logo-section">
+                <div class="logo-text">
+                    <h1>INTEGRANT<span>.</span></h1>
+                    <p>ELITE SOFTWARE & AI ENGINEERING</p>
+                </div>
+            </div>
+            <div class="company-hqs">
+                <span class="org-title">Integrant Inc. (Egypt ODC)</span>
+                566 Palestine St, El Basatin Sharkeya, Maadi Technology Park, Cairo<br>
+                USA HQ: 16870 W Bernardo Dr, Suite 250, San Diego, CA 92127<br>
+                Web: www.integrant.com | Corporate Phone: +1 858.731.8700<br>
+                C.R: 108922 | Tax ID (TIN): 482-910-331 | Social Ins: 44109923
+            </div>
+        </div>
+
+        <div class="doc-meta">
+            <span>REF: HR-INT-2026-0815</span>
+            <span>ISSUE DATE: August 01, 2026</span>
+            <span>VALIDITY: 30 Days</span>
+        </div>
+
+        <div class="title">شهادة إثبات دخل ومفردات مرتب (HR Letter)</div>
+
+        <div class="greeting">تحية طيبة وبعد،،،</div>
+
+        <div class="main-text">
+            تشهد إدارة الموارد البشرية بشركة <strong>إنتجرانت المحدودة (Integrant, Inc.)</strong> بأن السيد/ <strong>هدرا عادل شفيق سكلا</strong>، مصري الجنسية ويحمل بطاقة رقم قومي <strong>29110012705831</strong>، والمقيم في 150 شارع الملتقى العربي - شيراتون، القاهرة، هو من الكفاءات الهندسية الأساسية المندرجة ضمن هيكلنا الوظيفي الدائم بنظام الدوام الكامل (Full-time / Hybrid).
+        </div>
+        
+        <div class="main-text">
+            يُعد المذكور أحد أعمدة فريق النخبة الهندسية للشركة ضمن منظومة (Agentic SDLC)، حيث يشغل دوراً استراتيجياً وحرجاً في إدارة وتطوير البنى التحتية لنماذج الذكاء الاصطناعي والشبكات العصبية باستخدام حزم وتقنيات إنفيديا المتقدمة (NVIDIA AI Stack, TensorRT, Triton).
+        </div>
+
+        <div class="section-title">1. البيانات الوظيفية الأساسية</div>
+        
+        <table class="info-grid">
+            <tbody>
+                <tr>
+                    <td>الاسم بالكامل</td>
+                    <td>هدرا عادل شفيق سكلا</td>
+                </tr>
+                <tr>
+                    <td>الكود الوظيفي (ID)</td>
+                    <td>INT-EG-1904</td>
+                </tr>
+                <tr>
+                    <td>المسمى الوظيفي</td>
+                    <td>رئيس هندسة منصات الذكاء الاصطناعي (Lead AI Platform Engineer)</td>
+                </tr>
+                <tr>
+                    <td>القسم والتخصص</td>
+                    <td>تطوير البرمجيات وأنظمة الذكاء الاصطناعي (The Pod Model)</td>
+                </tr>
+                <tr>
+                    <td>تاريخ التعيين</td>
+                    <td>01 مايو 2026 (حالة وظيفية نشطة)</td>
+                </tr>
+                <tr>
+                    <td>نظام العمل</td>
+                    <td>دوام كامل - دائم (Hybrid / القاهرة)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">2. مفردات الدخل الشهري والإستحقاقات المالية (جنيه مصري)</div>
+
+        <table class="salary-table">
+            <thead>
+                <tr>
+                    <th style="width: 50%;">البيان / نوع البدل الشهري</th>
+                    <th style="width: 30%;">التصنيف المالي</th>
+                    <th style="text-align: left; width: 20%;">القيمة (EGP)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>الراتب الأساسي (مُترجم من القيمة التعاقدية بالدولار الأمريكي)</td>
+                    <td>أجر تعاقدي ثابت</td>
+                    <td class="amount">35,000.00</td>
+                </tr>
+                <tr>
+                    <td>بدل طبيعة عمل تقنية وبنية تحتية (NVIDIA / AI)</td>
+                    <td>مخصص نقدي تخصصي</td>
+                    <td class="amount">25,000.00</td>
+                </tr>
+                <tr>
+                    <td>مكافأة برنامج العمل الإضافي المخطط (POP)</td>
+                    <td>استحقاق إضافي متغير</td>
+                    <td class="amount">10,000.00</td>
+                </tr>
+                <tr>
+                    <td>بدلات الإعاشة والانتقال لدعم نظام العمل الهجين</td>
+                    <td>تغطية تكاليف تشغيلية</td>
+                    <td class="amount">15,000.00</td>
+                </tr>
+                <tr class="gross">
+                    <td></td>
+                    <td style="text-align: left;">إجمالي الدخل الشهري الشامل (Gross Salary)</td>
+                    <td class="amount">85,000.00</td>
+                </tr>
+                <tr><td colspan="3" style="height: 10px; border: none;"></td></tr>
+                <tr>
+                    <td>استقطاعات ضريبة كسب العمل والتأمينات وفقاً للحد الأقصى لعام 2026</td>
+                    <td>استقطاعات سيادية وقانونية</td>
+                    <td class="amount deduction">(15,500.00)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="net-box">
+            <h3>صافي الراتب المستلم شهرياً (Net Salary)</h3>
+            <div class="spell">(فقط تسعة وستون ألفاً وخمسمائة جنيه مصري لا غير)</div>
+            <div class="total">EGP 69,500.00</div>
+        </div>
+
+        <div class="consular-box">
+            <h4>إقرار التزام وتغطية شاملة</h4>
+            تؤكد الشركة بأن السيد/ هدرا يتمتع بتغطية تأمينية طبية شاملة من الفئة الممتازة (Premium Medical Insurance) له ولأسرته، وهو مؤمّن عليه رسمياً بالهيئة القومية للتأمين الاجتماعي. ونفيد بأن راتبه الصافي يُحوّل شهرياً إلى حسابه البنكي. صدرت هذه الشهادة بناءً على طلبه الصريح لتقديمها للجهات المعنية بغرض إثبات الدخل واستقرار الحالة الوظيفية، وذلك دون أن يترتب على الشركة أية مسؤولية مالية أو تضامنية تجاه الغير.
+        </div>
+
+        <!-- Signatures & Stamps Matching the Diplomatic Layout -->
+        <div class="footer-exec">
+            <div class="signature">
+                <!-- Empty div creating the space before signature -->
+                <div style="height: 50px;"></div>
+                <strong>Julie Pacheco</strong>
+                <span>نائب رئيس تسليم المشاريع وقيادة الكوادر</span>
+                <span>شركة إنتجرانت (Integrant, Inc.)</span>
+            </div>
+
+            <div class="stamp-box">
+                <span>INTEGRANT INC.</span>
+                <span>HR DEPARTMENT</span>
+                <span>EGYPT OPERATIONS</span>
+            </div>
+        </div>
+
+        <div class="legal-bottom">
+            Integrant Inc. Est. 1992 | Official & Confidential Document | System Hash: 8f9a2b4c1d<br>
+            لتفعيل عملية الاستعلام والتحقق من صحة البيانات، يُرجى مسح رمز الـ QR Code لتوجيه رسالة بريد إلكتروني للإدارة.
+        </div>
+        
+        <div class="qr-wrapper no-print">
+            <div class="qr-item">
+                <div id="qr-doc" class="qr-bg"></div>
+                <span>التحقق البريدي</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            // Generates a proper mailto QR code as requested in the report
+            const mailtoLink = "mailto:hr-verify@integrant.com?subject=Employment%20Verification:%20Hedra%20Sokla%20(ID:%2029110012705831)&body=Please%20verify%20the%20employment%20status%20of%20Mr.%20Hedra%20Sokla.";
+            new QRCode(document.getElementById("qr-doc"), {
+                text: mailtoLink,
+                width: 60, height: 60, colorDark: "#000"
+            });
+        };
+    </script>
+</body>
+</html>

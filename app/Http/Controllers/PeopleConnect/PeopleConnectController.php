@@ -3,82 +3,40 @@
 namespace App\Http\Controllers\PeopleConnect;
 
 use App\Http\Controllers\Controller;
-use App\Models\Contact;
-use App\Models\PeopleConnect\PeopleConnectConversation;
-use App\Models\PeopleConnect\PeopleConnectSession;
+use App\Http\Requests\UpdateReplyModeRequest;
+use App\Services\PeopleConnect\PeopleConnectConversationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PeopleConnectController extends Controller
 {
+    public function __construct(
+        protected PeopleConnectConversationService $conversationService
+    ) {}
+
     public function stats(Request $request): JsonResponse
     {
-        // Global system health + high level stats
-        $totalContacts = Contact::whereHas('peopleConnectConversations')->count();
-        $activeSessions = PeopleConnectSession::where('status', 'open')->count();
-        $unreadConversations = PeopleConnectConversation::where('unread_count', '>', 0)->count();
-
-        return response()->json([
-            'total_contacts' => $totalContacts,
-            'active_sessions' => $activeSessions,
-            'unread_conversations' => $unreadConversations,
-            'status' => 'healthy',
-        ]);
+        return response()->json($this->conversationService->getSystemStats());
     }
 
     public function search(Request $request): JsonResponse
     {
-        $query = $request->input('q');
+        $results = $this->conversationService->searchConversations($request->input('q'));
 
-        if (empty($query)) {
-            $recent = PeopleConnectConversation::with('contact')
-                ->orderBy('last_message_at', 'desc')
-                ->take(20)
-                ->get();
-
-            return response()->json($recent);
-        }
-
-        $contacts = Contact::whereHas('peopleConnectConversations')
-            ->where(function ($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%")
-                    ->orWhere('phone', 'like', "%{$query}%")
-                    ->orWhere('whatsapp_number', 'like', "%{$query}%");
-            })
-            ->with(['peopleConnectConversations' => function ($q) {
-                $q->select('id', 'contact_id', 'channel', 'status', 'unread_count', 'last_message_preview', 'last_message_at');
-            }])
-            ->take(20)
-            ->get();
-
-        return response()->json($contacts);
+        return response()->json($results);
     }
 
-    public function showConversation(int $id): JsonResponse
+    public function showConversation(int|string $id): JsonResponse
     {
-        $conversation = PeopleConnectConversation::with([
-            'contact',
-            'sessions' => function ($q) {
-                $q->orderBy('created_at', 'desc')->take(5);
-            },
-            'messages' => function ($q) {
-                $q->orderBy('created_at', 'desc')->take(50);
-            },
-        ])->findOrFail($id);
+        $conversation = $this->conversationService->getConversationDetails($id);
 
         return response()->json($conversation);
     }
 
-    public function updateReplyMode(Request $request, int $id): JsonResponse
+    public function updateReplyMode(UpdateReplyModeRequest $request, int|string $id): JsonResponse
     {
-        $request->validate([
-            'reply_mode' => 'required|in:manual,auto,hybrid,ai_only',
-        ]);
-
-        $conversation = PeopleConnectConversation::findOrFail($id);
-        $conversation->update([
-            'reply_mode_effective' => $request->input('reply_mode'),
-        ]);
+        $replyMode = $request->validated()['reply_mode'] ?? $request->input('reply_mode');
+        $conversation = $this->conversationService->updateReplyMode($id, $replyMode);
 
         return response()->json([
             'message' => 'Reply mode updated successfully',

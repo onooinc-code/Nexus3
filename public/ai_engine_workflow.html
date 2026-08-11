@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus & HedraSoul AI Engine — Architectural Workflow & Interactive Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        slate: { 950: "#070a12", 900: "#0f172a", 850: "#131d33", 800: "#1e293b" }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .glow-cyan { box-shadow: 0 0 30px -5px rgba(6, 182, 212, 0.25); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen antialiased selection:bg-cyan-500 selection:text-slate-950">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-50 glass border-b border-slate-800/80 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-3.5 h-3.5 rounded-full bg-cyan-400 animate-pulse"></div>
+            <h1 class="text-lg font-bold tracking-wider text-slate-100">
+                Nexus <span class="text-cyan-400">&amp;</span> HedraSoul <span class="text-xs font-mono px-2.5 py-1 bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 rounded-full ml-2">AI Provider Engine v2.0</span>
+            </h1>
+        </div>
+        <div class="flex items-center gap-5 text-xs font-mono">
+            <a href="#simulator" class="px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg transition font-semibold shadow-md">🕹 Live Simulator Tool</a>
+            <a href="#diagrams" class="text-slate-400 hover:text-slate-200 transition">Diagrams</a>
+            <a href="#cases" class="text-slate-400 hover:text-slate-200 transition">Scenarios</a>
+            <a href="#schema" class="text-slate-400 hover:text-slate-200 transition">DB Schema</a>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-6 py-8 space-y-12">
+
+        <!-- Banner -->
+        <div class="glass p-8 rounded-3xl glow-cyan space-y-4 text-center md:text-left relative overflow-hidden">
+            <div class="absolute -right-20 -top-20 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <span class="text-xs font-mono font-bold uppercase tracking-widest text-cyan-400 bg-cyan-950/60 border border-cyan-800/80 px-3 py-1 rounded-full">Architectural Blueprint &amp; Interactive Guide</span>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-slate-100 tracking-tight">How Prompts Flow Through Nexus &amp; HedraSoul Engine</h2>
+            <p class="text-sm text-slate-400 max-w-3xl leading-relaxed">
+                Every prompt submitted in HedraSoul is routed through an autonomous failover and optimization matrix. This document interactively simulates and details the lifecycle of standalone prompts, sequential agent chains, rate-limit fallback execution, and token usage analytics.
+            </p>
+        </div>
+
+        <!-- SECTION 1: INTERACTIVE SIMULATOR TOOL -->
+        <section id="simulator" class="space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-xl font-bold text-slate-100 flex items-center gap-2">
+                    <span>🕹 Interactive Prompt Execution Simulator</span>
+                    <span class="text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/80 px-2.5 py-0.5 rounded-full">Try it live</span>
+                </h3>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Controls -->
+                <div class="lg:col-span-5 glass p-6 rounded-2xl border border-slate-800 space-y-5 text-xs">
+                    <h4 class="font-bold text-slate-200 text-sm border-b border-slate-800 pb-2">1. Configure Execution Scenario</h4>
+
+                    <div>
+                        <label class="block font-medium text-slate-400 mb-1.5">Execution Mode</label>
+                        <select id="sim-mode" class="w-full bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-slate-100 font-mono focus:border-cyan-500 focus:outline-none">
+                            <option value="standalone">Standalone Mode (Single Agent / Direct Prompt)</option>
+                            <option value="sequential">Sequential Chain Mode (Agent A ➔ Agent B Chain)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-medium text-slate-400 mb-1.5">Priority #1 Provider Status (Simulation)</label>
+                        <select id="sim-status" class="w-full bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-slate-100 font-mono focus:border-cyan-500 focus:outline-none">
+                            <option value="200">200 OK (Primary Provider Healthy)</option>
+                            <option value="429">429 Rate Limit (Triggers Auto Failover to #2)</option>
+                            <option value="401">401 Invalid Key (Triggers Auto Failover to #2)</option>
+                            <option value="500">500 Internal Error (Triggers Auto Failover to #2)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-medium text-slate-400 mb-1.5">Sample Prompt Input</label>
+                        <textarea id="sim-prompt" rows="3" class="w-full bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-slate-100 font-mono focus:border-cyan-500 focus:outline-none">Analyze the market trends for AI SaaS infrastructure in 2026.</textarea>
+                    </div>
+
+                    <button onclick="runSimulation()" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-3 rounded-xl transition shadow-lg flex items-center justify-center gap-2 text-sm">
+                        <span>🚀 Run Execution Simulation</span>
+                    </button>
+                </div>
+
+                <!-- Trace Log Output -->
+                <div class="lg:col-span-7 glass p-6 rounded-2xl border border-slate-800 flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
+                            <h4 class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                                <span>⚡ Live Execution Trace Log</span>
+                                <span id="sim-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">Ready</span>
+                            </h4>
+                            <span class="text-[10px] font-mono text-slate-500">Time resolution: ms</span>
+                        </div>
+                        <div id="sim-output" class="font-mono text-xs text-slate-300 space-y-2 max-h-72 overflow-y-auto p-3 bg-slate-950 rounded-xl border border-slate-900">
+                            <div class="text-slate-500">// Click "Run Execution Simulation" to visualize trace steps...</div>
+                        </div>
+                    </div>
+
+                    <div id="sim-summary" class="p-3 bg-cyan-950/40 border border-cyan-800/60 rounded-xl text-xs text-cyan-300 hidden">
+                        <!-- Injected -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 2: ARCHITECTURAL DIAGRAMS -->
+        <section id="diagrams" class="space-y-6">
+            <div class="border-b border-slate-800 pb-3">
+                <h3 class="text-xl font-bold text-slate-100">📐 System Flow &amp; Failover Logic Diagrams</h3>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <div class="glass p-6 rounded-2xl border border-slate-800 space-y-4">
+                    <h4 class="font-bold text-slate-200 text-sm font-mono">1. High-Level Data Flow Matrix</h4>
+                    <div class="mermaid text-xs flex justify-center">
+                        graph TD
+                            A[HedraSoul SPA Vue 3] -->|Sanctum Bearer Token| B[Nexus Core API Routes]
+                            B --> C{Execution Router}
+                            C -->|Standalone| D[Dynamic Provider Registry]
+                            C -->|Sequential Chain| E[Workflow Execution Engine]
+                            D --> F[Priority #1 Provider]
+                            F -->|200 OK| G[Token & Cost Logger]
+                            F -->|429 / 5xx Error| H[Auto Failover Router]
+                            H --> I[Priority #2 Provider]
+                            I -->|200 OK| G
+                            G --> J[Sanctum JSON Response]
+                            J --> A
+                    </div>
+                </div>
+
+                <div class="glass p-6 rounded-2xl border border-slate-800 space-y-4">
+                    <h4 class="font-bold text-slate-200 text-sm font-mono">2. Failover &amp; Retry Decision Tree</h4>
+                    <div class="mermaid text-xs flex justify-center">
+                        graph TD
+                            P1[Primary Provider] -->|HTTP POST Request| Resp{HTTP Status?}
+                            Resp -->|200 OK| Pass[Return Completion & Log Usage]
+                            Resp -->|429 Rate Limit| Fail[Log Metric Error & Health Badge]
+                            Resp -->|401 Bad Key| Fail
+                            Resp -->|500 Server Error| Fail
+                            Fail --> Next{Next Priority Provider?}
+                            Next -->|Yes| P2[Secondary Provider]
+                            Next -->|No| Err[Return 503 System Unavailable]
+                            P2 -->|HTTP POST Request| Resp
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 3: CASE SCENARIOS -->
+        <section id="cases" class="space-y-6">
+            <div class="border-b border-slate-800 pb-3">
+                <h3 class="text-xl font-bold text-slate-100">📋 Detailed Scenario Case Breakdown</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+                
+                <div class="glass p-6 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-cyan-400 font-mono uppercase">Case 1: Standalone Request (Success)</span>
+                        <span class="px-2 py-0.5 bg-emerald-950 text-emerald-300 border border-emerald-800 rounded font-mono text-[10px]">Primary Ready</span>
+                    </div>
+                    <p class="text-slate-400 leading-relaxed">
+                        User sends prompt directly to single agent. DynamicRestProvider resolves encrypted API key for Priority #1 provider (e.g. AIStudio Proxy or DeepSeek), fires HTTP POST, logs tokens in <code class="text-cyan-300 font-mono">usage_logs</code>, and renders response in HedraSoul chat pane.
+                    </p>
+                </div>
+
+                <div class="glass p-6 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-rose-400 font-mono uppercase">Case 2: Primary 429 Failover</span>
+                        <span class="px-2 py-0.5 bg-rose-950 text-rose-300 border border-rose-800 rounded font-mono text-[10px]">Auto Failover</span>
+                    </div>
+                    <p class="text-slate-400 leading-relaxed">
+                        Priority #1 returns 429 Rate Limit. System logs health metric in <code class="text-cyan-300 font-mono">provider_health_metrics</code>, sets temporary rate_limit_reset_at timestamp, and automatically routes request to Priority #2 provider without user intervention.
+                    </p>
+                </div>
+
+                <div class="glass p-6 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-purple-400 font-mono uppercase">Case 3: Sequential Agent Chain</span>
+                        <span class="px-2 py-0.5 bg-purple-950 text-purple-300 border border-purple-800 rounded font-mono text-[10px]">Agent A ➔ Agent B</span>
+                    </div>
+                    <p class="text-slate-400 leading-relaxed">
+                        Prompt is fed to Agent A. Output of Agent A is automatically sanitized and injected as context input for Agent B. Both steps log token counts independently in analytics.
+                    </p>
+                </div>
+
+                <div class="glass p-6 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-amber-400 font-mono uppercase">Case 4: All Providers Offline</span>
+                        <span class="px-2 py-0.5 bg-amber-950 text-amber-300 border border-amber-800 rounded font-mono text-[10px]">Graceful Error</span>
+                    </div>
+                    <p class="text-slate-400 leading-relaxed">
+                        If every configured provider fails, system intercepts final exception and returns structured JSON error specifying retry duration and status details.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 4: DATABASE SCHEMAS -->
+        <section id="schema" class="space-y-6">
+            <div class="border-b border-slate-800 pb-3">
+                <h3 class="text-xl font-bold text-slate-100">🗄 Database Schema Architecture</h3>
+            </div>
+
+            <div class="glass p-6 rounded-2xl border border-slate-800 overflow-x-auto text-xs font-mono">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px]">
+                            <th class="py-2 px-3">Table Name</th>
+                            <th class="py-2 px-3">Key Fields</th>
+                            <th class="py-2 px-3">Encryption / Storage Logic</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                        <tr>
+                            <td class="py-3 px-3 font-bold text-cyan-400">ai_providers</td>
+                            <td class="py-3 px-3">id, name, base_url, api_key, schema, priority_order, status</td>
+                            <td class="py-3 px-3">api_key encrypted via Laravel Crypt::encryptString() at rest.</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-3 font-bold text-emerald-400">provider_health_metrics</td>
+                            <td class="py-3 px-3">id, provider_id, status, latency_ms, created_at</td>
+                            <td class="py-3 px-3">Ping latency metrics logged in ms for live sparklines and health badges.</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-3 font-bold text-amber-400">usage_logs</td>
+                            <td class="py-3 px-3">id, provider_id, input_tokens, output_tokens, total_cost</td>
+                            <td class="py-3 px-3">Logs token usage per request across 6h, 12h, 24h, and 7d rolling windows.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: "dark" });
+
+        async function runSimulation() {
+            const mode = document.getElementById("sim-mode").value;
+            const status = document.getElementById("sim-status").value;
+            const output = document.getElementById("sim-output");
+            const badge = document.getElementById("sim-badge");
+            const summary = document.getElementById("sim-summary");
+
+            output.innerHTML = "";
+            badge.innerText = "Executing...";
+            badge.className = "text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 animate-pulse";
+            summary.classList.add("hidden");
+
+            const addLog = (text, type = "info", delay = 250) => {
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        const color = type === "success" ? "text-emerald-400" : type === "error" ? "text-rose-400" : type === "warn" ? "text-amber-400" : "text-slate-300";
+                        const icon = type === "success" ? "✅" : type === "error" ? "❌" : type === "warn" ? "⚠️" : "➡️";
+                        output.innerHTML += `<div class="${color}">${icon} ${text}</div>`;
+                        output.scrollTop = output.scrollHeight;
+                        resolve();
+                    }, delay);
+                });
+            };
+
+            await addLog("[1/5] HedraSoul SPA: Dispatched request via Sanctum Bearer Token...", "info", 200);
+            await addLog("[2/5] Nexus Core: Auth verified -> Resolving Dynamic Provider Registry...", "info", 250);
+
+            if (mode === "standalone") {
+                await addLog("[3/5] Target Execution: Standalone Prompt -> Querying Priority #1 Provider (AIStudio Proxy)...", "info", 300);
+
+                if (status === "200") {
+                    await addLog("[4/5] Provider #1 HTTP 200 OK (Latency: 22ms) -> Prompt completed successfully!", "success", 300);
+                    await addLog("[5/5] Usage Logger: Recorded 48 Prompt Tokens + 112 Completion Tokens in DB.", "success", 250);
+                    badge.innerText = "Success (200 OK)";
+                    badge.className = "text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800";
+                    summary.innerHTML = "<b>Execution Result:</b> Direct hit on Primary Provider. Response delivered in 22ms with 160 total tokens logged.";
+                } else {
+                    await addLog(`[4/5] ⚠️ Provider #1 Returned HTTP ${status} Error -> Triggering Failover Router!`, "warn", 300);
+                    await addLog("[4.1/5] Health Monitor: Persisted error metric in DB -> Routing to Priority #2 (DeepSeek)...", "warn", 300);
+                    await addLog("[4.2/5] Priority #2 Provider HTTP 200 OK (Latency: 145ms) -> Fallback execution success!", "success", 350);
+                    await addLog("[5/5] Usage Logger: Logged token consumption for Priority #2 in DB.", "success", 250);
+                    badge.innerText = "Fallback Engaged (Success)";
+                    badge.className = "text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800";
+                    summary.innerHTML = `<b>Execution Result:</b> Primary failed (${status}). Automatic failover routed request to Secondary Provider in 145ms seamlessly.`;
+                }
+            } else {
+                await addLog("[3/5] Target Execution: Sequential Chain Mode (Agent A -> Agent B)...", "info", 300);
+                await addLog("[3.1/5] Step 1: Agent A processed prompt -> Generating output context...", "info", 300);
+                await addLog("[3.2/5] Step 2: Injected Agent A output into Agent B input prompt...", "info", 300);
+                await addLog("[4/5] Both Agents executed through Priority Chain successfully!", "success", 350);
+                await addLog("[5/5] Usage Logger: Logged 310 cumulative tokens across chain execution.", "success", 250);
+                badge.innerText = "Chain Completed";
+                badge.className = "text-[10px] font-mono px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800";
+                summary.innerHTML = "<b>Execution Result:</b> Sequential chain executed 2 steps across connected agents cleanly.";
+            }
+
+            summary.classList.remove("hidden");
+        }
+    </script>
+</body>
+</html>

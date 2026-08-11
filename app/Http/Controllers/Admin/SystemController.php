@@ -4,21 +4,26 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\ProcessManager;
+use App\Services\SystemMetadataService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 
 class SystemController extends Controller
 {
-    protected $processManager;
-
     protected $logsPath;
 
-    public function __construct(ProcessManager $processManager)
-    {
-        $this->processManager = $processManager;
+    public function __construct(
+        protected ProcessManager $processManager,
+        protected SystemMetadataService $metadataService
+    ) {
         $this->logsPath = base_path('../logs');
     }
 
@@ -411,5 +416,264 @@ class SystemController extends Controller
         $minutes = intdiv($seconds % 3600, 60);
 
         return "{$days}d {$hours}h {$minutes}m";
+    }
+
+    /**
+     * Get all project routes (categorized by API and WEB)
+     */
+    public function routes(): JsonResponse
+    {
+        try {
+            $data = $this->metadataService->getRoutes();
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to get system routes: '.$e->getMessage(), ['exception' => $e]);
+
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get current database schema
+     */
+    public function schema(): JsonResponse
+    {
+        try {
+            $data = $this->metadataService->getDatabaseSchema();
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to get database schema: '.$e->getMessage(), ['exception' => $e]);
+
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all project Controllers and Services with their methods and descriptions
+     */
+    public function codebase(): JsonResponse
+    {
+        try {
+            $data = $this->metadataService->getControllersAndServices();
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to get codebase metadata: '.$e->getMessage(), ['exception' => $e]);
+
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get project documentation index and contents
+     */
+    public function docs(Request $request): JsonResponse
+    {
+        try {
+            $file = $request->query('file');
+            $data = $this->metadataService->getDocumentationIndex($file);
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to get documentation index: '.$e->getMessage(), ['exception' => $e]);
+
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all Blade views templates and their purposes
+     */
+    public function views(): JsonResponse
+    {
+        try {
+            $data = $this->metadataService->getViews();
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to get views metadata: '.$e->getMessage(), ['exception' => $e]);
+
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Return README.md content as JSON, raw text, or web view.
+     *
+     * @return JsonResponse|Response|View
+     */
+    public function readme(Request $request)
+    {
+        try {
+            $data = $this->metadataService->getReadmeContent();
+            $format = strtolower((string) $request->query('format', ''));
+
+            if ($format === 'raw' || $format === 'text') {
+                return response($data['content'], 200, [
+                    'Content-Type' => 'text/plain; charset=UTF-8',
+                ]);
+            }
+
+            if ($request->wantsJson() || $format === 'json') {
+                return response()->json([
+                    'success' => true,
+                    'data' => $data,
+                ]);
+            }
+
+            return view('system.readme', ['readme' => $data]);
+        } catch (\Exception $e) {
+            Log::error('Failed to get README metadata: '.$e->getMessage(), ['exception' => $e]);
+
+            if ($request->wantsJson() || $request->query('format') === 'json') {
+                return response()->json([
+                    'success' => false,
+                    'error' => $e->getMessage(),
+                ], 500);
+            }
+
+            return response($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Clear all caches (browser & server), clear views/routes/config/events, and run full Laravel optimization.
+     */
+    public function optimizeAndClear(): JsonResponse
+    {
+        try {
+            $steps = [];
+
+            $runCmd = function (string $command, string $label) use (&$steps) {
+                Artisan::call($command);
+                $rawOut = trim(Artisan::output());
+                $steps[] = [
+                    'command' => 'php artisan '.$command,
+                    'label' => $label,
+                    'output' => $rawOut ?: 'Command executed cleanly.',
+                    'status' => 'success',
+                ];
+            };
+
+            // 1. Clear application cache
+            $runCmd('cache:clear', 'Clear Application Cache');
+
+            // 2. Clear route cache
+            $runCmd('route:clear', 'Clear Route Cache');
+
+            // 3. Clear config cache
+            $runCmd('config:clear', 'Clear Configuration Cache');
+
+            // 4. Clear compiled views
+            $runCmd('view:clear', 'Clear Compiled Blade Views');
+
+            // 5. Clear event cache
+            $runCmd('event:clear', 'Clear Event Cache');
+
+            // 6. Purge optimization state and compile framework optimization
+            $runCmd('optimize:clear', 'Purge Optimization Bootstrap');
+            $runCmd('optimize', 'Compile Framework Optimization');
+
+            // 7. Flush Redis and system cache
+            Cache::flush();
+            $steps[] = [
+                'command' => 'Cache::flush()',
+                'label' => 'Flush Redis & Memory Cache',
+                'output' => 'Flushed Redis keys and application cache store.',
+                'status' => 'success',
+            ];
+
+            Log::info('System optimize and clear executed with detailed outputs');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'System cache, routes, views, config, and optimization completed successfully.',
+                'steps' => $steps,
+                'timestamp' => now()->toIso8601String(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('System optimize and clear failed: '.$e->getMessage(), ['exception' => $e]);
+
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get live queue details and Redis metrics
+     */
+    public function queueDetails(): JsonResponse
+    {
+        try {
+            $redis = Redis::connection('default');
+            $queues = ['default', 'critical', 'llm-inference', 'batch', 'agent-tasks'];
+            $queueStats = [];
+
+            foreach ($queues as $q) {
+                $size = (int) $redis->llen("queues:{$q}");
+                $queueStats[] = [
+                    'name' => $q,
+                    'size' => $size,
+                    'status' => $size > 0 ? 'processing' : 'idle',
+                ];
+            }
+
+            $failedJobsCount = DB::table('failed_jobs')->count();
+            $totalJobs = array_sum(array_column($queueStats, 'size'));
+            $masters = $redis->keys('*horizon:master:*');
+            $horizonStatus = count($masters) > 0 ? 'running' : 'idle';
+
+            return response()->json([
+                'success' => true,
+                'status' => $horizonStatus,
+                'total_jobs' => $totalJobs,
+                'failed_jobs' => $failedJobsCount,
+                'queues' => $queueStats,
+                'timestamp' => now()->toIso8601String(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'status' => 'offline',
+                'total_jobs' => 0,
+                'failed_jobs' => 0,
+                'queues' => [],
+            ]);
+        }
     }
 }

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Integrant Inc. — التحقق من الوثيقة الرسمية</title>
+<style>
+  :root{
+    --navy:#0A192F;
+    --navy2:#102A4C;
+    --gold:#C9A24B;
+    --green:#0B6E4F;
+    --grey:#5A6573;
+    --bg:#F4F6FA;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:"Segoe UI",Tahoma,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--navy);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .card{
+    background:#fff;
+    width:100%;
+    max-width:640px;
+    border-radius:14px;
+    box-shadow:0 10px 40px rgba(10,25,47,.12);
+    overflow:hidden;
+    border:1px solid #E3E8F0;
+  }
+  .head{
+    background:linear-gradient(135deg,var(--navy),var(--navy2));
+    color:#fff;
+    padding:22px 28px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+  .head img{height:46px;width:auto;}
+  .head .ttl{font-size:18px;font-weight:700;letter-spacing:.3px;}
+  .head .sub{font-size:12px;color:#B9C4D4;margin-top:2px;}
+  .body{padding:26px 28px;}
+  .badge{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(11,110,79,.1);
+    color:var(--green);
+    border:1px solid rgba(11,110,79,.3);
+    padding:8px 16px;border-radius:30px;
+    font-weight:700;font-size:14px;margin-bottom:20px;
+  }
+  .badge .dot{width:9px;height:9px;border-radius:50%;background:var(--green);}
+  .row{
+    display:flex;justify-content:space-between;
+    padding:11px 0;border-bottom:1px solid #EEF1F6;
+    font-size:14px;
+  }
+  .row:last-child{border-bottom:none;}
+  .row .k{color:var(--grey);}
+  .row .v{font-weight:700;text-align:left;direction:ltr;}
+  .note{
+    margin-top:18px;font-size:12px;color:var(--grey);
+    background:#FAFBFD;border:1px solid #EEF1F6;border-radius:8px;
+    padding:12px 14px;line-height:1.6;
+  }
+  .foot{
+    background:var(--navy);color:#C9D2DF;
+    padding:14px 28px;font-size:11px;text-align:center;
+  }
+  .count{
+    margin-top:14px;text-align:center;font-size:12px;color:var(--grey);
+  }
+  .count a{color:var(--navy2);font-weight:700;text-decoration:none;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="head">
+      <img src="/integrant-logo.svg" alt="Integrant">
+      <div>
+        <div class="ttl">INTEGRANT INC.</div>
+        <div class="sub">نظام التحقق الرقمي من المحررات الرسمية</div>
+      </div>
+    </div>
+    <div class="body">
+      <div class="badge"><span class="dot"></span> الوثيقة أصيلة ومفعّلة ✓</div>
+      <div class="row"><span class="k">اسم الموظف</span><span class="v" id="emp">Hedra Adel</span></div>
+      <div class="row"><span class="k">رقم المرجع</span><span class="v" id="ref">—</span></div>
+      <div class="row"><span class="k">حالة الوثيقة</span><span class="v">ACTIVE / مفعّلة</span></div>
+      <div class="row"><span class="k">تاريخ الإصدار</span><span class="v">2026-08-01</span></div>
+      <div class="row"><span class="k">الشركة</span><span class="v">Integrant Inc. — Egypt Operations</span></div>
+      <div class="row"><span class="k">السجل التجاري</span><span class="v" id="cr">108922</span></div>
+      <div class="row"><span class="k">البطاقة الضريبية</span><span class="v" id="tax">482-910</span></div>
+      <div class="note" id="note">
+        هذه الوثيقة صادرة من شركة إنتجرانت (Integrant Inc.) وموقّعة من الإدارة المختصة،
+        وأي كشط أو تعديل يلغي صلاحيتها. للتأكيد يمكنكم مراسلة قسم الموارد البشرية.
+      </div>
+      <div class="count">
+        سيتم تحويلك لنسخة الخطاب الكاملة خلال <span id="cd">10</span> ثانية —
+        <a href="#" id="stay">إبقاء في هذه الصفحة</a>
+      </div>
+    </div>
+    <div class="foot">
+      Integrant Inc. Confidential &amp; Official Document | Any alteration renders this document invalid.
+    </div>
+  </div>
+
+<script>
+  var DB = {
+    "INT-HR-2026-08112": {emp:"Hedra Adel", cr:"108922", tax:"482-910", net:"60,000 EGP"},
+    "INT-EG-HR-20260801-9982": {emp:"Hedra Adel", cr:"145920", tax:"512-880-992", net:"60,000 EGP"}
+  };
+  var params = new URLSearchParams(window.location.search);
+  var id = params.get("id") || "";
+  document.getElementById("ref").textContent = id || "غير محدد";
+  var rec = DB[id];
+  if(rec){
+    document.getElementById("emp").textContent = rec.emp;
+    document.getElementById("cr").textContent = rec.cr;
+    document.getElementById("tax").textContent = rec.tax;
+  }
+  var target = "https://soulyeg.online/integrant-hr-letter-en-v2.html?id=" + encodeURIComponent(id);
+  var secs = 10;
+  var cd = document.getElementById("cd");
+  var timer = setInterval(function(){
+    secs--;
+    cd.textContent = secs;
+    if(secs <= 0){ clearInterval(timer); window.location.href = target; }
+  }, 1000);
+  document.getElementById("stay").addEventListener("click", function(e){
+    e.preventDefault();
+    clearInterval(timer);
+    document.querySelector(".count").innerHTML = "تم الإيقاف — الصفحة ثابتة.";
+  });
+</script>
+</body>
+</html>

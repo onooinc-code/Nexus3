@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HedraSoul Panel - Desktop Command Center</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Gridstack.js CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/gridstack@10.0.1/dist/gridstack.min.css" rel="stylesheet"/>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        glass: 'rgba(15, 23, 42, 0.45)',
+                        borderGlass: 'rgba(255, 255, 255, 0.08)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #030712;
+            background-image: radial-gradient(#1e1b4b 1.5px, transparent 1.5px), radial-gradient(#111827 1.5px, transparent 1.5px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            color: #f3f4f6;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Glassmorphism Styles */
+        .glass-panel {
+            background: rgba(10, 15, 30, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Neon Mood Glows */
+        .glow-focus {
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.25), inset 0 0 15px rgba(168, 85, 247, 0.05);
+            border-color: rgba(168, 85, 247, 0.4) !important;
+        }
+        .glow-planning {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.25), inset 0 0 15px rgba(59, 130, 246, 0.05);
+            border-color: rgba(59, 130, 246, 0.4) !important;
+        }
+        .glow-critical {
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.25), inset 0 0 15px rgba(239, 68, 68, 0.05);
+            border-color: rgba(239, 68, 68, 0.4) !important;
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Dot Grid Background for Infinite Canvas */
+        .canvas-bg {
+            background-size: 30px 30px;
+            background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1.5px, transparent 1.5px);
+        }
+
+        /* Gridstack tweaks */
+        .grid-stack-item-content {
+            background: rgba(10, 15, 30, 0.7) !important;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col antialiased">
+
+    <!-- Top Neon Mood Indicator (Mood status bar) -->
+    <div id="mood-bar" class="h-1 w-full bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 transition-all duration-1000 shadow-lg shadow-purple-500/50"></div>
+
+    <!-- Global Header -->
+    <header class="h-16 border-b border-white/5 glass-panel px-6 flex items-center justify-between z-40">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-xl bg-purple-600 flex items-center justify-center text-white shadow-lg shadow-purple-500/30">
+                <i class="bi bi-cpu-fill text-lg"></i>
+            </div>
+            <div>
+                <span class="font-extrabold tracking-wider bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">HEDRASOUL</span>
+                <span class="text-[10px] text-purple-400 font-mono block tracking-widest -mt-1 uppercase">Universal Control OS</span>
+            </div>
+        </div>
+
+        <!-- Mode Switcher -->
+        <div class="flex items-center space-x-1 bg-black/40 p-1 rounded-xl border border-white/5">
+            <button onclick="setMood('focus')" class="px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all duration-300 text-purple-400 hover:bg-purple-500/10">
+                <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
+                <span>Focus Mode</span>
+            </button>
+            <button onclick="setMood('planning')" class="px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all duration-300 bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                <span>Planning Mode</span>
+            </button>
+            <button onclick="setMood('critical')" class="px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all duration-300 text-red-400 hover:bg-red-500/10">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
+                <span>Critical Mode</span>
+            </button>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <!-- Server Status metrics -->
+            <div class="flex items-center space-x-4 text-xs text-gray-400 border-r border-white/10 pr-4">
+                <div class="flex items-center space-x-1.5">
+                    <span class="text-emerald-400"><i class="bi bi-hdd-network"></i></span>
+                    <span>Server: <strong class="text-white">Active</strong></span>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                    <span class="text-indigo-400"><i class="bi bi-cpu"></i></span>
+                    <span>CPU: <strong class="text-white">12%</strong></span>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                    <span class="text-purple-400"><i class="bi bi-memory"></i></span>
+                    <span>RAM: <strong class="text-white">2.4/8 GB</strong></span>
+                </div>
+            </div>
+
+            <!-- Profile and Options -->
+            <div class="flex items-center space-x-3">
+                <div class="text-right">
+                    <span class="text-xs font-semibold block text-white">Hedra Souly</span>
+                    <span class="text-[10px] text-emerald-400 font-mono block">Architect</span>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 p-[1px]">
+                    <div class="w-full h-full bg-[#0d0e15] rounded-[11px] flex items-center justify-center font-bold text-white">
+                        H
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <div class="flex-1 flex overflow-hidden relative">
+
+        <!-- Left Sidebar: Islands/Navigation -->
+        <aside class="w-64 border-r border-white/5 glass-panel flex flex-col z-30 transition-all duration-300">
+            <div class="p-4 border-b border-white/5">
+                <div class="relative">
+                    <input type="text" placeholder="Search Islands & Modules..." class="w-full bg-black/30 border border-white/5 rounded-xl py-2 px-3 pl-9 text-xs text-gray-300 focus:outline-none focus:border-purple-500/40">
+                    <i class="bi bi-search absolute left-3 top-2.5 text-gray-500 text-xs"></i>
+                </div>
+            </div>
+
+            <!-- Islands Accordion / Navigation -->
+            <div class="flex-1 overflow-y-auto p-3 space-y-1">
+                <div class="text-[10px] text-gray-500 font-bold uppercase tracking-wider px-3 mb-2">Systems & Hubs</div>
+                
+                <!-- Hub 1: Planning Hub -->
+                <div class="rounded-xl overflow-hidden mb-1">
+                    <button class="w-full px-3 py-2.5 flex items-center justify-between text-xs text-gray-300 hover:bg-white/5 transition-all">
+                        <span class="flex items-center space-x-2.5 font-semibold">
+                            <span class="text-blue-400"><i class="bi bi-journal-text"></i></span>
+                            <span>Planning Hub</span>
+                        </span>
+                        <i class="bi bi-chevron-down text-[10px]"></i>
+                    </button>
+                    <div class="pl-8 pr-3 pb-2 pt-1 space-y-1 bg-black/10 text-xs text-gray-400">
+                        <a href="#" class="block py-1 hover:text-white transition">Requirements Manager</a>
+                        <a href="#" class="block py-1 hover:text-white transition">Roadmap Gating</a>
+                        <a href="#" class="block py-1 hover:text-white transition">Features Specs</a>
+                    </div>
+                </div>
+
+                <!-- Hub 2: Code Engineering Hub -->
+                <div class="rounded-xl overflow-hidden mb-1">
+                    <button class="w-full px-3 py-2.5 flex items-center justify-between text-xs text-gray-200 bg-white/5 border-l-2 border-purple-500">
+                        <span class="flex items-center space-x-2.5 font-semibold">
+                            <span class="text-purple-400"><i class="bi bi-code-slash"></i></span>
+                            <span>Code Engineering</span>
+                        </span>
+                        <i class="bi bi-chevron-down text-[10px]"></i>
+                    </button>
+                    <div class="pl-8 pr-3 pb-2 pt-1 space-y-1 bg-black/10 text-xs text-gray-400">
+                        <a href="#" class="block py-1 text-purple-400 font-medium">Laravel Component Visualizer</a>
+                        <a href="#" class="block py-1 hover:text-white transition">Automatic Pipes</a>
+                        <a href="#" class="block py-1 hover:text-white transition">Git Orchestrator</a>
+                    </div>
+                </div>
+
+                <!-- Hub 3: Server & Real-time Hub -->
+                <div class="rounded-xl overflow-hidden mb-1">
+                    <button class="w-full px-3 py-2.5 flex items-center justify-between text-xs text-gray-300 hover:bg-white/5 transition-all">
+                        <span class="flex items-center space-x-2.5 font-semibold">
+                            <span class="text-emerald-400"><i class="bi bi-terminal-fill"></i></span>
+                            <span>Environment Hub</span>
+                        </span>
+                        <i class="bi bi-chevron-down text-[10px]"></i>
+                    </button>
+                </div>
+
+                <!-- Hub 4: Autonomous Agents Hub -->
+                <div class="rounded-xl overflow-hidden mb-1">
+                    <button class="w-full px-3 py-2.5 flex items-center justify-between text-xs text-gray-300 hover:bg-white/5 transition-all">
+                        <span class="flex items-center space-x-2.5 font-semibold">
+                            <span class="text-indigo-400"><i class="bi bi-robot"></i></span>
+                            <span>Cognitive AI Pipelines</span>
+                        </span>
+                        <i class="bi bi-chevron-down text-[10px]"></i>
+                    </button>
+                </div>
+
+                <div class="text-[10px] text-gray-500 font-bold uppercase tracking-wider px-3 mt-6 mb-2">My Live Systems</div>
+                
+                <a href="#" class="flex items-center justify-between px-3 py-2 text-xs text-gray-300 hover:bg-white/5 rounded-xl transition">
+                    <span class="flex items-center space-x-2.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span>Nexus Core App</span>
+                    </span>
+                    <i class="bi bi-box-arrow-up-right text-[10px] text-gray-500"></i>
+                </a>
+
+                <a href="#" class="flex items-center justify-between px-3 py-2 text-xs text-gray-300 hover:bg-white/5 rounded-xl transition">
+                    <span class="flex items-center space-x-2.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span>WAHA WhatsApp Gateway</span>
+                    </span>
+                    <i class="bi bi-box-arrow-up-right text-[10px] text-gray-500"></i>
+                </a>
+
+                <a href="#" class="flex items-center justify-between px-3 py-2 text-xs text-gray-300 hover:bg-white/5 rounded-xl transition">
+                    <span class="flex items-center space-x-2.5">
+                        <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                        <span>LiteLLM API Gateway</span>
+                    </span>
+                    <i class="bi bi-box-arrow-up-right text-[10px] text-gray-500"></i>
+                </a>
+            </div>
+
+            <!-- Footer Sidebar Status -->
+            <div class="p-4 border-t border-white/5 space-y-3">
+                <div class="flex items-center justify-between text-xs text-gray-400">
+                    <span>Souly Brain State</span>
+                    <span class="text-purple-400 font-mono">Empathetic</span>
+                </div>
+                <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                    <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-full rounded-full" style="width: 82%"></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center Infinite Canvas Area / Dot Grid Workspace -->
+        <main class="flex-1 relative overflow-hidden flex flex-col canvas-bg">
+            
+            <!-- Canvas Controls Overlay -->
+            <div class="absolute bottom-6 left-6 z-20 flex items-center space-x-2 bg-black/60 border border-white/10 p-2 rounded-xl backdrop-blur-md">
+                <button onclick="zoomIn()" class="w-9 h-9 rounded-lg hover:bg-white/10 flex items-center justify-center transition text-gray-300">
+                    <i class="bi bi-zoom-in"></i>
+                </button>
+                <button onclick="zoomOut()" class="w-9 h-9 rounded-lg hover:bg-white/10 flex items-center justify-center transition text-gray-300">
+                    <i class="bi bi-zoom-out"></i>
+                </button>
+                <div class="w-px h-6 bg-white/10"></div>
+                <button onclick="resetCanvas()" class="px-3 h-9 rounded-lg hover:bg-white/10 flex items-center justify-center transition text-xs text-gray-300 font-semibold space-x-1">
+                    <i class="bi bi-arrows-fullscreen"></i>
+                    <span>Fit Board</span>
+                </button>
+                <div class="text-xs text-gray-500 px-2 font-mono" id="zoom-level">100%</div>
+            </div>
+
+            <!-- Infinite Grid Canvas Element -->
+            <div id="infinite-canvas" class="flex-1 w-full h-full relative transition-transform duration-100 ease-out p-6" style="transform: scale(1) translate(0px, 0px);">
+                
+                <!-- Gridstack.js Responsive Dashboard Grid -->
+                <div class="grid-stack">
+                    <!-- Widget 1: Souly Memory Constellation -->
+                    <div class="grid-stack-item glow-focus" gs-x="0" gs-y="0" gs-w="6" gs-h="4">
+                        <div class="grid-stack-item-content p-4 flex flex-col justify-between">
+                            <div class="flex items-center justify-between border-b border-white/5 pb-2 mb-3">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-purple-400 text-base"><i class="bi bi-diagram-3-fill"></i></span>
+                                    <span class="text-xs font-bold text-gray-200 tracking-wide uppercase">Memory Constellation</span>
+                                </div>
+                                <span class="bg-purple-500/15 text-[10px] text-purple-400 px-2 py-0.5 rounded font-mono font-bold uppercase tracking-wider">Cognitive</span>
+                            </div>
+                            <div class="flex-1 overflow-y-auto space-y-3 pr-1 text-xs">
+                                <div class="border-l-2 border-purple-500 pl-3 py-1 bg-purple-500/5 rounded-r">
+                                    <span class="text-[10px] text-gray-500 block font-mono">FACT #4129 - RELATIONSHIP</span>
+                                    <p class="text-gray-300">Marlin Hany (توتا) wants Hedra to plan a cinema outing (horror film preferred).</p>
+                                </div>
+                                <div class="border-l-2 border-indigo-500 pl-3 py-1 bg-indigo-500/5 rounded-r">
+                                    <span class="text-[10px] text-gray-500 block font-mono">FACT #4128 - SYSTEM CONVENTION</span>
+                                    <p class="text-gray-300">Prohibit Livewire/Alpine/React. Front-end is strictly Blade + jQuery + Bootstrap 5 + Glassmorphism.</p>
+                                </div>
+                                <div class="border-l-2 border-teal-500 pl-3 py-1 bg-teal-500/5 rounded-r">
+                                    <span class="text-[10px] text-gray-500 block font-mono">FACT #4127 - SECRETS</span>
+                                    <p class="text-gray-300">Vaultwarden running on 127.0.0.1:8800. Must not leak credentials to GitHub repository.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Widget 2: Tasks & Roadmap Tree -->
+                    <div class="grid-stack-item glow-planning" gs-x="6" gs-y="0" gs-w="6" gs-h="4">
+                        <div class="grid-stack-item-content p-4 flex flex-col justify-between">
+                            <div class="flex items-center justify-between border-b border-white/5 pb-2 mb-3">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-blue-400 text-base"><i class="bi bi-list-task"></i></span>
+                                    <span class="text-xs font-bold text-gray-200 tracking-wide uppercase">Agent Programmatic Pipelines</span>
+                                </div>
+                                <span class="bg-blue-500/15 text-[10px] text-blue-400 px-2 py-0.5 rounded font-mono font-bold uppercase tracking-wider">Tasks</span>
+                            </div>
+                            <div class="flex-1 overflow-y-auto pr-1">
+                                <div class="space-y-3.5">
+                                    <!-- Task Item -->
+                                    <div class="flex items-start space-x-3 text-xs bg-black/20 p-2.5 rounded-lg border border-white/5">
+                                        <div class="w-5 h-5 rounded-md bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">1</div>
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-center mb-0.5">
+                                                <span class="font-semibold text-white">UI Mockups Phase</span>
+                                                <span class="text-[10px] text-purple-400 font-mono font-bold">IN PROGRESS</span>
+                                            </div>
+                                            <p class="text-gray-400 mb-1.5 text-[11px]">Building Interactive glass mockups inside /devmockup</p>
+                                            <div class="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+                                                <div class="bg-purple-500 h-full rounded-full" style="width: 40%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Task Item -->
+                                    <div class="flex items-start space-x-3 text-xs bg-black/20 p-2.5 rounded-lg border border-white/5">
+                                        <div class="w-5 h-5 rounded-md bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">2</div>
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-center mb-0.5">
+                                                <span class="font-semibold text-white">Task API Integration</span>
+                                                <span class="text-[10px] text-blue-400 font-mono font-bold">PENDING APPROVAL</span>
+                                            </div>
+                                            <p class="text-gray-400 text-[11px]">Connect HedraSoul frontend with Laravel tasks endpoints via API</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Widget 3: Live Environment Terminal -->
+                    <div class="grid-stack-item glow-critical" gs-x="0" gs-y="4" gs-w="8" gs-h="4">
+                        <div class="grid-stack-item-content p-4 flex flex-col justify-between bg-black/80 font-mono">
+                            <div class="flex items-center justify-between border-b border-white/5 pb-2 mb-2 font-sans">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-red-400 text-sm"><i class="bi bi-terminal"></i></span>
+                                    <span class="text-xs font-bold text-gray-200 tracking-wide uppercase">SOULEY SHELL</span>
+                                </div>
+                                <span class="bg-red-500/15 text-[10px] text-red-400 px-2 py-0.5 rounded font-mono font-bold uppercase tracking-wider">Terminal</span>
+                            </div>
+                            <div class="flex-1 overflow-y-auto text-xs text-emerald-400 p-2 bg-black/50 rounded-lg space-y-1">
+                                <p class="text-gray-500"># Last login Wed Jul 15 2026 23:42:01 from 162.243.58.33</p>
+                                <p><span class="text-purple-400">root@souly-center</span>:<span class="text-blue-400">~/nexus</span>$ php artisan task:status --active</p>
+                                <p class="text-white">Active Agents: 2 (Architect, Coder)</p>
+                                <p class="text-yellow-400">Task #19: Running UI construction in background via deleg_b6a6a389... [DONE]</p>
+                                <p class="text-yellow-400">Task #20: Running Mobile UI construction in background via deleg_e9dce8f7... [DONE]</p>
+                                <p class="text-white"><span class="text-emerald-400">✔</span> Devmockup updated successfully with production-ready code.</p>
+                                <p class="animate-pulse"><span class="text-purple-400">root@souly-center</span>:<span class="text-blue-400">~/nexus</span>$ <span class="bg-emerald-400 text-black px-1"> </span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Widget 4: Laravel 13 Component Hub -->
+                    <div class="grid-stack-item" gs-x="8" gs-y="4" gs-w="4" gs-h="4">
+                        <div class="grid-stack-item-content p-4 flex flex-col justify-between">
+                            <div class="flex items-center justify-between border-b border-white/5 pb-2 mb-3">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-emerald-400 text-base"><i class="bi bi-box"></i></span>
+                                    <span class="text-xs font-bold text-gray-200 tracking-wide uppercase">Framework Entities</span>
+                                </div>
+                                <span class="bg-emerald-500/15 text-[10px] text-emerald-400 px-2 py-0.5 rounded font-mono font-bold uppercase tracking-wider">Active Modules</span>
+                            </div>
+                            <div class="flex-1 overflow-y-auto text-xs space-y-2 pr-1">
+                                <div class="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+                                    <span class="font-medium text-gray-300">TaskController.php</span>
+                                    <span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded">Controller</span>
+                                </div>
+                                <div class="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+                                    <span class="font-medium text-gray-300">AgentTask.php</span>
+                                    <span class="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded">Model</span>
+                                </div>
+                                <div class="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+                                    <span class="font-medium text-gray-300">execute_task_pipeline</span>
+                                    <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded">Service</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Right Sidebar: Agent Chat / Context -->
+        <aside class="w-80 border-l border-white/5 glass-panel flex flex-col z-30 transition-all duration-300">
+            <div class="p-4 border-b border-white/5 flex items-center justify-between">
+                <span class="text-xs font-bold text-gray-300 uppercase tracking-wider">Souly AI Assistant</span>
+                <span class="flex h-2 w-2 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+            </div>
+
+            <!-- Chat Messages Container -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                
+                <!-- Assistant Message -->
+                <div class="flex items-start space-x-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center shrink-0">
+                        <i class="bi bi-robot text-white text-xs"></i>
+                    </div>
+                    <div class="bg-white/5 border border-white/5 rounded-2xl rounded-tl-none p-3 text-xs text-gray-300 max-w-[85%]">
+                        <p class="font-semibold text-[10px] text-purple-400 mb-1">SOULY</p>
+                        يا صديقي، أنا بنيتلك الـ Mockups بالكامل هنا في لوحة التحكم التفاعلية دي. تقدر تسحب الـ widgets وتغير مقاساتها وتجرب كل حاجة بنفسك!
+                    </div>
+                </div>
+
+                <!-- User Message -->
+                <div class="flex items-start space-x-2.5 justify-end">
+                    <div class="bg-purple-600/20 border border-purple-500/20 rounded-2xl rounded-tr-none p-3 text-xs text-gray-200 max-w-[85%]">
+                        <p class="font-semibold text-[10px] text-purple-400 mb-1 text-right">HEDRA</p>
+                        جميل جداً يا سولي! كمل وعايز أشوف واجهة الموبايل والـ Design التفاعلي بتاعها.
+                    </div>
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0">
+                        <span class="text-xs font-bold text-white">H</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Box -->
+            <div class="p-4 border-t border-white/5">
+                <div class="relative">
+                    <textarea rows="2" placeholder="Send a message to Souly..." class="w-full bg-black/40 border border-white/5 rounded-xl py-2.5 pl-3 pr-10 text-xs text-gray-300 focus:outline-none focus:border-purple-500/40 resize-none"></textarea>
+                    <button class="absolute right-3.5 bottom-3.5 text-purple-400 hover:text-purple-300 transition">
+                        <i class="bi bi-send-fill text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- Scripts -->
+    <!-- Gridstack JS -->
+    <script src="https://cdn.jsdelivr.net/npm/gridstack@10.0.1/dist/gridstack.all.js"></script>
+    <script>
+        // Initialize Gridstack
+        document.addEventListener('DOMContentLoaded', function () {
+            let grid = GridStack.init({
+                cellHeight: 100,
+                margin: 12,
+                minRow: 1,
+                animate: true,
+                float: true
+            });
+        });
+
+        // Zoom Functions for Canvas Mode
+        let scale = 1;
+        const canvas = document.getElementById('infinite-canvas');
+        const zoomText = document.getElementById('zoom-level');
+
+        function zoomIn() {
+            if (scale < 1.5) {
+                scale += 0.1;
+                updateCanvasScale();
+            }
+        }
+
+        function zoomOut() {
+            if (scale > 0.7) {
+                scale -= 0.1;
+                updateCanvasScale();
+            }
+        }
+
+        function resetCanvas() {
+            scale = 1;
+            updateCanvasScale();
+        }
+
+        function updateCanvasScale() {
+            canvas.style.transform = `scale(${scale})`;
+            zoomText.innerText = `${Math.round(scale * 100)}%`;
+        }
+
+        // Change Mood Colors (Real-time Demo)
+        function setMood(mood) {
+            const items = document.querySelectorAll('.grid-stack-item');
+            const moodBar = document.getElementById('mood-bar');
+            
+            items.forEach(item => {
+                item.className = 'grid-stack-item'; // reset classes
+            });
+
+            if (mood === 'focus') {
+                moodBar.className = "h-1 w-full bg-gradient-to-r from-purple-500 via-indigo-600 to-purple-800 transition-all duration-1000 shadow-lg shadow-purple-500/50";
+                items.forEach(item => item.classList.add('glow-focus'));
+            } else if (mood === 'planning') {
+                moodBar.className = "h-1 w-full bg-gradient-to-r from-blue-500 via-cyan-600 to-blue-800 transition-all duration-1000 shadow-lg shadow-blue-500/50";
+                items.forEach(item => item.classList.add('glow-planning'));
+            } else if (mood === 'critical') {
+                moodBar.className = "h-1 w-full bg-gradient-to-r from-red-500 via-rose-600 to-red-800 transition-all duration-1000 shadow-lg shadow-red-500/50";
+                items.forEach(item => item.classList.add('glow-critical'));
+            }
+        }
+    </script>
+</body>
+</html>

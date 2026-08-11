@@ -41,6 +41,7 @@ class Contact extends BaseModel
 
     protected $fillable = [
         'uuid',
+        'firebase_uid',
         'user_id',
         'phone',
         'whatsapp_number',
@@ -89,6 +90,26 @@ class Contact extends BaseModel
     public function peopleConnectConversations(): HasMany
     {
         return $this->hasMany(PeopleConnectConversation::class);
+    }
+
+    public function facts(): HasMany
+    {
+        return $this->hasMany(ContactFact::class);
+    }
+
+    public function stances(): HasMany
+    {
+        return $this->hasMany(ContactStance::class);
+    }
+
+    public function dialogueTasks(): HasMany
+    {
+        return $this->hasMany(DialogueTask::class);
+    }
+
+    public function messageHistoryIndex(): HasMany
+    {
+        return $this->hasMany(MessageHistoryIndex::class);
     }
 
     public function notes(): HasMany

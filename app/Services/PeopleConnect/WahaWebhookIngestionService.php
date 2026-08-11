@@ -14,23 +14,32 @@ class WahaWebhookIngestionService
     public function ingest(array $payload): void
     {
         $session = $payload['session'] ?? null;
+        $event = $payload['event'] ?? 'unknown';
         $messageId = $payload['payload']['id'] ?? null;
 
-        if (! $session || ! $messageId) {
-            Log::warning('WAHA Webhook Ingestion: Missing session or payload id', ['payload' => $payload]);
+        if (! $session) {
+            Log::warning('WAHA Webhook Ingestion: Missing session', ['payload' => $payload]);
+
+            return;
+        }
+
+        if (! $messageId && $event !== 'session.status') {
+            Log::warning('WAHA Webhook Ingestion: Missing payload id', ['payload' => $payload]);
 
             return;
         }
 
         // Deduplication check at raw event level
-        $existing = PeopleConnectRawProviderEvent::where('session_name', $session)
-            ->where('payload->payload->id', $messageId)
-            ->exists();
+        if ($messageId) {
+            $existing = PeopleConnectRawProviderEvent::where('session_name', $session)
+                ->where('payload->payload->id', '=', $messageId)
+                ->exists();
 
-        if ($existing) {
-            Log::info('WAHA Webhook Ingestion: Duplicate payload detected, skipping.', ['session' => $session, 'message_id' => $messageId]);
+            if ($existing) {
+                Log::info('WAHA Webhook Ingestion: Duplicate payload detected, skipping.', ['session' => $session, 'message_id' => $messageId]);
 
-            return;
+                return;
+            }
         }
 
         // Store raw provider event

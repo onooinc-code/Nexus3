@@ -128,19 +128,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Delay init to ensure Chart.js is fully parsed and canvas is visible
-    setTimeout(initCharts, 500);
+    setTimeout(function() {
+        initCharts();
+        pollChartData();
+    }, 500);
 
     // Poll data for charts
     function pollChartData() {
         if (!window.TaskAPI || !charts.status) return;
 
+        // 1. Status Donut
         TaskAPI.get('/tasks/stats').done(function(res) {
             if(res.data) {
-                // Update Donut
                 charts.status.data.datasets[0].data = [
-                    res.data.todo || 0,
-                    res.data.in_progress || 0,
-                    res.data.blocked || 0,
+                    res.data.todo ?? res.data.pending ?? 0,
+                    res.data.in_progress ?? res.data.running ?? 0,
+                    res.data.blocked ?? res.data.paused ?? 0,
                     res.data.completed || 0,
                     res.data.failed || 0,
                     res.data.cancelled || 0
@@ -149,13 +152,32 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        // 2. Tasks by Type
         TaskAPI.get('/tasks/stats/by-type').done(function(res) {
             if(res.data) {
-                // Assuming res.data is key-value: { 'manual': 10, 'agent': 20, ... }
                 let types = ['manual', 'agent', 'system', 'code', 'api', 'terminal', 'tool'];
-                let data = types.map(t => res.data[t] ? res.data[t].total || 0 : 0);
+                let data = types.map(t => res.data[t] ? (typeof res.data[t] === 'object' ? res.data[t].total : res.data[t]) : 0);
                 charts.type.data.datasets[0].data = data;
                 charts.type.update();
+            }
+        });
+
+        // 3. Execution Timeline
+        TaskAPI.get('/tasks/stats/timeline').done(function(res) {
+            if(res.data) {
+                charts.timeline.data.labels = res.data.labels || [];
+                charts.timeline.data.datasets[0].data = res.data.completed || [];
+                charts.timeline.data.datasets[1].data = res.data.failed || [];
+                charts.timeline.update();
+            }
+        });
+
+        // 4. Agent Performance
+        TaskAPI.get('/tasks/stats/agents').done(function(res) {
+            if(res.data) {
+                charts.agent.data.labels = res.data.labels || [];
+                charts.agent.data.datasets[0].data = res.data.data || [];
+                charts.agent.update();
             }
         });
     }

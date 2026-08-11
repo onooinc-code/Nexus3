@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الدليل والقاموس الشامل لـ Laravel AI SDK</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Cairo & Fira Code) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Alpine.js for Interactivity -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #0b0f19;
+            color: #f8fafc;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.12), transparent 25%),
+                radial-gradient(circle at 90% 40%, rgba(168, 85, 247, 0.12), transparent 25%),
+                radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.08), transparent 30%);
+            background-attachment: fixed;
+        }
+        
+        .glass-card {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #a855f7, #6366f1, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .code-block {
+            direction: ltr;
+            background: #090d16;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 1.25rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+
+        /* Syntax Highlighting */
+        .kw { color: #f43f5e; font-weight: 600; } /* Keyword */
+        .func { color: #c084fc; font-weight: 500; } /* Function */
+        .str { color: #38bdf8; } /* String */
+        .var { color: #818cf8; } /* Variable */
+        .cmt { color: #64748b; font-style: italic; } /* Comment */
+        .attr { color: #fbbf24; font-weight: 600; } /* Attribute */
+        .class-name { color: #34d399; font-weight: 600; } /* Class */
+
+        .nav-tab.active {
+            border-bottom: 3px solid #a855f7;
+            color: #a855f7;
+            background: rgba(168, 85, 247, 0.1);
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            border-color: rgba(168, 85, 247, 0.4);
+            box-shadow: 0 12px 35px rgba(168, 85, 247, 0.15);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    </style>
+</head>
+<body class="min-h-screen text-slate-200 antialiased selection:bg-purple-500/30">
+
+    <!-- Header Section -->
+    <header class="py-12 px-6 text-center border-b border-white/5 relative overflow-hidden">
+        <div class="max-w-5xl mx-auto">
+            <div class="inline-flex items-center justify-center p-4 bg-white/5 rounded-2xl mb-6 shadow-2xl border border-white/10 backdrop-blur-md">
+                <i class="fa-brands fa-laravel text-6xl text-red-500 mr-4"></i>
+                <i class="fa-solid fa-brain text-5xl text-purple-400"></i>
+            </div>
+            <h1 class="text-4xl md:text-6xl font-black mb-4 tracking-tight">
+                مرجع وموسوعة <span class="gradient-text">Laravel AI SDK</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-400 mb-8 max-w-3xl mx-auto leading-relaxed font-light">
+                الدليل التفاعلي الشامل لجميع الواجهات (Interfaces)، الفئات (Classes)، الدوال (Methods)، الـ Attributes، والـ Traits الخاصة بالحزمة الرسمية الأولى للذكاء الاصطناعي من Laravel.
+            </p>
+        </div>
+    </header>
+
+    <!-- Main App Container -->
+    <main class="max-w-7xl mx-auto px-4 py-8" x-data="{ 
+        activeTab: 'dictionary',
+        searchQuery: '',
+        selectedCategory: 'all',
+        
+        items: [
+            { type: 'Interface', name: 'Laravel\\Ai\\Contracts\\Agent', desc: 'الواجهة الأساسية لجميع الوكلاء الأذكياء (Agents).', category: 'agents' },
+            { type: 'Interface', name: 'Laravel\\Ai\\Contracts\\Conversational', desc: 'لتوفير أو تخصيص سجل وسياق المحادثة.', category: 'agents' },
+            { type: 'Interface', name: 'Laravel\\Ai\\Contracts\\HasStructuredOutput', desc: 'لإلزام الوكيل بإرجاع نتائج ميكانيكية بتركيبة JSON محددة.', category: 'agents' },
+            { type: 'Interface', name: 'Laravel\\Ai\\Contracts\\HasTools', desc: 'لتجهيز الوكيل بأدوات وظائف (Tools) يستدعيها تلقائياً.', category: 'tools' },
+            { type: 'Interface', name: 'Laravel\\Ai\\Contracts\\HasMiddleware', desc: 'لإضافة برمجيات وسيطة لتنقية الـ Prompts أو الردود.', category: 'agents' },
+            { type: 'Interface', name: 'Laravel\\Ai\\Contracts\\HasProviderOptions', desc: 'لتمرير خيارات مخصصة إضافية لجسم الـ HTTP Request للمزود.', category: 'settings' },
+            
+            { type: 'Trait', name: 'Laravel\\Ai\\Promptable', desc: 'الـ Trait الرئيسي المحرك للـ Agent (يوفر prompt, stream, queue, forUser).', category: 'agents' },
+            { type: 'Trait', name: 'Laravel\\Ai\\Concerns\\RemembersConversations', desc: 'تخزين واسترجاع محادثات المستخدم التلقائي في داتابيز لارافيل.', category: 'agents' },
+
+            { type: 'Class', name: 'Laravel\\Ai\\Image', desc: 'توليد الصور، التحكم بجودتها وأبعادها، وحفظها أو فحصها.', category: 'media' },
+            { type: 'Class', name: 'Laravel\\Ai\\Audio', desc: 'تحويل النص إلى صوت (TTS) مع تحديد جنس الصوت والإرشادات.', category: 'media' },
+            { type: 'Class', name: 'Laravel\\Ai\\Transcription', desc: 'تحويل الصوت إلى نص (STT) مع دعم Diarization وتحديد المتحدثين.', category: 'media' },
+            { type: 'Class', name: 'Laravel\\Ai\\Embeddings', desc: 'توليد الـ Vector Embeddings مع دعم الكاش وتقليل الأبعاد.', category: 'rag' },
+            { type: 'Class', name: 'Laravel\\Ai\\Reranking', desc: 'إعادة ترتيب نتائج البحث بناءً على صلتها بالسؤال/الاستعلام.', category: 'rag' },
+            { type: 'Class', name: 'Laravel\\Ai\\Files\\Document', desc: 'رفع المستندات (PDF, TXT) لمزودي الذكاء الاصطناعي لاستخدامها.', category: 'rag' },
+            { type: 'Class', name: 'Laravel\\Ai\\Stores', desc: 'إنشاء وإدارة مخازن المتجهات (Vector Stores) لتقنيات الـ RAG.', category: 'rag' },
+
+            { type: 'Attribute', name: '#[Provider]', desc: 'تحديد مزود الخدمة (مثل Lab::Anthropic أو Lab::OpenAI).', category: 'attributes' },
+            { type: 'Attribute', name: '#[Model]', desc: 'تحديد موديل محدد (مثل claude-3-5-sonnet أو gpt-4o).', category: 'attributes' },
+            { type: 'Attribute', name: '#[Temperature]', desc: 'تحديد معامل الإبداعية/العشوائية للنموذج (0.0 إلى 1.0).', category: 'attributes' },
+            { type: 'Attribute', name: '#[MaxTokens]', desc: 'تحديد الحد الأقصى للتوكنز في الإجابة.', category: 'attributes' },
+            { type: 'Attribute', name: '#[MaxSteps]', desc: 'تحديد أقصى عدد لخطوات التفكير وتنفيذ الأدوات (Tool Calling).', category: 'attributes' },
+            { type: 'Attribute', name: '#[Timeout]', desc: 'تحديد مهلة الاتصال بالثواني.', category: 'attributes' },
+            { type: 'Attribute', name: '#[UseSmartestModel]', desc: 'اختيار أذكى موديل متاح لدى المزود أوتوماتيكياً.', category: 'attributes' },
+            { type: 'Attribute', name: '#[UseCheapestModel]', desc: 'اختيار أرخص موديل متاح لدى المزود أوتوماتيكياً.', category: 'attributes' },
+            { type: 'Attribute', name: '#[WithoutBroadcasting]', desc: 'منع بث أحداث معينة عبر الـ WebSockets لحماية النطاق الترددي.', category: 'attributes' },
+
+            { type: 'Enum', name: 'Laravel\\Ai\\Enums\\Lab', desc: 'قائمة Enum لجميع المزودين (OpenAI, Anthropic, Gemini, DeepSeek, etc).', category: 'settings' },
+            { type: 'Helper', name: 'Laravel\\Ai\\agent()', desc: 'دالة مساعدة عالمية لبناء Anonymous Agent سريع بدون إنشاء ملف Class.', category: 'agents' }
+        ],
+
+        get filteredItems() {
+            return this.items.filter(item => {
+                const matchesCat = this.selectedCategory === 'all' || item.category === this.selectedCategory;
+                const matchesQuery = item.name.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
+                                     item.desc.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                                     item.type.toLowerCase().includes(this.searchQuery.toLowerCase());
+                return matchesCat && matchesQuery;
+            });
+        }
+    }">
+        
+        <!-- Navigation Tabs -->
+        <nav class="flex flex-wrap gap-3 justify-center mb-10 border-b border-slate-800 pb-4">
+            <button @click="activeTab = 'dictionary'" :class="activeTab === 'dictionary' ? 'nav-tab active' : 'text-slate-400 hover:text-white'" class="px-5 py-2.5 rounded-xl text-base font-bold transition-all duration-200 flex items-center gap-2">
+                <i class="fa-solid fa-book-bookmark text-purple-400"></i> دليل الكلاسات والدوال (Dictionary)
+            </button>
+            <button @click="activeTab = 'specs'" :class="activeTab === 'specs' ? 'nav-tab active' : 'text-slate-400 hover:text-white'" class="px-5 py-2.5 rounded-xl text-base font-bold transition-all duration-200 flex items-center gap-2">
+                <i class="fa-solid fa-layer-group text-blue-400"></i> المواصفات الفنية الكاملة (Full Specs)
+            </button>
+            <button @click="activeTab = 'examples'" :class="activeTab === 'examples' ? 'nav-tab active' : 'text-slate-400 hover:text-white'" class="px-5 py-2.5 rounded-xl text-base font-bold transition-all duration-200 flex items-center gap-2">
+                <i class="fa-solid fa-code text-green-400"></i> الأمثلة والأنماط البرمجية (Patterns)
+            </button>
+            <button @click="activeTab = 'testing'" :class="activeTab === 'testing' ? 'nav-tab active' : 'text-slate-400 hover:text-white'" class="px-5 py-2.5 rounded-xl text-base font-bold transition-all duration-200 flex items-center gap-2">
+                <i class="fa-solid fa-vial text-yellow-400"></i> الاختبارات والمحاكاة (Testing & Fakes)
+            </button>
+        </nav>
+
+        <!-- TAB 1: Dictionary & Searchable Class Reference -->
+        <section x-show="activeTab === 'dictionary'" x-transition.opacity class="space-y-6">
+            
+            <!-- Filter Bar -->
+            <div class="glass-card p-6 flex flex-col md:flex-row gap-4 justify-between items-center">
+                <!-- Search Input -->
+                <div class="relative w-full md:w-1/2">
+                    <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                    <input type="text" x-model="searchQuery" placeholder="ابحث باسم الكلاس، الفانكشن، أو الوصف..." class="w-full bg-slate-900/90 border border-slate-700/60 rounded-xl py-3 pr-11 pl-4 text-sm text-slate-200 focus:outline-none focus:border-purple-500 transition-colors">
+                </div>
+
+                <!-- Category Filters -->
+                <div class="flex flex-wrap gap-2 w-full md:w-auto justify-start md:justify-end">
+                    <button @click="selectedCategory = 'all'" :class="selectedCategory === 'all' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors">الكل</button>
+                    <button @click="selectedCategory = 'agents'" :class="selectedCategory === 'agents' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors">Agents</button>
+                    <button @click="selectedCategory = 'media'" :class="selectedCategory === 'media' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors">Media</button>
+                    <button @click="selectedCategory = 'rag'" :class="selectedCategory === 'rag' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors">RAG & Stores</button>
+                    <button @click="selectedCategory = 'attributes'" :class="selectedCategory === 'attributes' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors">Attributes</button>
+                </div>
+            </div>
+
+            <!-- Class & Method Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <template x-for="item in filteredItems" :key="item.name">
+                    <div class="glass-card p-6 card-hover flex flex-col justify-between border-t-2" :class="{
+                        'border-t-purple-500': item.type === 'Class',
+                        'border-t-blue-500': item.type === 'Interface',
+                        'border-t-green-500': item.type === 'Trait',
+                        'border-t-yellow-500': item.type === 'Attribute',
+                        'border-t-pink-500': item.type === 'Enum' || item.type === 'Helper'
+                    }">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider" :class="{
+                                    'bg-purple-500/10 text-purple-400 border border-purple-500/20': item.type === 'Class',
+                                    'bg-blue-500/10 text-blue-400 border border-blue-500/20': item.type === 'Interface',
+                                    'bg-green-500/10 text-green-400 border border-green-500/20': item.type === 'Trait',
+                                    'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20': item.type === 'Attribute',
+                                    'bg-pink-500/10 text-pink-400 border border-pink-500/20': item.type === 'Enum' || item.type === 'Helper'
+                                }" x-text="item.type"></span>
+                                <span class="text-slate-500 text-xs font-mono uppercase" x-text="item.category"></span>
+                            </div>
+                            <h3 class="text-sm font-mono font-bold text-slate-100 mb-2 break-all ltr text-left" x-text="item.name"></h3>
+                            <p class="text-xs text-slate-400 leading-relaxed" x-text="item.desc"></p>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </section>
+
+        <!-- TAB 2: Full Specs -->
+        <section x-show="activeTab === 'specs'" x-transition.opacity class="space-y-8" style="display: none;">
+            
+            <!-- Matrix Table of Providers -->
+            <div class="glass-card p-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                    <i class="fa-solid fa-table-cells text-purple-400"></i> مصفوفة دعم المزودين والإمكانيات (Provider Capabilities Matrix)
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-700 bg-slate-900/60 text-slate-300">
+                                <th class="p-3">الإمكانية (Capability)</th>
+                                <th class="p-3">المزودون المدعومون (Providers)</th>
+                                <th class="p-3">الكلاس المسؤول</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60 text-slate-400">
+                            <tr>
+                                <td class="p-3 font-semibold text-slate-200">Text & Chat Generation</td>
+                                <td class="p-3">OpenAI, Anthropic, Gemini, Azure, Groq, xAI, DeepSeek, Mistral, Ollama, OpenRouter, OpenAI-compatible</td>
+                                <td class="p-3 font-mono text-purple-400 text-xs">Laravel\Ai\Contracts\Agent</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold text-slate-200">Image Generation</td>
+                                <td class="p-3">OpenAI, Gemini, xAI</td>
+                                <td class="p-3 font-mono text-purple-400 text-xs">Laravel\Ai\Image</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold text-slate-200">Text-to-Speech (TTS)</td>
+                                <td class="p-3">OpenAI, ElevenLabs</td>
+                                <td class="p-3 font-mono text-purple-400 text-xs">Laravel\Ai\Audio</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold text-slate-200">Speech-to-Text (STT)</td>
+                                <td class="p-3">OpenAI, ElevenLabs, Mistral</td>
+                                <td class="p-3 font-mono text-purple-400 text-xs">Laravel\Ai\Transcription</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold text-slate-200">Embeddings</td>
+                                <td class="p-3">OpenAI, Gemini, Azure, Cohere, Mistral, Jina, VoyageAI, OpenAI-compatible</td>
+                                <td class="p-3 font-mono text-purple-400 text-xs">Laravel\Ai\Embeddings</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold text-slate-200">Reranking</td>
+                                <td class="p-3">Cohere, Jina</td>
+                                <td class="p-3 font-mono text-purple-400 text-xs">Laravel\Ai\Reranking</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold text-slate-200">Files & Vector Stores</td>
+                                <td class="p-3">OpenAI, Anthropic, Gemini</td>
+                                <td class="p-3 font-mono text-purple-400 text-xs">Laravel\Ai\Stores</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Features Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold mb-4 text-indigo-400 flex items-center gap-2">
+                        <i class="fa-solid fa-arrows-rotate"></i> التوفير والجاهزية (Failover & Routing)
+                    </h3>
+                    <p class="text-slate-300 text-sm mb-4 leading-relaxed">
+                        تدعم الحزمة خاصية **Failover** التلقائية، بحيث إذا توقف أحد المزودين (مثل OpenAI)، يتم التحويل أوتوماتيكياً للمزود الاحتياطي (مثل Anthropic):
+                    </p>
+                    <div class="code-block">
+<span class="var">$response</span> = (<span class="kw">new</span> MyAgent)-><span class="func">prompt</span>(
+    <span class="str">'Hello'</span>, 
+    provider: [Lab::OpenAI, Lab::Anthropic]
+);
+                    </div>
+                </div>
+
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold mb-4 text-amber-400 flex items-center gap-2">
+                        <i class="fa-solid fa-plug"></i> المزود المخصص (OpenAI-Compatible)
+                    </h3>
+                    <p class="text-slate-300 text-sm mb-4 leading-relaxed">
+                        يمكنك توجيه الـ SDK لأي سيرفر يعمل بنمط OpenAI (مثل LM Studio أو Ollama أو السيرفر الخاص بنا في Nexus):
+                    </p>
+                    <div class="code-block text-xs">
+<span class="cmt">// في config/ai.php</span>
+<span class="str">'my-llm'</span> => [
+    <span class="str">'driver'</span> => <span class="str">'openai-compatible'</span>,
+    <span class="str">'url'</span> => env(<span class="str">'MY_LLM_URL'</span>),
+    <span class="str">'key'</span> => env(<span class="str">'MY_LLM_KEY'</span>),
+]
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: Code Examples & Patterns -->
+        <section x-show="activeTab === 'examples'" x-transition.opacity class="space-y-8" style="display: none;">
+            
+            <div class="glass-card p-8">
+                <h2 class="text-2xl font-bold mb-6 text-purple-400"><i class="fa-solid fa-code"></i> أمثلة برمجية شاملة (Full Usage Code)</h2>
+
+                <!-- Code Accordion / Tabs -->
+                <div class="space-y-6">
+                    <!-- Example 1: Full Agent with Attributes & Tools -->
+                    <div>
+                        <h3 class="text-lg font-bold mb-3 text-slate-200">1. بناء Agent متكامل مع Tools و Attributes و Structured JSON</h3>
+                        <div class="code-block">
+<span class="kw">namespace</span> App\Ai\Agents;
+
+<span class="kw">use</span> Laravel\Ai\Contracts\{Agent, HasTools, HasStructuredOutput};
+<span class="kw">use</span> Laravel\Ai\Promptable;
+<span class="kw">use</span> Laravel\Ai\Attributes\{Provider, Model, Temperature, MaxTokens};
+<span class="kw">use</span> Laravel\Ai\Enums\Lab;
+<span class="kw">use</span> Illuminate\Contracts\JsonSchema\JsonSchema;
+
+<span class="attr">#[Provider(Lab::Gemini)]</span>
+<span class="attr">#[Model('gemini-1.5-pro')]</span>
+<span class="attr">#[Temperature(0.2)]</span>
+<span class="attr">#[MaxTokens(2000)]</span>
+<span class="kw">class</span> ServerMonitorAgent <span class="kw">implements</span> Agent, HasTools, HasStructuredOutput
+{
+    <span class="kw">use</span> Promptable;
+
+    <span class="kw">public function</span> <span class="func">instructions</span>(): <span class="kw">string</span>
+    {
+        <span class="kw">return</span> <span class="str">'You are a Linux Server Monitor Agent.'</span>;
+    }
+
+    <span class="kw">public function</span> <span class="func">tools</span>(): <span class="kw">iterable</span>
+    {
+        <span class="kw">return</span> [<span class="kw">new</span> CheckDiskSpaceTool, <span class="kw">new</span> RestartNginxTool];
+    }
+
+    <span class="kw">public function</span> <span class="func">schema</span>(JsonSchema <span class="var">$schema</span>): <span class="kw">array</span>
+    {
+        <span class="kw">return</span> [
+            <span class="str">'status'</span> => <span class="var">$schema</span>-><span class="func">string</span>()-><span class="func">enum</span>([<span class="str">'ok'</span>, <span class="str">'warning'</span>, <span class="str">'critical'</span>]),
+            <span class="str">'report'</span> => <span class="var">$schema</span>-><span class="func">string</span>(),
+        ];
+    }
+}
+                        </div>
+                    </div>
+
+                    <!-- Example 2: Streaming & Background Queueing -->
+                    <div>
+                        <h3 class="text-lg font-bold mb-3 text-slate-200">2. البث المباشر (Streaming) والمعالجة في الخلفية (Queueing)</h3>
+                        <div class="code-block">
+<span class="cmt">// 1. Streaming (إرجاع SSE Stream للمتصفح مباشرة في الـ Controller)</span>
+<span class="kw">return</span> (<span class="kw">new</span> ServerMonitorAgent)-><span class="func">stream</span>(<span class="str">'افحص السيرفر'</span>);
+
+<span class="cmt">// 2. Queueing (تشغيل الـ Agent في الخفاء عبر Laravel Worker)</span>
+(<span class="kw">new</span> ServerMonitorAgent)
+    -><span class="func">queue</span>(<span class="str">'افحص السيرفر'</span>)
+    -><span class="func">then</span>(<span class="kw">fn</span> (<span class="var">$response</span>) => Log::<span class="func">info</span>(<span class="var">$response</span>->text));
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: Testing & Fakes -->
+        <section x-show="activeTab === 'testing'" x-transition.opacity class="space-y-8" style="display: none;">
+            <div class="glass-card p-8 border border-yellow-500/20">
+                <h2 class="text-2xl font-bold mb-6 text-yellow-400">
+                    <i class="fa-solid fa-vial-circle-check"></i> اختبار ومحاكاة الـ AI (Testing & Faking)
+                </h2>
+                <p class="text-slate-300 text-sm mb-6 leading-relaxed">
+                    توفر الحزمة إمكانية عمل `fake()` لجميع المكونات لمنع استهلاك API Keys الحقيقية أثناء كتابة الـ PHPUnit / Feature Tests:
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-base font-bold mb-2 text-slate-200">اختبار الـ Agents</h3>
+                        <div class="code-block text-xs">
+<span class="cmt">// محاكاة ردود الـ Agent</span>
+SalesCoach::<span class="func">fake</span>([<span class="str">'رد وهمي تجريبي'</span>]);
+
+<span class="cmt">// تنفيذ الكود المطلوب فترته</span>
+<span class="var">$response</span> = (<span class="kw">new</span> SalesCoach)-><span class="func">prompt</span>(<span class="str">'سؤال'</span>);
+
+<span class="cmt">// التأكد من أن الـ Prompt تم إرساله</span>
+SalesCoach::<span class="func">assertPrompted</span>(<span class="str">'سؤال'</span>);
+SalesCoach::<span class="func">assertNotPrompted</span>(<span class="str">'سؤال آخر'</span>);
+SalesCoach::<span class="func">fake</span>()-><span class="func">preventStrayPrompts</span>();
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-base font-bold mb-2 text-slate-200">اختبار الميديا والمستندات</h3>
+                        <div class="code-block text-xs">
+<span class="cmt">// محاكاة الصور والصوت</span>
+Image::<span class="func">fake</span>();
+Audio::<span class="func">fake</span>();
+
+<span class="cmt">// التأكد من إنشاء الصورة بخصائص معينة</span>
+Image::<span class="func">assertGenerated</span>(<span class="kw">fn</span> (<span class="var">$p</span>) => <span class="var">$p</span>-><span class="func">contains</span>(<span class="str">'sunset'</span>));
+
+<span class="cmt">// محاكاة الـ Vector Stores</span>
+Stores::<span class="func">fake</span>();
+Stores::<span class="func">assertCreated</span>(<span class="str">'قاعدة معرفة نكسس'</span>);
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-8 text-slate-500 text-xs border-t border-white/5 mt-auto">
+        الدليل التفاعلي الشامل لـ Laravel AI SDK &copy; 2026 Nexus Platform.
+    </footer>
+
+</body>
+</html>

@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'driver' => env('NOTIFICATION_DRIVER', 'reverb'),
+    'driver' => env('NOTIFICATION_DRIVER', 'fcm'),
 
     'drivers' => [
         'reverb',

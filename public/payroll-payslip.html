@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrant Inc. - Monthly Payroll Slip (Payslip)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --brand-dark: #0A192F;
+            --brand-navy: #1E293B;
+            --brand-accent: #2563EB;
+            --border-color: #CBD5E0;
+            --text-dark: #0F172A;
+            --text-muted: #64748B;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #EDF2F7;
+            color: var(--text-dark);
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .no-print {
+            max-width: 850px;
+            margin: 0 auto 15px auto;
+            background: #fff;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            background: var(--brand-dark);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .page {
+            max-width: 850px;
+            width: 100%;
+            margin: 0 auto;
+            background: white;
+            padding: 35px 45px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Header */
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid var(--brand-dark);
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+        }
+
+        .logo-img {
+            width: 180px;
+            height: auto;
+            display: block;
+        }
+
+        .company-hqs {
+            font-size: 9.5px;
+            color: var(--text-dark);
+            text-align: right;
+            line-height: 1.4;
+        }
+        
+        .company-hqs .org-title {
+            font-weight: 800;
+            font-size: 10.5px;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .doc-title-bar {
+            background: var(--brand-dark);
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 14px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 15px;
+        }
+
+        .doc-title-bar span {
+            font-size: 11px;
+            font-weight: 600;
+            color: #93C5FD;
+        }
+
+        /* Meta Grid */
+        .meta-grid {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 11.5px;
+            background: #F8FAFC;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .meta-grid td {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .meta-grid label {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .meta-grid .val {
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        /* Breakdown Table */
+        .table-section-title {
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            color: var(--brand-dark);
+            letter-spacing: 0.5px;
+        }
+
+        .payslip-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 11.5px;
+        }
+
+        .payslip-table th {
+            background: #1E293B;
+            color: white;
+            text-align: left;
+            padding: 8px 12px;
+            font-size: 10.5px;
+            text-transform: uppercase;
+        }
+
+        .payslip-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .payslip-table .amount {
+            text-align: right;
+            font-family: monospace;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .payslip-table .gross-row td {
+            background: #F1F5F9;
+            font-weight: 800;
+            border-top: 1.5px solid var(--brand-dark);
+            border-bottom: 1.5px solid var(--brand-dark);
+        }
+
+        .net-summary-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #F0FFF4;
+            border: 2px solid #68D391;
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .net-summary-box h3 {
+            font-size: 13px;
+            font-weight: 900;
+            color: #22543D;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .net-summary-box .spell {
+            font-size: 11px;
+            font-weight: 600;
+            color: #276749;
+        }
+
+        .net-summary-box .net-amount {
+            font-size: 20px;
+            font-weight: 900;
+            color: #22543D;
+            font-family: monospace;
+        }
+
+        .bank-transfer-note {
+            background: #FEF3C7;
+            border-left: 4px solid #D97706;
+            padding: 10px 15px;
+            font-size: 10px;
+            color: #92400E;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        /* Signatures & Footer */
+        .exec-block {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .sign-col {
+            width: 200px;
+        }
+
+        .sig-space {
+            height: 35px;
+            border-bottom: 1px solid var(--brand-dark);
+            margin-bottom: 4px;
+        }
+
+        .sign-col strong {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .sign-col span {
+            font-size: 9px;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        .stamp-box {
+            width: 140px;
+            height: 55px;
+            border: 2px dashed #A0AEC0;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--brand-dark);
+            text-align: center;
+            background: #F7FAFC;
+        }
+
+        .stamp-box span:first-child { font-size: 10px; font-weight: 900; }
+        .stamp-box span:last-child { font-size: 8px; font-weight: 700; color: var(--text-muted); }
+
+        .footer-section {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1.5px solid var(--brand-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 8.5px;
+            color: var(--text-muted);
+        }
+
+        .qr-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .qr-item { text-align: center; }
+        .qr-item .qr-bg {
+            background: white;
+            padding: 3px;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            display: inline-block;
+        }
+        .qr-item label {
+            display: block;
+            font-size: 7.5px;
+            font-weight: 800;
+            color: var(--brand-dark);
+            margin-top: 1px;
+            text-transform: uppercase;
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+            body { background: white; padding: 0; margin: 0; }
+            .no-print { display: none !important; }
+            .page {
+                padding: 25px 40px !important;
+                box-shadow: none !important;
+                width: 100% !important;
+                height: 297mm !important;
+                max-height: 297mm !important;
+                border: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print">
+        <div><strong>Integrant Inc. — Monthly Payroll Slip (Payslip)</strong></div>
+        <button class="btn" onclick="window.print()">Print Payslip</button>
+    </div>
+
+    <div class="page">
+        <div>
+            <!-- Header -->
+            <div class="header-top">
+                <div class="logo-section">
+                    <img src="/integrant-logo.svg" class="logo-img" alt="Integrant Official Logo">
+                </div>
+                <div class="company-hqs">
+                    <span class="org-title">Integrant Inc. (Egypt ODC)</span>
+                    566 Palestine St, El Basatin Sharkeya, Maadi Technology Park, Cairo<br>
+                    USA HQ: 16870 W Bernardo Dr, Suite 250, San Diego, CA<br>
+                    C.R: 108922 | TIN: 482-910-331 | Social Ins: 44109923
+                </div>
+            </div>
+
+            <!-- Title Bar -->
+            <div class="doc-title-bar">
+                <div>MONTHLY PAYROLL STATEMENT</div>
+                <span>PAY PERIOD: JULY 2026</span>
+            </div>
+
+            <!-- Employee Meta Grid -->
+            <table class="meta-grid">
+                <tr>
+                    <td>
+                        <label>Employee Name</label>
+                        <div class="val">Hedra Adel Shafik Sokla</div>
+                    </td>
+                    <td>
+                        <label>Employee ID</label>
+                        <div class="val">INT-EG-1904</div>
+                    </td>
+                    <td>
+                        <label>National ID</label>
+                        <div class="val">29110012705831</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>Job Title</label>
+                        <div class="val">Lead AI Platform Engineer</div>
+                    </td>
+                    <td>
+                        <label>Department / Pod</label>
+                        <div class="val">Software Dev (AI Pod)</div>
+                    </td>
+                    <td>
+                        <label>Pay Date</label>
+                        <div class="val">01 / 08 / 2026</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>Bank Name</label>
+                        <div class="val">Banque Misr (بنك مصر)</div>
+                    </td>
+                    <td>
+                        <label>Payment Method</label>
+                        <div class="val">Automated Payroll Direct Deposit</div>
+                    </td>
+                    <td>
+                        <label>Slip Advice No.</label>
+                        <div class="val">SLIP-2026-07-9914</div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Salary Earnings & Deductions Table -->
+            <div class="table-section-title">Compensation & Statutory Breakdown</div>
+            <table class="payslip-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50%;">Description / Earnings Element</th>
+                        <th style="width: 30%;">Classification</th>
+                        <th style="text-align: right; width: 20%;">Amount (EGP)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Basic Salary (Pegged to USD Equivalent)</td>
+                        <td>Fixed Base Earning</td>
+                        <td class="amount">40,000.00</td>
+                    </tr>
+                    <tr>
+                        <td>Housing & Accommodation Allowance</td>
+                        <td>Fixed Allowance</td>
+                        <td class="amount">8,000.00</td>
+                    </tr>
+                    <tr>
+                        <td>AI Infrastructure & GPU Optimization Premium</td>
+                        <td>Technical Allowance</td>
+                        <td class="amount">10,000.00</td>
+                    </tr>
+                    <tr>
+                        <td>Planned Overtime Program (POP)</td>
+                        <td>Variable Earnings</td>
+                        <td class="amount">8,000.00</td>
+                    </tr>
+                    <tr>
+                        <td>Transportation & Vehicle Allowance</td>
+                        <td>Fixed Allowance</td>
+                        <td class="amount">4,000.00</td>
+                    </tr>
+                    <tr class="gross-row">
+                        <td><strong>TOTAL GROSS EARNINGS</strong></td>
+                        <td><strong>GROSS PAY</strong></td>
+                        <td class="amount"><strong>70,000.00</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Income Tax Deduction (PAYE)</td>
+                        <td>Statutory Tax</td>
+                        <td class="amount deduction">(8,163.00)</td>
+                    </tr>
+                    <tr>
+                        <td>Social Security Contribution (Max 2026 Cap)</td>
+                        <td>Social Insurance</td>
+                        <td class="amount deduction">(1,837.00)</td>
+                    </tr>
+                    <tr style="border-bottom: 2px solid var(--brand-dark);">
+                        <td>Premium Medical Insurance Contribution</td>
+                        <td>Corporate Benefits</td>
+                        <td class="amount deduction">(0.00)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Net Take Home Box -->
+            <div class="net-summary-box">
+                <div>
+                    <h3>NET DISBURSED SALARY (TAKE-HOME)</h3>
+                    <div class="spell">Sixty Thousand Egyptian Pounds Only</div>
+                </div>
+                <div class="net-amount">EGP 60,000.00</div>
+            </div>
+
+            <div class="bank-transfer-note">
+                <strong>Electronic Disbursement Confirmation:</strong> This payslip confirms that EGP 60,000.00 was disbursed electronically to employee's Banque Misr Payroll Account on August 01, 2026. This system-generated advice corresponds 1:1 with bank statement credit entries.
+            </div>
+        </div>
+
+        <!-- Footer & Signatures Block -->
+        <div>
+            <div class="exec-block">
+                <div class="sign-col">
+                    <div class="sig-space"></div>
+                    <strong>Yousef Awad</strong>
+                    <span>Founder & CEO, Integrant Inc.</span>
+                </div>
+
+                <div class="stamp-box">
+                    <span>INTEGRANT INC.</span>
+                    <span>PAYROLL DEPARTMENT</span>
+                </div>
+
+                <div class="sign-col">
+                    <div class="sig-space"></div>
+                    <strong>Julie Pacheco</strong>
+                    <span>VP, HR & Operations</span>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <div>
+                    <strong>Integrant Inc. Automated ERP Payroll System</strong> • System Hash: 8f9a2b4c1d<br>
+                    C.R: 108922 | TIN: 482-910-331 | Verification: hr-verify@integrant.com
+                </div>
+
+                <div class="qr-wrapper">
+                    <div class="qr-item">
+                        <div id="qr-payroll" class="qr-bg"></div>
+                        <label>ERP Verification</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            new QRCode(document.getElementById("qr-payroll"), {
+                text: "https://verify.integrant.com/payroll?slip=SLIP-2026-07-9914&emp=INT-EG-1904&net=60000",
+                width: 38, height: 38, colorDark: "#000"
+            });
+        };
+    </script>
+</body>
+</html>

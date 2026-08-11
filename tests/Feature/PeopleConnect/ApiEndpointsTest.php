@@ -2,17 +2,21 @@
 
 namespace Tests\Feature\PeopleConnect;
 
+use App\Jobs\PeopleConnect\SyncWahaContactsJob;
 use App\Models\Contact;
 use App\Models\PeopleConnect\PeopleConnectConversation;
 use App\Models\PeopleConnect\PeopleConnectMessage;
 use App\Models\PeopleConnect\PeopleConnectSession;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class ApiEndpointsTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected User $user;
 
     protected function setUp(): void
     {
@@ -89,5 +93,44 @@ class ApiEndpointsTest extends TestCase
         $response->assertStatus(200);
         $this->assertNotEmpty($response->json('data'));
         $this->assertEquals('Hello World', $response->json('data')[0]['body']);
+    }
+
+    public function test_update_reply_mode_validates_and_updates()
+    {
+        $contact = Contact::create(['name' => 'Bob', 'whatsapp_number' => '333444']);
+        $conversation = PeopleConnectConversation::create([
+            'contact_id' => $contact->id,
+            'channel' => 'whatsapp',
+            'provider' => 'waha',
+            'provider_conversation_id' => '333444@c.us',
+        ]);
+
+        // Valid update
+        $response = $this->actingAs($this->user)
+            ->postJson("/api/v1/people-connect/conversations/{$conversation->id}/reply-mode", [
+                'reply_mode' => 'ai_only',
+            ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals('ai_only', $conversation->fresh()->reply_mode_effective);
+
+        // Invalid update should fail validation
+        $responseInvalid = $this->actingAs($this->user)
+            ->postJson("/api/v1/people-connect/conversations/{$conversation->id}/reply-mode", [
+                'reply_mode' => 'invalid_mode',
+            ]);
+
+        $responseInvalid->assertStatus(422);
+    }
+
+    public function test_trigger_sync_endpoint_dispatches_jobs()
+    {
+        Queue::fake();
+
+        $response = $this->actingAs($this->user)
+            ->postJson('/api/v1/people-connect/livemsgs/sync', ['type' => 'contacts']);
+
+        $response->assertStatus(200);
+        Queue::assertPushed(SyncWahaContactsJob::class);
     }
 }

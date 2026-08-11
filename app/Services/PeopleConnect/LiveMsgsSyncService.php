@@ -6,6 +6,7 @@ use App\Events\JobProgressUpdated;
 use App\Jobs\ProcessWahaMessageChunkJob;
 use App\Models\Contact;
 use App\Models\ContactMessage;
+use App\Models\HedrasoulNotification;
 use App\Models\WahaSyncProcess;
 use App\Services\SettingCacheService;
 use Illuminate\Support\Facades\Http;
@@ -43,6 +44,14 @@ class LiveMsgsSyncService
             ?? '666';
     }
 
+    protected function getWahaSession(): string
+    {
+        return app(SettingCacheService::class)->get('waha_session')
+            ?? config('waha.default_session')
+            ?? config('services.waha.session')
+            ?? 'session_01220804039';
+    }
+
     public function syncContacts($processId = null): void
     {
         $process = $processId ? WahaSyncProcess::find($processId) : null;
@@ -56,7 +65,8 @@ class LiveMsgsSyncService
                 'X-Api-Key' => $this->getWahaSecret(),
                 'Accept' => 'application/json',
             ];
-            $url = "{$this->getWahaUrl()}/api/contacts/all?session=default";
+            $session = $this->getWahaSession();
+            $url = "{$this->getWahaUrl()}/api/contacts/all?session={$session}";
 
             Log::info('WAHA Sync Contacts Request', ['url' => $url]);
 
@@ -119,6 +129,18 @@ class LiveMsgsSyncService
                 if ($process) {
                     $process->update(['status' => 'completed', 'completed_at' => now(), 'processed_items' => $count, 'progress' => 100]);
                 }
+
+                HedrasoulNotification::create([
+                    'notification_type' => 'success',
+                    'priority' => 'normal',
+                    'title' => 'WAHA Contacts Sync Completed',
+                    'body' => "Successfully synchronized {$count} contacts from the WAHA pipeline.",
+                    'related_type' => 'waha_sync',
+                    'related_id' => $process?->id,
+                    'action_buttons' => [['label' => 'Open PeopleConnect', 'url' => route('hub.people-connect')]],
+                    'is_read' => false,
+                    'is_dismissed' => false,
+                ]);
             } else {
                 throw new \Exception('Failed to fetch contacts from WAHA: '.$response->body());
             }
@@ -128,6 +150,18 @@ class LiveMsgsSyncService
             } else {
                 Log::error('Waha contacts sync failed: '.$e->getMessage());
             }
+
+            HedrasoulNotification::create([
+                'notification_type' => 'error',
+                'priority' => 'high',
+                'title' => 'WAHA Contacts Sync Failed',
+                'body' => 'WAHA synchronization encountered an error: '.$e->getMessage(),
+                'related_type' => 'waha_sync',
+                'related_id' => $process?->id,
+                'action_buttons' => [['label' => 'View PeopleConnect', 'url' => route('hub.people-connect')]],
+                'is_read' => false,
+                'is_dismissed' => false,
+            ]);
         }
     }
 
@@ -164,7 +198,7 @@ class LiveMsgsSyncService
                     'Authorization' => "Bearer {$this->getWahaSecret()}",
                     'X-Api-Key' => $this->getWahaSecret(),
                     'Accept' => 'application/json',
-                ])->get("{$this->getWahaUrl()}/api/chats/{$chatId}/messages?session=default&limit=100");
+                ])->get("{$this->getWahaUrl()}/api/chats/{$chatId}/messages?session=".$this->getWahaSession().'&limit=100');
 
                 if ($response->successful()) {
                     $messages = $response->json();
@@ -217,12 +251,36 @@ class LiveMsgsSyncService
             if ($process) {
                 $process->update(['status' => 'completed', 'completed_at' => now(), 'progress' => 100]);
             }
+
+            HedrasoulNotification::create([
+                'notification_type' => 'success',
+                'priority' => 'normal',
+                'title' => 'WAHA Messages Sync Completed',
+                'body' => "Successfully synchronized messages ({$totalMessagesInserted} new inserted) across {$processedContacts} contacts.",
+                'related_type' => 'waha_sync',
+                'related_id' => $process?->id,
+                'action_buttons' => [['label' => 'Open PeopleConnect', 'url' => route('hub.people-connect')]],
+                'is_read' => false,
+                'is_dismissed' => false,
+            ]);
         } catch (\Throwable $e) {
             if ($process) {
                 $process->update(['status' => 'failed', 'completed_at' => now(), 'errors' => ['message' => $e->getMessage()]]);
             } else {
                 Log::error('Waha messages sync failed: '.$e->getMessage());
             }
+
+            HedrasoulNotification::create([
+                'notification_type' => 'error',
+                'priority' => 'high',
+                'title' => 'WAHA Messages Sync Failed',
+                'body' => 'WAHA messages synchronization failed: '.$e->getMessage(),
+                'related_type' => 'waha_sync',
+                'related_id' => $process?->id,
+                'action_buttons' => [['label' => 'View PeopleConnect', 'url' => route('hub.people-connect')]],
+                'is_read' => false,
+                'is_dismissed' => false,
+            ]);
         }
     }
 
@@ -236,8 +294,9 @@ class LiveMsgsSyncService
         try {
             $contact = Contact::whereNotNull('waha_contact_id')->findOrFail($contactId);
             $chatId = $contact->waha_contact_id;
+            $session = $this->getWahaSession();
 
-            $url = "{$this->getWahaUrl()}/api/default/chats/{$chatId}/messages?sortBy=timestamp&downloadMedia=false&merge=true&limit=9999999";
+            $url = "{$this->getWahaUrl()}/api/{$session}/chats/{$chatId}/messages?sortBy=timestamp&downloadMedia=false&merge=true&limit=9999999";
             Log::info('Fetching messages from WAHA: '.$url);
 
             $response = Http::withHeaders([

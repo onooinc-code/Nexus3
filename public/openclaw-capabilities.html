@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw — كتالوج الإمكانيات والتسعير</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0f1e;--bg2:#101830;--card:#15203f;--card2:#1b2a52;
+  --txt:#e8edf7;--mut:#93a0c0;--line:#24315c;
+  --accent:#7c5cff;--accent2:#22d3ee;--gold:#f5c451;--grn:#34d399;--pink:#f472b6;
+  --shadow:0 10px 40px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Cairo',system-ui,sans-serif;background:radial-gradient(1200px 600px at 85% -10%,#2a1d55 0,transparent 60%),radial-gradient(900px 500px at 0% 0%,#10324a 0,transparent 55%),var(--bg);color:var(--txt);line-height:1.6;min-height:100vh}
+.wrap{max-width:1280px;margin:0 auto;padding:28px 18px 80px}
+header.hero{display:flex;flex-direction:column;gap:14px;padding:34px 26px;border-radius:22px;background:linear-gradient(135deg,#1a1640,#0f1c3c);border:1px solid var(--line);box-shadow:var(--shadow);position:relative;overflow:hidden}
+header.hero:before{content:"";position:absolute;inset:0;background:radial-gradient(600px 300px at 90% -40%,rgba(124,92,255,.3),transparent 60%)}
+.brand{display:flex;align-items:center;gap:14px;flex-wrap:wrap;z-index:1}
+.brand .logo{width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:26px;font-weight:900;box-shadow:0 6px 20px rgba(124,92,255,.5)}
+.brand h1{font-size:26px;font-weight:900}
+.brand .sub{color:var(--mut);font-size:14px}
+.hero p.lead{color:var(--mut);font-size:15px;max-width:840px;z-index:1}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;z-index:1;margin-top:6px}
+.stat{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.stat b{display:block;font-size:22px;font-weight:900;color:var(--accent2)}
+.stat span{font-size:12px;color:var(--mut)}
+.toolbar{position:sticky;top:0;z-index:20;margin:22px 0 14px;padding:14px;border-radius:16px;background:rgba(16,24,48,.85);backdrop-filter:blur(10px);border:1px solid var(--line);display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.toolbar input{flex:1;min-width:220px;background:var(--bg2);border:1px solid var(--line);color:var(--txt);padding:11px 14px;border-radius:10px;font-family:inherit;font-size:14px;outline:none}
+.toolbar input:focus{border-color:var(--accent)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--card);border:1px solid var(--line);color:var(--mut);padding:8px 13px;border-radius:20px;font-size:13px;cursor:pointer;transition:.18s;user-select:none}
+.chip:hover{color:var(--txt);border-color:var(--accent)}
+.chip.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#06101f;font-weight:700;border-color:transparent}
+section.group{margin:26px 0}
+.group-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px dashed var(--line)}
+.group-head .gicon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:var(--card2);border:1px solid var(--line)}
+.group-head h2{font-size:19px;font-weight:800}
+.group-head .cnt{margin-inline-start:auto;font-size:13px;color:var(--mut);background:var(--card);border:1px solid var(--line);padding:4px 12px;border-radius:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.cap{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px;transition:.2s;position:relative}
+.cap:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 12px 30px rgba(124,92,255,.18)}
+.cap .ctitle{font-weight:700;font-size:15.5px;display:flex;align-items:center;gap:8px}
+.cap .ctitle .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);flex:none}
+.cap .cdesc{font-size:13px;color:var(--mut);flex:1}
+.price{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.4);color:var(--grn);font-weight:800;font-size:14px;padding:5px 12px;border-radius:10px}
+.price small{color:var(--mut);font-weight:600;font-size:11px}
+.pkg{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:6px}
+.pcard{background:linear-gradient(180deg,#15203f,#0e1838);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden}
+.pcard.featured{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 14px 40px rgba(245,196,81,.18)}
+.pcard .badge{position:absolute;top:14px;inset-inline-start:14px;background:var(--gold);color:#1a1206;font-size:11px;font-weight:800;padding:3px 10px;border-radius:8px}
+.pcard h3{font-size:18px;font-weight:900}
+.pcard .ptag{font-size:13px;color:var(--mut)}
+.pcard .pprice{font-size:24px;font-weight:900;color:var(--accent2);margin:4px 0}
+.pcard .pprice span{font-size:13px;color:var(--mut);font-weight:600}
+.pcard ul{list-style:none;display:flex;flex-direction:column;gap:7px;font-size:13px}
+.pcard ul li{padding-inline-start:22px;position:relative;color:var(--txt)}
+.pcard ul li:before{content:"✓";position:absolute;inset-inline-start:0;color:var(--grn);font-weight:900}
+.pcard .note{font-size:12px;color:var(--mut);border-top:1px dashed var(--line);padding-top:8px;margin-top:2px}
+section.title-block{margin:34px 0 6px}
+section.title-block h2{font-size:23px;font-weight:900;display:flex;align-items:center;gap:10px}
+section.title-block h2 .bar{width:6px;height:26px;border-radius:4px;background:linear-gradient(var(--accent),var(--accent2))}
+section.title-block p{color:var(--mut);font-size:14px;margin-top:4px;max-width:840px}
+.foot{margin-top:40px;padding:22px;border-radius:16px;background:var(--bg2);border:1px solid var(--line);color:var(--mut);font-size:13px;line-height:1.8}
+.foot b{color:var(--txt)}
+.hide{display:none!important}
+@media(max-width:560px){.brand h1{font-size:21px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="brand">
+    <div class="logo">🦞</div>
+    <div>
+      <h1>OpenClaw — كتالوج الإمكانيات والتسعير المقترح</h1>
+      <div class="sub">المحرك التشغيلي للـ Agents · مصدر البيانات: GitHub الرسمي (openclaw/openclaw) + docs</div>
+    </div>
+  </div>
+  <p class="lead">هذا الملف عرض تفاعلي لكل إمكانيات OpenClaw الحقيقية (من الـ docs الرسمية، مش من التجهيز المحلي فقط) مقسّمة لمجموعات، مع سعر وحدة مقترح (بالجنيه المصري شهرياً) لكل إمكانية، ونظام Packages مبني على قدرات OpenClaw لمشروع الموظفين الرقميين.</p>
+  <div class="stats">
+    <div class="stat"><b id="s-total">0</b><span>إمكانية مُفصّلة</span></div>
+    <div class="stat"><b>11</b><span>مجموعة قدرات</span></div>
+    <div class="stat"><b>35+</b><span>مزود نموذج</span></div>
+    <div class="stat"><b>24/7</b><span>تشغيل مستقل</span></div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <input id="search" placeholder="🔎 ابحث في إمكانيات OpenClaw...">
+  <div class="chips" id="chips"></div>
+</div>
+
+<section class="title-block">
+  <h2><span class="bar"></span> ١. كتالوج إمكانيات OpenClaw</h2>
+  <p>كل إمكانية مع سعر وحدة مقترح شهري (ج.م). السعر ضمن نطاق الـ Premium المعتمد للمنتج.</p>
+</section>
+
+<div id="groups"></div>
+
+<section class="title-block">
+  <h2><span class="bar"></span> ٢. نظام الـ Packages المُقترح (مبني على OpenClaw)</h2>
+  <p>حزم جاهزة للبيع للشركات والمصانع (Class A / B)، تركّز على الذاكرة الحية + مجلس الإدارة + التشغيل المستقل.</p>
+</section>
+
+<div class="pkg" id="packages"></div>
+
+<div class="foot">
+  <b>ملاحظات استراتيجية لهدرة:</b><br>
+  • OpenClaw هو "المحرك التشغيلي" اللي بيشغّل الـ Agents على أرض الواقع — الذاكرة فيه (خاصة <b>الـ Dreaming</b> والـ <b>Standing Orders</b>) بتدي الموظف الرقمي "وعي مستمر" بالشركة.<br>
+  • <b>الـ Delegate Architecture</b> هو المفتاح للشركات: كل موظف رقمي له هويته المستقلة ويعمل "بالنيابة عن" المدير — صفر تزييف هوية، صفر لبس مسؤولية.<br>
+  • الـ Swarm + Multi-Agent Routing = مجلس الإدارة الهجين يشتغل كـ agents بيتخاصموا ويصوّتوا لحظياً.<br>
+  • رسوم التأسيس: 50k–300k+ ج.م. العملاء الكبار (مصانع مُصدّرة) يُفضّل تسعيرهم بالدولار.<br>
+  • كل الأسعار قابلة للمراجعة ضمن نطاق الـ Premium (Single 8–20k / Dept 40–100k / Board 150–400k / Enterprise 500k–1.5M+).
+</div>
+
+</div>
+
+<script>
+const DATA = [
+  { g:"القنوات والمنصات (Channels)", icon:"📡", items:[
+    ["iMessage / Telegram / WebChat","مدمجة مع التثبيت الأساسي — تغطية فورية","1500"],
+    ["WhatsApp (Baileys)","الأهم للسوق المصري — تواصل مباشر مع العملاء/الموردين","2000"],
+    ["Discord / Slack / Signal / SMS","قنوات رسمية عبر plugin واحد","1500"],
+    ["Microsoft Teams / Google Chat / LINE / Matrix / Mattermost","تغطية الشركات الكبرى والمؤسسات","1800"],
+    ["IRC / Twitch / Zalo / Nostr / QQ Bot / Raft","قنوات متخصصة للأسواق الآسيوية/الاجتماعية","1500"],
+    ["Nextcloud Talk / Synology Chat / Tlon","قنوات مؤسسية وself-hosted","1500"],
+    ["Voice Call (مكالمات صوتية)","تفاعل صوتي مباشر كقناة","3000"],
+    ["تفعيل عبر plugin (@openclaw/<id>)","أمر واحد يضيف أي قناة رسمية","1000"],
+    ["مجموعات (Group chats) + تنشيط بالمنشن","تفعيل الذكاء داخل القروبات عند النداء","1000"],
+    ["DM safety (allowlists + pairing)","أمان الرسائل المباشرة وعزل الهويات","1000"]
+  ]},
+  { g:"العميل المفوض للشركات (Delegate Architecture)", icon:"🏢", items:[
+    ["Delegate Tier 1 — قراءة + مسودة","يقرأ بيانات الشركة ويعمل مسودات بشرط المراجعة","5000"],
+    ["Delegate Tier 2 — إرسال بالنيابة","يرسل باسمه 'بالنيابة عن' المدير — لا يزيّف هوية","8000"],
+    ["Delegate Tier 3 — تشغيل استباقي","يعمل ذاتياً بجدول وstanding orders بلا اعتماد لكل خطوة","12000"],
+    ["Hard blocks (خطوط حمراء)","قواعد أمان لا تتجاوزها أي تعليمات — دفاع ضد الحقن","3000"],
+    ["عزل الأدوات (Tool restrictions)","منع أدوات محددة على مستوى Gateway بغض النظر عن شخصية الوكيل","2000"],
+    ["عزل Sandbox","حبس الوكيل عن نظام الملفات/الشبكة خارج أدواته","3000"],
+    ["سجل تدقيق (Audit trail)","كل أفعال الوكيل مسجلة لغرض الامتثال","2000"],
+    ["ربط عبر Multi-Agent Routing","توجيه قناة/قسم لمندوب محدد","2000"]
+  ]},
+  { g:"الذاكرة الحية وأنواعها (Memory & Dreaming)", icon:"🧠", items:[
+    ["الذاكرة المدمجة (Built-in memory)","ملفات MEMORY.md + يوميات مستمرة","3000"],
+    ["الـ Dreaming — ثلاث مراحل (Light/REM/Deep)","دمج الذاكرة أثناء الخمول (يومياً 3 صباحاً افتراضياً)","4000"],
+    ["Dream Diary (يوميات الأحلام)","سرد بشري مقروء لما استوعبه الوكيل — للمراجعة","1500"],
+    ["ترقية الذاكرة (memory promote)","ترقية الإشارات القوية لذاكرة دائمة بعتبات وزن","2000"],
+    ["تفسير الترقية (promote-explain)","لماذا ترقّت أو رُفضت ذكرى معينة","1000"],
+    ["REM harness (تأمل الموضوعات)","انعكاس للموضوعات والأفكار المتكررة","1500"],
+    ["Backfill تاريخي (مراجعة/استرداد)","استيراد ملاحظات قديمة لمراجعتها وترقيتها","2000"],
+    ["Active Memory / Memory Wiki","إضافات ذاكرة منظمة وقابلة للبحث","2500"],
+    ["Honcho-style نمذجة المستخدم","فهم عميق لأسلوب صاحب العمل","3000"],
+    ["بحث الذاكرة (Memory search)","استرجاع دلالي سريع لأي ذكرى","1500"]
+  ]},
+  { g:"الذكاء الاستباقي والتشغيل المستقل (Proactive & Standing Orders)", icon:"⚡", items:[
+    ["Standing Orders (أوامر دائمة)","سلطة تشغيل دائمة لبرامج محددة بحدود واضحة","3000"],
+    ["Execute-Verify-Report","ينفّذ، يتحقق، ويبلغ — لا يكتفي بـ 'تمام'","1500"],
+    ["Cron Jobs (جدولة)","تنفيذ دوري للأوامر الدائمة (مثلاً تقرير أسبوعي)","1500"],
+    ["Heartbeat (نبض دوري)","فحوصات استباقية دورية (بريد/تقويم/تنبيهات)","1500"],
+    ["Hooks (سكريبتات حدثية)","تشغيل عند أحداث دورة حياة الوكيل","1500"],
+    ["Webhooks (محفزات HTTP واردة)","تشغيل الوكيل عند أي حدث خارجي","1500"],
+    ["Escalation rules (تصعيد)","متى يتوقف ويسأل البشر عند الشذوذ","1000"],
+    ["Approval gates (بوابات اعتماد)","إجراءات عالية المخاطر تتطلب موافقة بشرية","1000"]
+  ]},
+  { g:"العمل متعدد الوكلاء (Multi-Agent & Swarm)", icon:"🕸️", items:[
+    ["Multi-Agent Routing","توجيه بجلسات معزولة لكل ورشة/مرسل","4000"],
+    ["جلسات معزولة (Isolated sessions)","كل قسم/مستخدم له جلسة مستقلة","2000"],
+    ["Sub-agents (وكلاء فرعيون)","تفرّخ وكلاء فرعيين للعمل الموازي","3000"],
+    ["Swarm (سرب الوكلاء)","تنسيق وكلاء متعددين في سرب واحد","4000"],
+    ["ClawRouter (توجيه السرب)","توجيه ذكي داخل السرب","2000"],
+    ["Steering while streaming","توجيه رسالة واردة أثناء التشغيل دون كسر الأدوات","1000"],
+    ["Queue (متابعة/مقاطعة)","إدارة الطابور: انتظار/متابعة/مقاطعة","1000"]
+  ]},
+  { g:"الأدوات والأتمتة (Tools & Automation)", icon:"🧰", items:[
+    ["Browser automation (أتمتة المتصفح)","فتح مواقع وتعبئة نماذج وسحب داتا","2500"],
+    ["Exec + Sandboxing (تنفيذ معزول)","تشغيل أوامر في بيئة آمنة","2000"],
+    ["Web Search (13 محرك)","Brave, DDG, Exa, Firecrawl, Perplexity, Tavily, SearXNG...","2000"],
+    ["Canvas (كانفس قابل للتحرير)","واجهة HTML/CSS/JS يحررها الوكيل ويحاكيها للعميل","3000"],
+    ["Skills (مهارات)","إجراءات قابلة لإعادة الاستخدام والتحميل","1500"],
+    ["Workflow pipelines (Lobster)","سلاسل عمل متعددة الخطوات","3000"],
+    ["Plugins (إضافات)","توسيع القدرات بأمر واحد","1500"],
+    ["apply_patch / edit / write","تعديل وكتابة ملفات ذكي","1000"]
+  ]},
+  { g:"الوسائط (Media — صور/صوت/فيديو)", icon:"🎬", items:[
+    ["صور/صوت/فيديو/مستندات داخل وخارج","فهم وإنتاج كل أنواع الوسائط","2000"],
+    ["توليد الصور (Image generation)","تصميم بصري وإعلانات","2500"],
+    ["توليد الفيديو (Video generation)","محتوى مرئي تلقائي","3000"],
+    ["تحويل الملاحظات الصوتية (Transcription)","فهم الرسائل الصوتية","1500"],
+    ["تحويل النص لصوت (TTS)","رد صوتي طبيعي","1500"]
+  ]},
+  { g:"التطبيقات والواجهات (Apps & UI)", icon:"🖥️", items:[
+    ["WebChat + Control UI","واجهة تحكم بالمتصفح","2000"],
+    ["Windows Hub","مركز تحكم على ويندوز","2000"],
+    ["macOS menu bar app","تطبيق شريط القائمة","1500"],
+    ["iOS node (كانفس/كاميرا/شاشة/موقع/صوت)","عقدة هاتف مع أوامر جهاز غنية","2500"],
+    ["Android node (دردشة/صوت/كانفس/كاميرا)","عقدة أندرويد مقترنة","2500"],
+    ["Canvas host (/__openclaw__/canvas/)","استضافة الواجهات التفاعلية للوكيل","2000"],
+    ["A2UI host","واجهات مستخدم تطبيقية للوكيل","2000"]
+  ]},
+  { g:"المزودات والنماذج (35+ Providers)", icon:"🔋", items:[
+    ["35+ مزود نموذج","Anthropic, OpenAI, Google, وغيرهم","2000"],
+    ["اشتراك OAuth (مثل OpenAI Codex)","دخول بلا مفتاح","1000"],
+    ["مزودات ذاتية (vLLM/SGLang/Ollama/llama.cpp)","أي endpoint متوافق OpenAI/Anthropic","1500"],
+    ["LM Studio / أي OpenAI-compatible","ربط محلي أو سحابي بسهولة","1000"],
+    ["تبديل/توجيه تلقائي عند الفشل","مرونة بلا توقف","1000"]
+  ]},
+  { g:"بوابة الرسائل (Gateway Architecture)", icon:"🌐", items:[
+    ["Gateway واحد لكل مضيف","يملك كل أسطح المراسلة (WebSocket)","3000"],
+    ["WebSocket API مُحكَم (typed)","اتصال عميل/عقدة موثوق","2000"],
+    ["Nodes (macOS/iOS/Android/headless)","عقد تعلن role:node بأوامر محددة","2000"],
+    ["Pairing + Local trust (اقتران محلي)","موافقة اقتران لكل جهاز جديد + token","1500"],
+    ["Remote access (Tailscale/VPN/SSH tunnel)","وصول آمن عن بُعد","1500"],
+    ["Canvas host + A2UI على نفس البورت","خدمة الواجهات عبر بوابة HTTP","1000"],
+    ["أحداث (events): agent/chat/presence/health/heartbeat/cron","بث حي لحالة النظام","1000"]
+  ]},
+  { g:"هوية الوكيل والملفات (Identity & Workspace)", icon:"🎭", items:[
+    ["AGENTS.md (تعليمات التشغيل)","يُحقن كل جلسة — يحكم سلوك الوكيل","1000"],
+    ["SOUL.md (شخصية/حدود/نبرة)","هوية الوكيل الصارمة","1000"],
+    ["IDENTITY.md (اسم/إيموجي/فايب)","بصمة الوكيل البصرية","500"],
+    ["USER.md (ملف صاحب العمل)","تفضيلات وطريقة المخاطبة","500"],
+    ["BOOTSTRAP.md (طقس أول تشغيل)","يُحذف بعد التهيئة","0"],
+    ["MEMORY.md (ذاكرة جذر طويلة الأمد)","يُحقن فقط إن وُجد","1000"],
+    ["مساحة عمل معزولة لكل وكيل (Workspace)","دليل عمل وحيد لكل وكيل","1000"],
+    ["متعدد البرامج (Multi-program)","تنظيم الأوامر كبرامج بحدود مستقلة","1000"]
+  ]}
+];
+
+const PACKAGES = [
+  { name:"OpenClaw Starter", tag:"موظف رقمي واحد — تشغيل مستقل", price:"8,000–20,000", unit:"ج.م / شهر", featured:false, badge:"", items:[
+    "قناة واحدة (واتساب/تيليجرام)","ذاكرة مدمجة + Dreaming يومي","Standing Orders + Cron أساسي","Canvas بسيط للتقارير","هوية مستقلة (IDENTITY/SOUL)"
+  ], note:"أنسب لدور واحد: منسق مواعيد، متابع ليدز، مراقب مخزون صغير." },
+  { name:"OpenClaw Department", tag:"3–5 وكلاء + Delegate للقسم", price:"40,000–100,000", unit:"ج.م / شهر", featured:false, badge:"", items:[
+    "كل ما في Starter × لكل وكيل","Delegate Tier 2 (إرسال بالنيابة)","Multi-Agent Routing معزول","Sub-agents + Swarm للقسم","Canvas تفاعلي + تقارير دورية"
+  ], note:"مثال: باكة مالية (محاسب + محصل + مدقق) أو باكة مشتريات (مشتري + مورد + متابِع شحن)." },
+  { name:"OpenClaw Hybrid Board", tag:"مجلس إدارة هجين — الانبهار الأكبر", price:"150,000–400,000", unit:"ج.م / شهر", featured:true, badge:"⭐ الأكثر انبهاراً", items:[
+    "Swarm كامل (CEO/CFO/CMO/COO آليين)","Dreaming + Active Memory متقدم","Delegate Tier 3 (تشغيل استباقي)","Canvas + A2UI لاجتماعات المجلس","Hard blocks + Audit trail للامتثال"
+  ], note:"مجلس يشتغل لحظياً، يتناقش ويصوّت ويحلل — يُعرض Live لصاحب الشركة." },
+  { name:"OpenClaw Enterprise", tag:"مصنع/شركة كبرى — سرب مفتوح", price:"500,000–1.5M+", unit:"ج.م / شهر أو Revenue-Share", featured:false, badge:"", items:[
+    "كل الباقات + سرب بلا حدود","عزل Sandbox + Delegate لكل قسم","تكامل ERP/SAP معقد","Audit + Hard blocks على مستوى المؤسسة","SLA + Account Manager"
+  ], note:"للمصانع المصدّرة الكبرى — تسعير بالدولار كإجراء تحوطي متاح." }
+];
+
+const groupsEl = document.getElementById('groups');
+const chipsEl = document.getElementById('chips');
+let totalCaps = 0;
+const activeFilter = { g:null };
+
+DATA.forEach((grp, gi) => {
+  totalCaps += grp.items.length;
+  const sec = document.createElement('section');
+  sec.className = 'group';
+  sec.dataset.group = gi;
+  let cards = '';
+  grp.items.forEach(it=>{
+    cards += `<div class="cap" data-text="${(grp.g+' '+it[0]+' '+it[1]).toLowerCase()}">
+      <div class="ctitle"><span class="dot"></span>${it[0]}</div>
+      <div class="cdesc">${it[1]}</div>
+      <div class="price">${Number(it[2]).toLocaleString('ar-EG')} ج.م <small>/ شهر</small></div>
+    </div>`;
+  });
+  sec.innerHTML = `<div class="group-head"><div class="gicon">${grp.icon}</div><h2>${grp.g}</h2><div class="cnt">${grp.items.length} إمكانية</div></div><div class="grid">${cards}</div>`;
+  groupsEl.appendChild(sec);
+
+  const chip = document.createElement('div');
+  chip.className = 'chip';
+  chip.textContent = grp.g.split(' (')[0];
+  chip.onclick = ()=>{
+    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+    if(activeFilter.g===gi){ activeFilter.g=null; chip.classList.remove('active'); }
+    else { activeFilter.g=gi; chip.classList.add('active'); }
+    applyFilter();
+  };
+  chipsEl.appendChild(chip);
+});
+
+document.getElementById('s-total').textContent = totalCaps.toLocaleString('ar-EG');
+
+const pkEl = document.getElementById('packages');
+PACKAGES.forEach(p=>{
+  const ul = p.items.map(i=>`<li>${i}</li>`).join('');
+  const card = document.createElement('div');
+  card.className = 'pcard'+(p.featured?' featured':'');
+  card.innerHTML = `${p.badge?`<div class="badge">${p.badge}</div>`:''}
+    <h3>${p.name}</h3><div class="ptag">${p.tag}</div>
+    <div class="pprice">${p.price} <span>${p.unit}</span></div>
+    <ul>${ul}</ul><div class="note">${p.note}</div>`;
+  pkEl.appendChild(card);
+});
+
+const searchEl = document.getElementById('search');
+function applyFilter(){
+  const q = searchEl.value.trim().toLowerCase();
+  document.querySelectorAll('.group').forEach(sec=>{
+    const gi = +sec.dataset.group;
+    const showGroup = activeFilter.g===null || activeFilter.g===gi;
+    let anyVisible = false;
+    sec.querySelectorAll('.cap').forEach(cap=>{
+      const txt = cap.dataset.text;
+      const matchQ = !q || txt.includes(q);
+      const vis = showGroup && matchQ;
+      cap.classList.toggle('hide', !vis);
+      if(vis) anyVisible = true;
+    });
+    sec.classList.toggle('hide', !(showGroup && (anyVisible || !q)));
+  });
+}
+searchEl.addEventListener('input', applyFilter);
+</script>
+</body>
+</html>

@@ -8,6 +8,7 @@ use App\Models\Contact;
 use App\Models\PeopleConnect\PeopleConnectConversation;
 use App\Models\PeopleConnect\PeopleConnectRawProviderEvent;
 use App\Models\PeopleConnect\PeopleConnectSession;
+use App\Services\PeopleConnect\FirestoreSyncService;
 use App\Services\PeopleConnect\PeopleConnectContactResolver;
 use App\Services\PeopleConnect\PeopleConnectConversationService;
 use App\Services\PeopleConnect\PeopleConnectMessageService;
@@ -85,7 +86,8 @@ class IngestionPipelineTest extends TestCase
             app(PeopleConnectConversationService::class),
             app(PeopleConnectSessionService::class),
             app(PeopleConnectMessageService::class),
-            app(PeopleConnectRealtimeBroadcaster::class)
+            app(PeopleConnectRealtimeBroadcaster::class),
+            app(FirestoreSyncService::class)
         );
 
         // Assert Contact created
@@ -157,7 +159,8 @@ class IngestionPipelineTest extends TestCase
             app(PeopleConnectConversationService::class),
             app(PeopleConnectSessionService::class),
             app(PeopleConnectMessageService::class),
-            app(PeopleConnectRealtimeBroadcaster::class)
+            app(PeopleConnectRealtimeBroadcaster::class),
+            app(FirestoreSyncService::class)
         );
 
         $this->assertDatabaseCount('peopleconnect_messages', 1);
@@ -168,7 +171,8 @@ class IngestionPipelineTest extends TestCase
             app(PeopleConnectConversationService::class),
             app(PeopleConnectSessionService::class),
             app(PeopleConnectMessageService::class),
-            app(PeopleConnectRealtimeBroadcaster::class)
+            app(PeopleConnectRealtimeBroadcaster::class),
+            app(FirestoreSyncService::class)
         );
 
         // Message count should still be 1 (DuplicateMessageException caught silently in handle)

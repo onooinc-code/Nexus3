@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PeopleConnect - Dialogue Task Engine Spec</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--border:#334155;--accent:#3b82f6;--purple:#8b5cf6;--green:#10b981;--amber:#f59e0b;--text:#f8fafc;--muted:#94a3b8;}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);padding-bottom:60px;}
+.header{background:linear-gradient(135deg,#1e1b4b,#0f172a);border-bottom:1px solid #312e81;padding:36px 0;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:20px;box-shadow:0 10px 25px -5px rgba(0,0,0,.3);}
+.badge-agent{background:#3b82f622;color:#60a5fa;border:1px solid #3b82f644;padding:4px 10px;border-radius:6px;font-size:.82rem;font-weight:600;}
+.badge-status{background:#10b98122;color:#34d399;border:1px solid #10b98144;padding:4px 10px;border-radius:6px;font-size:.82rem;}
+.code{background:#090d16;border:1px solid #1e293b;border-radius:8px;padding:14px;color:#38bdf8;font-family:'Courier New',monospace;direction:ltr;text-align:left;font-size:.85rem;overflow-x:auto;}
+.task{border-right:4px solid var(--accent);background:#182234;border-radius:8px;padding:14px;margin-bottom:14px;transition:.2s;}
+.task:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(59,130,246,.15);}
+.table-custom{color:var(--text);border-color:var(--border);}
+.table-custom th{background:#0f172a;color:var(--muted);border-bottom-width:2px;}
+.table-custom td{background:var(--card);}
+.nav-pills .nav-link{color:var(--muted);}
+.nav-pills .nav-link.active{background:var(--accent);color:#fff;}
+</style>
+</head>
+<body>
+<div class="header"><div class="container">
+<div class="d-flex align-items-center justify-content-between">
+<div><span class="badge bg-primary mb-2"><i class="fa-solid fa-timeline me-1"></i> PeopleConnect Dialogue Engine</span>
+<h1 class="fw-bold mb-2">🗣️ محرك مهام التواصل المتخصص</h1>
+<p class="text-muted mb-0">مواصفات، خطة، workflow، UI، ومنطق النظام المبنى على هيكل Nexus الحالي — بدون تنفيذ</p></div>
+<div class="text-end"><span class="badge bg-warning text-dark p-2 fw-bold"><i class="fa-solid fa-lock me-1"></i> مخطط فقط</span></div>
+</div>
+</div></div>
+
+<div class="container">
+<ul class="nav nav-pills mt-4 mb-4" id="specTabs" role="tablist">
+<li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-spec">المواصفات</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-workflow">Workflow</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-ui">واجهة UI</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-logic">المنطق</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-plan">الخطة</button></li>
+</ul>
+
+<div class="tab-content">
+<div class="tab-pane fade show active" id="tab-spec">
+<div class="card"><h3 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-server me-2"></i> أساس النظام الحالي في Nexus</h3>
+<p class="text-muted">النظام سيُبنى فوق المكونات الموجودة فعلاً، بدون تكرار:</p>
+<div class="code">
+/* Existing foundation */
+Contact
+ ├─ ContactStance            // topic + hedra_stance + boundary_rules + past_incidents
+ ├─ ContactReplyRule         // active/inactive reply rules per contact
+ ├─ DialogueTask             // goal_type + target_outcome + current_state + checkpoint_data + hedra_approval_reason
+ ├─ ContactChannel           // whatsapp / messenger bindings
+ ├─ ContactMessageThread
+ ├─ ContactMessage
+ └─ PeopleConnect subsystem
+     ├─ PeopleConnectConversation   // channel/provider/unread/reply_mode_effective/agent_status
+     ├─ PeopleConnectSession        // opened_at/closed_at/summary/message_count
+     ├─ PeopleConnectMessage
+     ├─ PeopleConnectConversationTopic
+     ├─ PeopleConnectReplyDraft
+     ├─ PeopleConnectDeliveryAttempt
+     ├─ PeopleConnectRawProviderEvent
+     └─ Services: ContextAssembler / ReplyModeService / AgentReplyService / RealtimeBroadcaster
+</div>
+</div>
+
+<div class="card"><h3 class="fw-bold mb-3 text-info"><i class="fa-solid fa-sliders me-2"></i> مواصفات Dialogue Task Engine</h3>
+<div class="row g-3">
+<div class="col-md-6"><div class="p-3 border rounded bg-dark"><h6 class="fw-bold text-success">الغرض</h6><p class="text-muted small mb-0">تحويل المحادثات إلى أهداف قابلة للتتبع والتحقق، مع متابعة لحظية وتقييم تلقائي للوصول للهدف.</p></div></div>
+<div class="col-md-6"><div class="p-3 border rounded bg-dark"><h6 class="fw-bold text-success">النطاق</h6><p class="text-muted small mb-0">Outgoing Goal Chat + Incoming Goal Handler + Relationship Nurture Tasks.</p></div></div>
+<div class="col-md-6"><div class="p-3 border rounded bg-dark"><h6 class="fw-bold text-success">الالتزام</h6><p class="text-muted small mb-0">Human-in-the-Loop: أي موضوع حساس أو غير مسجل يوقف التنفيذ فوراً ويصعد لهدرا.</p></div></div>
+<div class="col-md-6"><div class="p-3 border rounded bg-dark"><h6 class="fw-bold text-success">المصادر</h6><p class="text-muted small mb-0">PeopleConnect Conversations + ContactStance + ContactReplyRule + WAHA events.</p></div></div>
+</div>
+</div>
+
+<div class="card"><h3 class="fw-bold mb-3 text-warning"><i class="fa-solid fa-list-check me-2"></i> متطلبات النظام</h3>
+<ul class="text-muted">
+<li class="mb-2"><strong>هوية موحدة:</strong> كل شخص له ملف واحد حتى لو حسابات WhatsApp و Messenger متعددة.</li>
+<li class="mb-2"><strong>حالة حوار حية:</strong> تتبع تلقائي لحالة المحادثة: initiated → in_progress → goal_satisfied → escalated/closed.</li>
+<li class="mb-2"><strong>تقييم هدف ذكي:</strong> بعد كل رسالة يتم تقييم: هل الهدف تحقق؟ هل نحتاج مزيد نقاش؟ هل يجب التصعيد؟</li>
+<li class="mb-2"><strong>Checkpoints:</strong> نقاط تفتيش داخل المحادثة لتسجيل التقدم والنتائج الجزئية.</li>
+<li class="mb-2"><strong>تصعيد فوري:</strong> موضوع مادي/قرار مصيري/غير مسجل → إيقاف + تنبيه Telegram + Dashboard alert.</li>
+<li class="mb-2"><strong>أداء:</strong> لا يكرس SQL queries زائدة؛ يستخدم Redis cache للـ context assemblies.</li>
+</ul>
+</div>
+</div>
+
+<div class="tab-pane fade" id="tab-workflow">
+<div class="card"><h3 class="fw-bold mb-3 text-success"><i class="fa-solid fa-route me-2"></i> Workflow الكامل</h3>
+<div class="code">
+/* Outgoing Goal Chat */
+[Create Dialogue Task] → [Assemble Context] → [Build Hedra-Twin Prompt] → [Send via WAHA/Messenger]
+    → [Receive Reply] → [Analyze + Update Facts/Stances] → [Evaluate Goal]
+    → [Goal Met?] → Yes → [Close + Summary] / No → [Continue or Escalate]
+
+/* Incoming Message */
+[Webhook Event] → [Resolve Contact] → [Fetch Active DialogueTask + Stances]
+    → [Build Reply] → [Hedra Approval Gate?] → Approved → [Send] / Blocked → [Alert Hedra]
+    → [Log Message + Update History + Evaluate Goal]
+</div>
+</div>
+
+<div class="card"><h3 class="fw-bold mb-3 text-info"><i class="fa-solid fa-diagram-project me-2"></i> حالة المهام حسب السياق</h3>
+<table class="table table-custom align-middle">
+<thead><tr><th>الحالة</th><th>المعنى</th><th>الإجراء التالي</th></tr></thead>
+<tbody>
+<tr><td>initiated</td><td>تم إنشاء المهمة وبدء السياق</td><td>Assemble context → send first message</td></tr>
+<tr><td>in_progress</td><td>المحادثة جارية</td><td>Receive → Analyze → Evaluate goal</td></tr>
+<tr><td>awaiting_reply</td><td>في انتظار رد الشخص</td><td>Time-based reminder/escalation if overdue</td></tr>
+<tr><td>goal_satisfied</td><td>تم تحقيق الهدف</td><td>Auto-close with summary + update facts</td></tr>
+<tr><td>escalated</td><td>تم التصعيد لهدرا</td><td>Hedra review → resume or manual takeover</td></tr>
+<tr><td>closed</td><td>انتهت المهمة</td><td>Archive + update contact memory_freshness</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="tab-pane fade" id="tab-ui">
+<div class="card"><h3 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-display me-2"></i> تصميم الواجهة المقترح</h3>
+<div class="row g-3">
+<div class="col-md-4"><div class="p-3 border rounded bg-dark text-center"><i class="fa-solid fa-address-book fs-2 text-primary mb-2"></i><h6>Contact 360°</h6><p class="text-muted small mb-0">بروفايل موحد: الحقائق، المواقف، المبادئ، قواعد الرد، المواضيع المشتركة.</p></div></div>
+<div class="col-md-4"><div class="p-3 border rounded bg-dark text-center"><i class="fa-solid fa-list-check fs-2 text-success mb-2"></i><h6>Active Dialogue Tasks</h6><p class="text-muted small mb-0">قائمة مهام التواصل النشطة مع شريط تقدم الهدف وحالة المحادثة الحالية.</p></div></div>
+<div class="col-md-4"><div class="p-3 border rounded bg-dark text-center"><i class="fa-solid fa-comments fs-2 text-warning mb-2"></i><h6>Live Conversation Console</h6><p class="text-muted small mb-0">شات مباشر مع زر [تدخل يدوي] + عرض الاقتراحات التلقائية + سجل التقييم.</p></div></div>
+</div>
+</div>
+
+<div class="card"><h3 class="fw-bold mb-3 text-info"><i class="fa-solid fa-layer-group me-2"></i> عناصر الواجهة حسب الأولوية</h3>
+<table class="table table-custom align-middle">
+<thead><tr><th>العنصر</th><th>الوظيفة</th><th>الحالة المقترحة</th></tr></thead>
+<tbody>
+<tr><td>لوحة المهام النشطة</td><td>عرض كل مهام التواصل الجارية مع الحالة والهدف</td><td>P1</td></tr>
+<tr><td>شريط الحالة الذكي</td><td>عرض حالة المحادثة الحالية وتقييم الهدف</td><td>P1</td></tr>
+<tr><td>نظام الإشعارات</td><td>تنبيهات Telegram + Dashboard للتصعيد</td><td>P1</td></tr>
+<tr><td>محادثة مباشرة</td><td>واجهة شات مع capacidad للتدخل اليدوي</td><td>P2</td></tr>
+<tr><td>محرر القواعد</td><td>إضافة/تعديل stances + rules من الواجهة</td><td>P2</td></tr>
+<tr><td>تقارير الأداء</td><td>معدل تحقيق الأهداف + زمن الاستجابة + sentiment</td><td>P3</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="tab-pane fade" id="tab-logic">
+<div class="card"><h3 class="fw-bold mb-3 text-purple"><i class="fa-solid fa-microchip me-2"></i> منطق تشغيل المحرك</h3>
+<div class="code">
+/* Core Logic Rules */
+1. Context Assembly
+   - Fetch Contact + Stances + Rules + RecentMessages + ActiveDialogueTask
+   - Build prompt block: facts / stances / boundary_rules / hedra_twin_style / goal
+
+2. Reply Generation
+   - IF reply_mode_override == 'auto' AND no sensitive topic → send auto
+   - IF reply_mode_override == 'draft' → save draft, notify Hedra
+   - IF reply_mode_override == 'manual' → never send without explicit Hedra approval
+
+3. Goal Evaluation (after every message)
+   - Compare target_outcome vs last_message + conversation_thread
+   - IF confidence >= 0.85 → mark goal_satisfied
+   - IF sensitive topic OR unknown fact → escalate immediately
+
+4. Memory Update
+   - On every closed task: update contact.memory_freshness
+   - On new stance change: insert ContactStance + audit log
+   - On new fact: upsert ContactFact with confidence + source
+</div>
+</div>
+
+<div class="card"><h3 class="fw-bold mb-3 text-warning"><i class="fa-solid fa-shield-halved me-2"></i> قواعد الأمان والحدود</h3>
+<ul class="text-muted">
+<li class="mb-2"><strong>التصعيد الفوري:</strong> أي رسالة تحتوي على مال/قرار/طلاق/عمل/مشكلة قانونية → stop + Telegram alert.</li>
+<li class="mb-2"><strong>عدم تجاوز القواعد:</strong> boundary_rules تُطبّق كـ hard stop قبل إرسال أي رد.</li>
+<li class="mb-2"><strong>تسجيل كامل:</strong> كل رسالة + قرار + سبب تصعيد تُسجل في PeopleConnectProcessingLog.</li>
+<li class="mb-2"><strong>فصل الأدوار:</strong> people-orchestrator يدير الأهداف، people-waha يدير الإرسال، people-persona يبني الاقتراح.</li>
+</ul>
+</div>
+</div>
+
+<div class="tab-pane fade" id="tab-plan">
+<div class="card"><h3 class="fw-bold mb-3 text-success"><i class="fa-solid fa-map me-2"></i> خطة التنفيذ المقترحة</h3>
+<div class="code">
+Phase 1: Audit & Gap Analysis
+  - مراجعة PeopleConnectConversation + DialogueTask + ContactStance الحالية
+  - تحديد النواقص: هل goal evaluation service موجود؟ هل checkpoint_data يُستخدم؟
+  - المخرج: تقرير فراغات + قرار تعديل vs إضافة
+
+Phase 2: Logic & Rules Layer
+  - كتابة PeopleConnectGoalEvaluationService
+  - كتابة PeopleConnectEscalationPolicy
+  - ربط ContactReplyRule بنظام التصعيد
+
+Phase 3: UI & Dashboard
+  - لوحة مهام + محادثة مباشرة + أزرار تدخل يدوي
+  - موصل بـ LiveMsgsSyncService + RealtimeBroadcaster
+
+Phase 4: Testing & Hedra Review
+  - سيناريوهات اختبار: incoming/outgoing/sensitive topic
+  - مراجعتك + تعديل + اعتماد نهائي
+</div>
+</div>
+</div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

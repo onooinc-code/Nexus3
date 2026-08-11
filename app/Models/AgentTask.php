@@ -39,6 +39,12 @@ class AgentTask extends BaseModel
         'payload_data',
         'result_data',
         'metadata',
+        'origin_agent_id',
+        'target_agent_id',
+        'task_type',
+        'dynamic_system_instruction',
+        'execution_proof',
+        'dom_event_trigger',
     ];
 
     protected $casts = [
@@ -48,6 +54,8 @@ class AgentTask extends BaseModel
         'metadata' => 'json',
         'payload_data' => 'json',
         'result_data' => 'json',
+        'execution_proof' => 'array',
+        'dom_event_trigger' => 'array',
     ];
 
     public function agent(): BelongsTo

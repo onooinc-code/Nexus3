@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <title>Nexus3 Audit — Mobile</title>
+    <link rel="stylesheet" href="css/mobile.css?v=1">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <meta name="theme-color" content="#070b16">
+</head>
+<body>
+    <!-- Reading Progress -->
+    <div class="mob-progress" id="mob-progress"></div>
+
+    <!-- Header -->
+    <header class="mob-header">
+        <button class="mob-icon-btn" id="mob-menu-btn" title="Navigation Menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <div style="flex:1;overflow:hidden;">
+            <div class="mob-title" id="mob-header-title">Nexus3 Audit Portal</div>
+        </div>
+        <button class="mob-icon-btn" id="mob-search-hdr-btn" title="Search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+    </header>
+
+    <!-- Drawer Overlay -->
+    <div class="mob-overlay" id="mob-overlay"></div>
+
+    <!-- Left Drawer -->
+    <nav class="mob-drawer" id="mob-drawer">
+        <div class="mob-drawer-brand">
+            <div class="mob-brand-icon"><i class="fa-solid fa-atom"></i></div>
+            <div>
+                <div class="mob-brand-name">Nexus3 Architecture</div>
+                <div class="mob-brand-sub">PeopleConnect &amp; AI Studio</div>
+            </div>
+        </div>
+
+        <div class="mob-nav" id="mob-nav">
+            <div class="mob-nav-cat">1. Inbound Pipeline</div>
+            <div class="mob-nav-link active" data-doc="docs/01-inbound-waha-ingestion.md"><i class="fa-solid fa-satellite-dish"></i><span>WAHA Webhook Ingestion</span></div>
+            <div class="mob-nav-link" data-doc="docs/02-inbound-contact-resolution.md"><i class="fa-solid fa-lock"></i><span>Atomic Redis Lock &amp; Contacts</span></div>
+            <div class="mob-nav-link" data-doc="docs/03-inbound-session-slicing.md"><i class="fa-solid fa-hourglass-half"></i><span>2-Hour Session Slicing</span></div>
+            <div class="mob-nav-link" data-doc="docs/04-inbound-db-storage.md"><i class="fa-solid fa-database"></i><span>DB Persistence &amp; Counters</span></div>
+            <div class="mob-nav-link" data-doc="docs/05-inbound-firestore-sync.md"><i class="fa-solid fa-fire"></i><span>Firestore Zero-Latency Sync</span></div>
+            <div class="mob-nav-link" data-doc="docs/06-inbound-reverb-broadcast.md"><i class="fa-solid fa-tower-broadcast"></i><span>Reverb WebSockets &amp; Echo</span></div>
+
+            <div class="mob-nav-cat">2. Outbound Pipeline</div>
+            <div class="mob-nav-link" data-doc="docs/07-outbound-ui-transmission.md"><i class="fa-solid fa-paper-plane"></i><span>Manual Dashboard Send</span></div>
+            <div class="mob-nav-link" data-doc="docs/08-outbound-waha-gateway.md"><i class="fa-solid fa-project-diagram"></i><span>WAHA Gateway &amp; Cache Engine</span></div>
+            <div class="mob-nav-link" data-doc="docs/09-outbound-queue-dispatcher.md"><i class="fa-solid fa-layer-group"></i><span>Queue Dispatcher Audit</span></div>
+
+            <div class="mob-nav-cat">3. AI Workflows &amp; Stubs</div>
+            <div class="mob-nav-link" data-doc="docs/10-workflows-eca-engine.md"><i class="fa-solid fa-gears"></i><span>ECA Rule Evaluation Engine</span></div>
+            <div class="mob-nav-link" data-doc="docs/11-workflows-nlp-stub.md"><i class="fa-solid fa-triangle-exclamation"></i><span>NLP Analysis Stub</span></div>
+            <div class="mob-nav-link" data-doc="docs/12-workflows-autopilot-disconnect.md"><i class="fa-solid fa-link-slash"></i><span>Autopilot Step 10 Disconnect</span></div>
+            <div class="mob-nav-link" data-doc="docs/13-workflows-context-assembler.md"><i class="fa-solid fa-memory"></i><span>Context Assembler &amp; Tokens</span></div>
+
+            <div class="mob-nav-cat">4. AI Agent Studio Audit</div>
+            <div class="mob-nav-link" data-doc="docs/14-studio-ui-audit.md"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Studio UI &amp; Components</span></div>
+            <div class="mob-nav-link" data-doc="docs/15-studio-backend-persona.md"><i class="fa-solid fa-microchip"></i><span>Persona &amp; Hyperparameters</span></div>
+            <div class="mob-nav-link" data-doc="docs/16-studio-key-rotation-engine.md"><i class="fa-solid fa-key"></i><span>Multi-Key Rotation</span></div>
+            <div class="mob-nav-link" data-doc="docs/17-studio-mockup-analysis.md"><i class="fa-solid fa-magnifying-glass-chart"></i><span>Mockup vs. Live Matrix</span></div>
+            <div class="mob-nav-link" data-doc="docs/18-studio-autonomous-roadmap.md"><i class="fa-solid fa-road"></i><span>Autonomous Execution Roadmap</span></div>
+
+            <div class="mob-nav-cat">5. System Reference</div>
+            <div class="mob-nav-link" data-doc="docs/19-reference-database-schema.md"><i class="fa-solid fa-table"></i><span>13-Table Schema Dictionary</span></div>
+            <div class="mob-nav-link" data-doc="docs/20-reference-code-matrix.md"><i class="fa-solid fa-code"></i><span>Models &amp; Services Matrix</span></div>
+            <div class="mob-nav-link" data-doc="docs/21-reference-api-endpoints.md"><i class="fa-solid fa-server"></i><span>REST Endpoints &amp; WS Channels</span></div>
+        </div>
+
+        <div class="mob-drawer-footer">
+            <span>Nexus3 Core v3.4</span>
+            <span class="mob-badge"><span class="pulse-dot"></span> Audit Ready</span>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <main class="mob-content" id="mob-content">
+        <div class="mob-loading"><i class="fas fa-circle-notch fa-spin"></i><span>Loading…</span></div>
+    </main>
+
+    <!-- Back to Top -->
+    <button class="mob-back-top" id="mob-back-top" title="Back to top">
+        <i class="fa-solid fa-chevron-up"></i>
+    </button>
+
+    <!-- TOC Sheet -->
+    <div class="mob-sheet" id="mob-toc-sheet">
+        <div class="mob-sheet-handle"></div>
+        <div class="mob-sheet-header">
+            <span><i class="fa-solid fa-list-ul"></i> On This Page</span>
+            <button class="mob-sheet-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="mob-sheet-body" id="mob-toc-body">
+            <p style="color:var(--dim);font-size:.82rem;">Load a document first.</p>
+        </div>
+    </div>
+
+    <!-- Search Sheet -->
+    <div class="mob-sheet" id="mob-search-sheet">
+        <div class="mob-sheet-handle"></div>
+        <div class="mob-sheet-header">
+            <span><i class="fa-solid fa-magnifying-glass"></i> Search Document</span>
+            <button class="mob-sheet-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="mob-sheet-body">
+            <div class="mob-search-wrap">
+                <i class="fa-solid fa-magnifying-glass" style="color:var(--dim);"></i>
+                <input type="search" class="mob-search-input" id="mob-search-input" placeholder="Type to search…" autocomplete="off">
+            </div>
+            <div id="mob-search-results"></div>
+        </div>
+    </div>
+
+    <!-- Settings Sheet -->
+    <div class="mob-sheet" id="mob-settings-sheet">
+        <div class="mob-sheet-handle"></div>
+        <div class="mob-sheet-header">
+            <span><i class="fa-solid fa-sliders"></i> Settings</span>
+            <button class="mob-sheet-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="mob-sheet-body">
+            <div class="mob-settings-section">
+                <div class="mob-settings-label">Text Size</div>
+                <div class="mob-font-btns">
+                    <button class="mob-font-btn" id="mob-fs-sm" data-fs="sm">Small A</button>
+                    <button class="mob-font-btn active" id="mob-fs-md" data-fs="md">Medium A</button>
+                    <button class="mob-font-btn" id="mob-fs-lg" data-fs="lg">Large A</button>
+                </div>
+            </div>
+            <div class="mob-settings-section">
+                <div class="mob-settings-label">Desktop Version</div>
+                <a href="index.html" style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--muted);font-size:.85rem;text-decoration:none;">
+                    <i class="fa-solid fa-desktop"></i> Switch to Desktop View
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="mob-lightbox" id="mob-lightbox">
+        <div class="mob-lb-header">
+            <span class="mob-lb-title"><i class="fa-solid fa-microscope" style="color:var(--purple);"></i> Visual Inspection</span>
+            <div class="mob-lb-controls">
+                <button class="mob-lb-btn" id="mob-lb-zoom-in"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                <button class="mob-lb-btn" id="mob-lb-zoom-out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                <button class="mob-lb-btn" id="mob-lb-reset"><i class="fa-solid fa-sync-alt"></i></button>
+                <button class="mob-lb-btn" id="mob-lb-close"><i class="fa-solid fa-times"></i></button>
+            </div>
+        </div>
+        <div class="mob-lb-viewport" id="mob-lb-viewport">
+            <div class="mob-lb-content" id="mob-lb-content"></div>
+        </div>
+        <div class="mob-lb-hint">Pinch to zoom &middot; ESC to close</div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="mob-bottom-nav">
+        <button class="mob-tab" data-tab="docs">
+            <i class="fa-solid fa-book-open"></i>
+            <span>Docs</span>
+        </button>
+        <button class="mob-tab" data-tab="toc">
+            <i class="fa-solid fa-list-ul"></i>
+            <span>Contents</span>
+        </button>
+        <button class="mob-tab" data-tab="search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Search</span>
+        </button>
+        <button class="mob-tab" data-tab="settings">
+            <i class="fa-solid fa-sliders"></i>
+            <span>Settings</span>
+        </button>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup-templating.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="js/mobile.js?v=1"></script>
+</body>
+</html>

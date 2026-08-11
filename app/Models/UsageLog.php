@@ -11,6 +11,7 @@ class UsageLog extends BaseModel
     protected $fillable = [
         'provider_id',
         'model_id',
+        'api_key_id',
         'intent_name',
         'input_tokens',
         'output_tokens',
@@ -19,6 +20,15 @@ class UsageLog extends BaseModel
         'total_cost',
         'timestamp',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (UsageLog $log) {
+            if (empty($log->timestamp)) {
+                $log->timestamp = now();
+            }
+        });
+    }
 
     protected $casts = [
         'input_tokens' => 'integer',
@@ -37,5 +47,10 @@ class UsageLog extends BaseModel
     public function model(): BelongsTo
     {
         return $this->belongsTo(AIModel::class, 'model_id');
+    }
+
+    public function apiKey(): BelongsTo
+    {
+        return $this->belongsTo(AIApiKey::class, 'api_key_id');
     }
 }

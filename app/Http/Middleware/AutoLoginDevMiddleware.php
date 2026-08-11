@@ -19,11 +19,7 @@ class AutoLoginDevMiddleware
     {
         if (app()->environment('local')) {
             // Try to get admin user, or create it if doesn't exist
-            $user = User::where('email', 'admin@nexus.local')->first();
-
-            if (! $user) {
-                $user = User::first();
-            }
+            $user = User::where('email', 'admin@nexus.local')->first() ?? User::first();
 
             if (! $user) {
                 // Create default admin user
@@ -36,9 +32,10 @@ class AutoLoginDevMiddleware
             }
 
             if ($user) {
-                // Use stateless Auth to prevent session locks
+                if (! Auth::guard('web')->check()) {
+                    Auth::guard('web')->login($user);
+                }
                 Auth::guard('sanctum')->setUser($user);
-                Auth::shouldUse('sanctum');
                 $request->setUserResolver(function () use ($user) {
                     return $user;
                 });

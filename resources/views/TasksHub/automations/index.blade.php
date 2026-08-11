@@ -113,12 +113,49 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    let currentTemplateId = null;
     
-    // Template Spawning Logic (F23)
-    $('.btn-spawn-template').on('click', function() {
+    // Dynamic fetching of task templates
+    function loadTaskTemplates() {
+        if (!window.TaskAPI) return;
+        TaskAPI.get('/task-templates').done(function(res) {
+            if (res.data && res.data.length > 0) {
+                let container = $('#templates-list-container');
+                container.empty();
+                res.data.forEach(tmpl => {
+                    let varsStr = Array.isArray(tmpl.variables) ? tmpl.variables.join(',') : (tmpl.variables || '');
+                    container.append(`
+                        <div class="tasks-glass-panel p-3 mb-3 rounded" style="background: rgba(255,255,255,0.03);">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="text-light font-mono mb-0">${tmpl.name}</h6>
+                                <span class="badge ${tmpl.type === 'system' ? 'bg-secondary' : 'bg-primary'}">${tmpl.type || 'Template'}</span>
+                            </div>
+                            <p class="text-muted font-mono mb-3" style="font-size: 0.75rem;">${tmpl.description || ''}</p>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button class="btn btn-sm btn-outline-info btn-spawn-template" data-id="${tmpl.id}" data-name="${tmpl.name}" data-vars="${varsStr}"><i class="fa-solid fa-play me-1"></i>Spawn</button>
+                            </div>
+                        </div>
+                    `);
+                });
+            }
+        });
+    }
+
+    if ($('#content-automations').hasClass('active')) {
+        loadTaskTemplates();
+    }
+    $('a[data-bs-toggle="tab"], button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+        if ($(e.target).attr('data-bs-target') === '#content-automations') {
+            loadTaskTemplates();
+        }
+    });
+
+    // Template Spawning Logic (F23) - Delegated click event
+    $(document).on('click', '.btn-spawn-template', function() {
+        currentTemplateId = $(this).data('id') || null;
         let name = $(this).data('name');
         let varsStr = $(this).data('vars');
-        let vars = varsStr ? varsStr.split(',') : [];
+        let vars = varsStr ? varsStr.toString().split(',') : [];
         
         $('#spawn-tmpl-name').text(name);
         let container = $('#spawn-vars-container');
@@ -128,12 +165,15 @@ document.addEventListener('DOMContentLoaded', function() {
             container.append('<div class="text-success font-mono" style="font-size: 0.8rem;">No variables required. Ready to spawn.</div>');
         } else {
             vars.forEach(v => {
-                container.append(`
-                    <div class="mb-3">
-                        <label class="form-label font-mono text-muted" style="font-size: 0.7rem;">${v}</label>
-                        <input type="text" class="form-control form-control-sm bg-dark border-secondary text-light tmpl-var-input" data-var="${v}" required>
-                    </div>
-                `);
+                let cleanVar = v.trim();
+                if(cleanVar) {
+                    container.append(`
+                        <div class="mb-3">
+                            <label class="form-label font-mono text-muted" style="font-size: 0.7rem;">${cleanVar}</label>
+                            <input type="text" class="form-control form-control-sm bg-dark border-secondary text-light tmpl-var-input" data-var="${cleanVar}" required>
+                        </div>
+                    `);
+                }
             });
         }
         
@@ -151,20 +191,32 @@ document.addEventListener('DOMContentLoaded', function() {
             payload[$(this).data('var')] = $(this).val();
         });
 
-        if(!valid) {
+        if(inputs.length > 0 && !valid) {
             alert('Please fill all variables.');
             return;
         }
 
         btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i>');
 
-        // Simulate API Call for Template spawning
-        setTimeout(() => {
-            Nexus.notify('Task spawned from template successfully!', 'success');
-            $('#spawnTemplateModal').modal('hide');
-            btn.prop('disabled', false).text('Create Task');
-            // If we are simulating, just open modal / show success
-        }, 800);
+        if (currentTemplateId && window.TaskAPI) {
+            TaskAPI.post(`/task-templates/${currentTemplateId}/spawn`, { variables: payload })
+                .done(function() {
+                    Nexus.notify('Task spawned from template successfully!', 'success');
+                    $('#spawnTemplateModal').modal('hide');
+                })
+                .fail(function() {
+                    Nexus.notify('Failed to spawn task template', 'error');
+                })
+                .always(function() {
+                    btn.prop('disabled', false).text('Create Task');
+                });
+        } else {
+            setTimeout(() => {
+                Nexus.notify('Task spawned from template successfully!', 'success');
+                $('#spawnTemplateModal').modal('hide');
+                btn.prop('disabled', false).text('Create Task');
+            }, 500);
+        }
     });
 
 });

@@ -14,9 +14,9 @@
     ],
     "sail": false,
     "skills": [
+        "ai-sdk-development",
         "laravel-best-practices",
         "configuring-horizon",
-        "echo-development",
         "tailwindcss-development",
         "debug-using-debugbar",
         "deploying-laravel-cloud"

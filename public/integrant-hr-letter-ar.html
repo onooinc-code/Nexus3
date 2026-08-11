@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خطاب مفردات المرتب الرسمي - شركة إنتجرانت (Integrant Inc.)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --integrant-navy: #0A192F;
+            --integrant-blue: #0052CC;
+            --integrant-accent: #00B8D9;
+            --text-main: #172B4D;
+            --text-sub: #5E6C84;
+            --bg-light: #F4F5F7;
+            --border-line: #DFE1E6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            background-color: #E2E8F0;
+            color: var(--text-main);
+            line-height: 1.5;
+            padding: 20px;
+        }
+
+        .no-print-bar {
+            max-width: 850px;
+            margin: 0 auto 20px auto;
+            background: #ffffff;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .btn-primary {
+            background-color: var(--integrant-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #003D99;
+        }
+
+        .a4-page {
+            max-width: 850px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 38px 48px;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .doc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--integrant-navy);
+            padding-bottom: 14px;
+            margin-bottom: 16px;
+            gap: 20px;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .logo-img {
+            height: 42px;
+            width: auto;
+            display: block;
+        }
+
+        .company-sub {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-sub);
+            margin-top: 4px;
+        }
+
+        .company-meta {
+            text-align: left;
+            direction: ltr;
+            font-size: 10px;
+            color: var(--text-sub);
+            line-height: 1.4;
+        }
+
+        .company-meta strong {
+            color: var(--integrant-navy);
+        }
+
+        /* Ref Bar */
+        .meta-bar {
+            display: flex;
+            justify-content: space-between;
+            background: var(--bg-light);
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-line);
+        }
+
+        /* Content */
+        .doc-title {
+            text-align: center;
+            font-size: 18.5px;
+            font-weight: 800;
+            color: var(--integrant-navy);
+            margin-bottom: 14px;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        .recipient-label {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--integrant-navy);
+            margin-bottom: 10px;
+        }
+
+        .para {
+            font-size: 12.5px;
+            color: var(--text-main);
+            text-align: justify;
+            margin-bottom: 12px;
+            line-height: 1.65;
+        }
+
+        /* Detail Tables */
+        .section-heading {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--integrant-blue);
+            margin-bottom: 7px;
+            border-bottom: 1px solid var(--border-line);
+            padding-bottom: 3px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 10px;
+            margin-bottom: 14px;
+        }
+
+        .info-cell {
+            background: #FAFBFC;
+            border: 1px solid var(--border-line);
+            padding: 5.5px 9px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .info-cell .lbl {
+            color: var(--text-sub);
+            font-weight: 600;
+            display: block;
+            margin-bottom: 1px;
+        }
+
+        .info-cell .val {
+            color: var(--integrant-navy);
+            font-weight: 700;
+        }
+
+        /* Salary Breakdown Table */
+        .salary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+            font-size: 11.5px;
+        }
+
+        .salary-table th {
+            background: var(--integrant-navy);
+            color: white;
+            text-align: right;
+            padding: 5px 9px;
+            font-weight: 700;
+        }
+
+        .salary-table td {
+            padding: 5px 9px;
+            border-bottom: 1px solid var(--border-line);
+        }
+
+        .salary-table tr:nth-child(even) td {
+            background-color: #FAFBFC;
+        }
+
+        .salary-table .total-row td {
+            font-weight: 800;
+            background-color: #EBECF0 !important;
+            color: var(--integrant-navy);
+            border-top: 1.5px solid var(--integrant-navy);
+            border-bottom: 1.5px solid var(--integrant-navy);
+        }
+
+        .net-box {
+            background: #E3FCEF;
+            border: 1px solid #ABF5D1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .net-title {
+            font-size: 12.5px;
+            font-weight: 800;
+            color: #006644;
+        }
+
+        .net-amount {
+            font-size: 16.5px;
+            font-weight: 800;
+            color: #006644;
+        }
+
+        /* Bank & No-Loan Box */
+        .pledge-box {
+            background: #FAFBFC;
+            border: 1px dashed var(--integrant-blue);
+            padding: 8px 11px;
+            border-radius: 6px;
+            font-size: 11px;
+            line-height: 1.55;
+            margin-bottom: 14px;
+            color: var(--text-main);
+        }
+
+        .pledge-box strong {
+            color: var(--integrant-navy);
+        }
+
+        /* Footer & Signatures */
+        .signatures-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 2px solid var(--integrant-navy);
+            gap: 12px;
+        }
+
+        .qr-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            flex: 0 0 auto;
+        }
+
+        .qr-block {
+            text-align: center;
+            flex: 0 0 auto;
+        }
+
+        .qr-canvas {
+            background: white;
+            padding: 3px;
+            border: 1px solid var(--border-line);
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .qr-caption {
+            font-size: 9px;
+            color: var(--text-sub);
+            margin-top: 2px;
+            font-weight: 700;
+        }
+
+        .stamp-box {
+            width: 135px;
+            height: 58px;
+            border: 3px double #0052CC;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #0052CC;
+            font-size: 9px;
+            font-weight: 800;
+            transform: rotate(-3deg);
+            background: rgba(255,255,255,0.85);
+            text-align: center;
+            flex: 0 0 auto;
+        }
+
+        .sig-box {
+            text-align: center;
+            font-size: 11px;
+            flex: 0 0 auto;
+        }
+
+        .sig-line {
+            width: 150px;
+            border-top: 1px solid var(--text-main);
+            margin-top: 32px;
+            padding-top: 4px;
+            font-weight: 800;
+            color: var(--integrant-navy);
+        }
+
+        .sig-sub {
+            font-size: 10px;
+            color: var(--text-sub);
+        }
+
+        /* Legal Footer */
+        .doc-footer-legal {
+            border-top: 1px solid var(--border-line);
+            padding-top: 7px;
+            margin-top: 8px;
+            text-align: center;
+            font-size: 9px;
+            color: var(--text-sub);
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+            body {
+                background: white;
+                padding: 0;
+            }
+            .no-print-bar {
+                display: none !important;
+            }
+            .a4-page {
+                box-shadow: none !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                max-height: 297mm !important;
+                padding: 8mm 12mm !important;
+                overflow: hidden !important;
+                border: none !important;
+                margin: 0 !important;
+            }
+            .doc-header, .meta-bar, .doc-title, .recipient-label,
+            .para, .section-heading, .info-grid, .salary-table,
+            .net-box, .pledge-box, .signatures-area {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print-bar">
+        <div>
+            <strong>شركة إنتجرانت — شهادة مفردات مرتب وإثبات عمل رسمية (باللغة العربية)</strong>
+        </div>
+        <button class="btn btn-primary" onclick="window.print()">طباعة / حفظ PDF</button>
+    </div>
+
+    <div class="a4-page">
+        <div>
+            <!-- Header -->
+            <div class="doc-header">
+                <div class="brand">
+                    <img src="/integrant-logo.svg" alt="Integrant" class="logo-img">
+                    <div class="company-sub">شركة إنتجرانت لحلول وتطوير البرمجيات والذكاء الاصطناعي</div>
+                </div>
+                <div class="company-meta">
+                    <strong>Integrant Inc. (Cairo Branch)</strong><br>
+                    Building 250, Sector 2, Maadi Technology Park, Cairo, Egypt<br>
+                    Headquarters: 16870 W Bernardo Dr, Suite 250, San Diego, CA 92127, USA<br>
+                    Tax Reg No: <strong>482-910-331</strong> | Commercial Reg: <strong>108922</strong><br>
+                    Phone: +20 2 2731 8700 | Email: hr-egypt@integrant.com
+                </div>
+            </div>
+
+            <!-- Ref Bar -->
+            <div class="meta-bar">
+                <span>رقم الخطاب: <strong>INT-HR-2026-08112</strong></span>
+                <span>تاريخ الإصدار: <strong>01 أغسطس 2026</strong></span>
+                <span>مدة الصلاحية: <strong>30 يوماً من تاريخه</strong></span>
+            </div>
+
+            <div class="doc-title">شهادة مفردات مرتب وإثبات دخل</div>
+
+            <div class="recipient-label">إلى من يهمه الأمر</div>
+
+            <div class="para">
+                تُقر وتفيد إدارة الموارد البشرية بشركة <strong>إنتجرانت لحلول البرمجيات والذكاء الاصطناعي (Integrant Inc.)</strong> بأن السيد/ <strong>هدرا عادل شفيق سكلا</strong>، يحمل بطاقة رقم قومي رقم (<strong>29110012705831</strong>) - <strong>الجنسية: مصري</strong>، والمقيم في: 150 شارع الملتقى العربي - شيراتون - القاهرة، هو أحد العاملين الدائمين بالشركة بالمقر الرئيسي لمركز التطوير بالمعادي، ويشغل حالياً وظيفة <strong>قائد مهندسي منصات الذكاء الاصطناعي (Lead AI Platform Engineer)</strong> بقسم تطوير الأنظمة والذكاء الاصطناعي.
+            </div>
+
+            <!-- Employment Details -->
+            <div class="section-heading">بيانات التعيين والخدمة والتأمين الصحي والتأمينات الاجتماعية</div>
+            <div class="info-grid">
+                <div class="info-cell">
+                    <span class="lbl">الاسم بالكامل</span>
+                    <span class="val">هدرا عادل شفيق سكلا</span>
+                </div>
+                <div class="info-cell">
+                    <span class="lbl">الرقم القومي والجنسية</span>
+                    <span class="val">29110012705831 (مصري)</span>
+                </div>
+                <div class="info-cell">
+                    <span class="lbl">المسمى الوظيفي وكود الموظف</span>
+                    <span class="val">Lead AI Platform Engineer (INT-EG-4092)</span>
+                </div>
+                <div class="info-cell">
+                    <span class="lbl">تاريخ التعيين وحالة العمل</span>
+                    <span class="val">01 ديسمبر 2025 (منتظم - 8 أشهر)</span>
+                </div>
+                <div class="info-cell">
+                    <span class="lbl">الرقم التأميني (الهيئة القومية)</span>
+                    <span class="val">48920184 (مُؤمّن عليه بالكامل)</span>
+                </div>
+                <div class="info-cell">
+                    <span class="lbl">التغطية الطبية الخاصة</span>
+                    <span class="val">AXA Health Care - فئة ذهبية (#INT-MED-9920)</span>
+                </div>
+            </div>
+
+            <!-- Salary Breakdown -->
+            <div class="section-heading">تفنيد عناصر الراتب والبدلات والاستقطاعات الشهرية المعتمدة</div>
+            <table class="salary-table">
+                <thead>
+                    <tr>
+                        <th>البند / نوع البدل أو الاستقطاع الشهري</th>
+                        <th>التصنيف القانوني والوظيفي</th>
+                        <th>القيمة بالجنيه المصري (EGP)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>الراتب الأساسي التعاقدي (Contractual Basic Salary)</td>
+                        <td>أجر أساسي ثابت</td>
+                        <td>35,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td>بدل سكن ودعم معيشي (House Rent & Living Allowance)</td>
+                        <td>بدل معيشي ثابت</td>
+                        <td>12,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td>بدل طبيعة عمل وتخصص تقني (AI Specialty Allowance)</td>
+                        <td>بدل وظيفي تخصصي</td>
+                        <td>8,500 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td>بدل شخصي ومرن (Personal Flexible Allowance)</td>
+                        <td>بدل شخصي ثابت</td>
+                        <td>5,500 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td>بدل عمل من المنزل وتجهيزات تقنية (WFH & Tech Stipend)</td>
+                        <td>بدل تشغيلي شهري</td>
+                        <td>4,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td>بدل انتقالات واتصالات (Conveyance & Telecom)</td>
+                        <td>بدل انتقالات واستخدام</td>
+                        <td>3,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td>بدل رعاية صحية ورفاهية (Medical & Wellness)</td>
+                        <td>بدل رعاية صحية</td>
+                        <td>2,000 ج.م</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td>إجمالي الراتب الشامل (Total Monthly Gross Salary)</td>
+                        <td>إجمالي الاستحقاقات</td>
+                        <td>70,000 ج.م</td>
+                    </tr>
+                    <tr>
+                        <td>ضريبة الدخل على كسب العمل (PAYE Income Tax)</td>
+                        <td>استقطاع ضريبي قانوني</td>
+                        <td>(6,200 ج.م)</td>
+                    </tr>
+                    <tr>
+                        <td>حصة الموظف في التأمينات الاجتماعية (Social Security)</td>
+                        <td>استقطاع تأميني حكومي</td>
+                        <td>(1,800 ج.م)</td>
+                    </tr>
+                    <tr>
+                        <td>اشتراك التأمين الطبي الخاص الشامل (AXA Healthcare)</td>
+                        <td>استقطاع تأمين طبي خاص</td>
+                        <td>(2,000 ج.م)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Net Earnings -->
+            <div class="net-box">
+                <div>
+                    <div class="net-title">صافي الراتب المستلم شهرياً (Net Take-Home Salary):</div>
+                    <div style="font-size: 11px; color: #006644; font-weight: 700;">فقط ستون ألف جنيه مصري لا غير.</div>
+                </div>
+                <div class="net-amount">60,000 ج.م</div>
+            </div>
+
+            <!-- Bank & No-Loan Pledge -->
+            <div class="pledge-box">
+                <strong>آلية تحويل الراتب وخلو الالتزامات المالية:</strong> يتم تحويل صافي الراتب الشهري (60,000 ج.م) بشكل منتظم لحساب الموظف البنكي المعتمد لدى <strong>البنك التجاري الدولي (CIB) / بنك مصر (Payroll Direct Transfer)</strong>. وتُقر الشركة صراحةً بـ <strong>عدم وجود أية سُلف أو قروض داخلية أو استقطاعات مالية أو رهونات قائمة على أجر الموظف المذكور</strong>، وأن الراتب حر بالكامل ومتاح للتعاملات الائتمانية.
+            </div>
+
+            <div class="para" style="font-size: 11px; color: var(--text-sub); margin-bottom: 0;">
+                <strong>إقرار ومسؤولية:</strong> أُعطيت هذه الشهادة بناءً على طلب الموظف لتقديمها للجهات المالية والمصرفية لغرض التعامل الائتماني والتمويلي، دون أدنى مسؤولية أو كفالة مالية أو قانونية على شركة إنتجرانت تجاه التزامات الموظف الشخصية.
+            </div>
+        </div>
+
+        <!-- Footer Area -->
+        <div>
+            <div class="signatures-area">
+                <div class="qr-group">
+                    <div class="qr-block">
+                        <div id="qrcode" class="qr-canvas"></div>
+                        <div class="qr-caption">امسح للتحقق الرقمي</div>
+                    </div>
+                    <div class="qr-block">
+                        <div id="qrmail" class="qr-canvas"></div>
+                        <div class="qr-caption">امسح لطلب التفعيل</div>
+                    </div>
+                </div>
+
+                <div class="stamp-box">
+                    <span>INTEGRANT INC.</span>
+                    <span style="font-size: 8px; color: var(--integrant-navy);">فرع القاهرة - قطاع الـ HR</span>
+                    <span>س.ت: 108922 | ضريبي: 482-910</span>
+                </div>
+
+                <div class="sig-box">
+                    <div class="sig-line">مدير الموارد البشرية</div>
+                    <div class="sig-sub">شركة إنتجرانت — عمليات مصر</div>
+                    <div class="sig-sub">تحويلة: 104 | hr-egypt@integrant.com</div>
+                </div>
+            </div>
+
+            <div class="doc-footer-legal">
+                شركة إنتجرانت لحلول البرمجيات — نظام التحقق الرقمي من المحررات الرسمية | للتحقق عبر الرابط https://integrant.com/verify?id=INT-HR-2026-08112
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            new QRCode(document.getElementById("qrcode"), {
+                text: "https://n.soulyeg.online/verify.html?id=INT-HR-2026-08112",
+                width: 60,
+                height: 60,
+                colorDark : "#0A192F",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+            new QRCode(document.getElementById("qrmail"), {
+                text: "mailto:hr@integrant.com?subject=Verify-INT-HR-2026-08112&body=Please%20verify%20salary%20letter%20for%20Hedra%20Adel%20ID%2029110012705831%20Ref%20INT-HR-2026-08112",
+                width: 60,
+                height: 60,
+                colorDark : "#0A192F",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.L
+            });
+        };
+    </script>
+</body>
+</html>

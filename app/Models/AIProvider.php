@@ -61,6 +61,6 @@ class AIProvider extends BaseModel
 
     public function healthMetrics(): HasMany
     {
-        return $this->hasMany(\App\Models\ProviderHealthMetric::class, 'provider_id');
+        return $this->hasMany(ProviderHealthMetric::class, 'provider_id');
     }
 }

@@ -61,7 +61,7 @@ class PeopleConnectContextAssembler
         $topics = $conv->topics()->select('topic', 'mention_count')->get()->toArray();
 
         // Latest session info
-        $latestSession = $conv->sessions()->orderBy('created_at', 'desc')->first();
+        $latestSession = $conv->sessions()->orderBy('opened_at', 'desc')->first();
 
         $payload = [
             'contact_profile' => $contactProfile,

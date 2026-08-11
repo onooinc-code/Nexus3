@@ -34,18 +34,45 @@ class EncryptedApiKeyStorage
     }
 
     /**
-     * Get decrypted API key by provider ID
+     * Get decrypted API key by provider ID, employing round-robin rotation and cooldown filtering.
      */
-    public function getDecryptedKey($providerId)
+    public function getDecryptedKey($providerId, ?string &$usedKeyId = null)
     {
+        // Auto-release keys whose cooldown duration has expired
+        AIApiKey::where('provider_id', $providerId)
+            ->where('status', 'cooldown')
+            ->where('cooldown_until', '<=', now())
+            ->update(['status' => 'active', 'cooldown_until' => null]);
+
+        // Select an available key that is not expired or in cooldown, using LRU rotation
         $apiKey = AIApiKey::where('provider_id', $providerId)
             ->where('is_active', true)
+            ->where(function ($query) {
+                $query->whereNull('status')
+                    ->orWhereNotIn('status', ['expired', 'cooldown']);
+            })
+            ->where(function ($query) {
+                $query->whereNull('cooldown_until')
+                    ->orWhere('cooldown_until', '<=', now());
+            })
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->orderBy('last_used_at', 'asc')
             ->orderByDesc('is_default')
             ->first();
 
         if (! $apiKey) {
             return null;
         }
+
+        $apiKey->update([
+            'last_used_at' => now(),
+            'last_rotated_at' => now(),
+        ]);
+
+        $usedKeyId = $apiKey->id;
 
         try {
             return Crypt::decryptString($apiKey->key_hash);
@@ -54,6 +81,37 @@ class EncryptedApiKeyStorage
 
             return null;
         }
+    }
+
+    /**
+     * Flag an API key as exhausted or rate-limited and apply a cooldown timer.
+     */
+    public function flagKeyExhausted(string $keyId, int $cooldownMinutes = 60, string $reason = ''): bool
+    {
+        $apiKey = AIApiKey::find($keyId);
+
+        if (! $apiKey) {
+            return false;
+        }
+
+        $apiKey->update([
+            'status' => 'cooldown',
+            'cooldown_until' => now()->addMinutes($cooldownMinutes),
+            'error_count' => ($apiKey->error_count ?? 0) + 1,
+            'last_rotated_at' => now(),
+        ]);
+
+        Log::warning("API Key [{$apiKey->name}] for provider [{$apiKey->provider_id}] flagged in cooldown for {$cooldownMinutes} minutes. Reason: {$reason}");
+
+        return true;
+    }
+
+    /**
+     * Retrieve all keys for a provider with rotation telemetry.
+     */
+    public function getProviderKeys($providerId)
+    {
+        return AIApiKey::where('provider_id', $providerId)->orderByDesc('is_active')->orderBy('last_used_at', 'desc')->get();
     }
 
     /**

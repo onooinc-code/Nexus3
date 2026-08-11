@@ -8,6 +8,7 @@ use App\Contracts\MemoryEngineContract;
 use App\Events\ContactCreated;
 use App\Events\MemoryIndexed;
 use App\Events\MessageReceived;
+use App\Events\PeopleConnect\MessageReceived as PeopleConnectMessageReceived;
 use App\Events\TaskCompletedEvent;
 use App\Events\TaskFailedEvent;
 use App\Events\WorkflowCompleted;
@@ -58,6 +59,8 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Sentinel\Drivers\Driver;
+use Laravel\Sentinel\Sentinel;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -105,6 +108,27 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (class_exists(Sentinel::class)) {
+            Sentinel::extend('horizon', function ($app) {
+                return new class(fn () => $app) extends Driver
+                {
+                    public function authorize(Request $request): bool
+                    {
+                        return true;
+                    }
+                };
+            });
+            Sentinel::extend('laravel', function ($app) {
+                return new class(fn () => $app) extends Driver
+                {
+                    public function authorize(Request $request): bool
+                    {
+                        return true;
+                    }
+                };
+            });
+        }
+
         if (app()->environment('production')) {
             URL::forceScheme('https');
         }
@@ -118,6 +142,8 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(ContactCreated::class, [TriggerWorkflowsForEvent::class, 'handle']);
         Event::listen(MessageReceived::class, [ProcessMessageReceived::class, 'handle']);
         Event::listen(MessageReceived::class, [TriggerWorkflowsForEvent::class, 'handle']);
+        Event::listen(PeopleConnectMessageReceived::class, [ProcessMessageReceived::class, 'handle']);
+        Event::listen(PeopleConnectMessageReceived::class, [TriggerWorkflowsForEvent::class, 'handle']);
         Event::listen(WorkflowStarted::class, [LogWorkflowStarted::class, 'handle']);
         Event::listen(WorkflowCompleted::class, [LogWorkflowCompleted::class, 'handle']);
         Event::listen(WorkflowStepCompleted::class, [LogWorkflowStepCompleted::class, 'handle']);

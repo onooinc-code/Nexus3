@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>طباعة الكروت الرسمية - A4 Glossy Sheet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --card-w: 86mm;
+            --card-h: 54mm;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .no-print-bar {
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            padding: 18px 25px;
+            width: 100%;
+            max-width: 210mm;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-print {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 900;
+            font-size: 16px;
+            font-family: 'Cairo', sans-serif;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+        }
+
+        .a4-sheet {
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            color: #111;
+            padding: 12mm 15mm;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: var(--card-w) var(--card-w);
+            grid-template-rows: repeat(3, var(--card-h));
+            gap: 8mm 10mm;
+            justify-content: center;
+        }
+
+        .card-box {
+            width: var(--card-w);
+            height: var(--card-h);
+            border-radius: 3.5mm;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            border: 1px solid #d1d5db;
+            font-family: 'Cairo', sans-serif;
+            page-break-inside: avoid;
+        }
+
+        /* -------------------------------------------------------------
+           CARD 1: WADI DEGLA CLUBS (الوجه والظهر الأصلي الحقيقي)
+           ------------------------------------------------------------- */
+        .wadi-front {
+            background-color: #fed900;
+            color: #2b2b2b;
+            padding: 3mm 4mm;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .wadi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .wadi-year {
+            font-size: 20pt;
+            font-weight: 900;
+            color: #fed900;
+            -webkit-text-stroke: 1.2px #2b2b2b;
+            line-height: 0.9;
+        }
+
+        .wadi-logo-box {
+            display: flex;
+            align-items: center;
+            gap: 2mm;
+            text-align: right;
+            line-height: 1.1;
+        }
+
+        .wadi-logo-img {
+            height: 10mm;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .wadi-logo-box h2 {
+            font-size: 9.5pt;
+            font-weight: 900;
+            color: #2b2b2b;
+            margin: 0;
+        }
+
+        .wadi-logo-box h3 {
+            font-size: 6.5pt;
+            font-weight: 900;
+            color: #2b2b2b;
+            margin: 0;
+            letter-spacing: 0.3px;
+        }
+
+        .wadi-logo-box p {
+            font-size: 3.8pt;
+            font-weight: 700;
+            color: #333;
+            margin-top: 1pt;
+            line-height: 1.2;
+        }
+
+        .wadi-body {
+            display: flex;
+            gap: 3mm;
+            align-items: center;
+            margin-top: 1mm;
+        }
+
+        .wadi-photo {
+            width: 17mm;
+            height: 22mm;
+            border: 1.5px solid #2b2b2b;
+            border-radius: 1mm;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .wadi-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5pt;
+            text-align: right;
+        }
+
+        .wadi-info h2 {
+            font-size: 8.5pt;
+            font-weight: 900;
+            color: #111;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .wadi-info h3 {
+            font-size: 6.5pt;
+            font-weight: 800;
+            color: #222;
+            margin: 0;
+            direction: ltr;
+            text-align: right;
+            font-family: sans-serif;
+        }
+
+        .wadi-info h4 {
+            font-size: 7.5pt;
+            font-weight: 900;
+            color: #000;
+            margin-top: 1pt;
+            font-family: monospace;
+            direction: ltr;
+            text-align: right;
+        }
+
+        .wadi-footer-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            font-size: 4pt;
+            font-weight: 700;
+            color: #222;
+            line-height: 1.25;
+            border-top: 1px solid rgba(0,0,0,0.15);
+            padding-top: 1.5pt;
+        }
+
+        .wadi-footer-text {
+            width: 72%;
+            text-align: right;
+        }
+
+        .wadi-signature {
+            width: 26%;
+            text-align: center;
+            font-weight: 800;
+            font-size: 4.5pt;
+        }
+
+        .wadi-back {
+            background-color: #fed900;
+            color: #2b2b2b;
+            padding: 4mm 5mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-align: center;
+        }
+
+        .wadi-back h3 {
+            font-size: 8pt;
+            font-weight: 900;
+            border-bottom: 1.5px solid #2b2b2b;
+            padding-bottom: 1.5pt;
+            margin-bottom: 2pt;
+        }
+
+        .wadi-back p {
+            font-size: 4.5pt;
+            font-weight: 700;
+            line-height: 1.4;
+            color: #111;
+        }
+
+        /* -------------------------------------------------------------
+           CARD 2: NEXTCARE CARD 1 (الأخضر/الأبيض)
+           ------------------------------------------------------------- */
+        .nextcare1-front {
+            background: linear-gradient(to bottom, #1d8679 48%, #ffffff 48%);
+            padding: 3mm 4mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: white;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        .nextcare1-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .nextcare1-logo h1 {
+            font-size: 13pt;
+            font-weight: 400;
+            letter-spacing: -0.5pt;
+            margin: 0;
+            line-height: 1;
+            font-family: sans-serif;
+        }
+
+        .nextcare1-logo h1 span { font-weight: 800; }
+
+        .nextcare1-logo hr {
+            border: 0.5px solid white;
+            margin: 1.5pt 0;
+            opacity: 0.8;
+        }
+
+        .nextcare1-logo p {
+            font-size: 4.5pt;
+            font-style: italic;
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .nextcare1-photo {
+            width: 16mm;
+            height: 20mm;
+            border: 1.5px solid white;
+            border-radius: 1mm;
+            object-fit: cover;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .nextcare1-body {
+            color: #0c574c;
+            font-size: 5.2pt;
+            font-weight: 800;
+            line-height: 1.35;
+            direction: ltr;
+            text-align: left;
+            margin-top: 1mm;
+        }
+
+        .nextcare1-body span {
+            color: #111;
+            font-weight: 900;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .nextcare1-bottom-bar {
+            background-color: #1d8679;
+            color: white;
+            font-size: 4pt;
+            text-align: center;
+            padding: 1.5pt 0;
+            letter-spacing: 1.5pt;
+            font-weight: 800;
+            border-radius: 0 0 2mm 2mm;
+            margin: 0 -4mm -3mm -4mm;
+        }
+
+        .nextcare1-back {
+            background: white;
+            padding: 3mm 4mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-top: 3mm solid #1d8679;
+            font-size: 4.5pt;
+            color: #333;
+            direction: ltr;
+            text-align: left;
+        }
+
+        /* -------------------------------------------------------------
+           CARD 3: MyNEXTCARE CARD 2 (الأبيض / الأخضر العلوي + QR)
+           ------------------------------------------------------------- */
+        .nextcare2-front {
+            background: white;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .nextcare2-top-bar {
+            background-color: #106c5c;
+            height: 12mm;
+            padding: 2mm 4mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+
+        .nextcare2-logo h2 {
+            font-size: 10pt;
+            font-weight: 400;
+            margin: 0;
+            line-height: 1;
+            font-family: sans-serif;
+        }
+
+        .nextcare2-logo h2 span { font-weight: 800; }
+        .nextcare2-logo p { font-size: 3.8pt; font-style: italic; margin: 1pt 0 0 0; opacity: 0.9; }
+
+        .nextcare2-photo {
+            position: absolute;
+            top: 2.5mm;
+            right: 4mm;
+            width: 16mm;
+            height: 16mm;
+            border-radius: 50%;
+            border: 2px solid white;
+            object-fit: cover;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+            z-index: 2;
+        }
+
+        .nextcare2-middle {
+            padding: 2mm 4mm 1mm 4mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .nextcare2-name-area {
+            max-width: 58%;
+        }
+
+        .nextcare2-name-area h3 {
+            font-size: 8pt;
+            font-weight: 900;
+            color: #111;
+            margin: 0;
+            direction: rtl;
+            text-align: left;
+        }
+
+        .nextcare2-name-area h4 {
+            font-size: 6.5pt;
+            font-weight: 800;
+            color: #106c5c;
+            margin: 0;
+            font-family: sans-serif;
+        }
+
+        .nextcare2-name-area p {
+            font-size: 5pt;
+            color: #444;
+            margin-top: 1pt;
+            font-weight: 700;
+        }
+
+        .nextcare2-info-box {
+            border: 1px solid #a1a1a1;
+            border-radius: 1mm;
+            padding: 1.5pt 3pt;
+            font-size: 4pt;
+            font-family: monospace;
+            line-height: 1.3;
+            color: #222;
+            background: #f8fafc;
+        }
+
+        .nextcare2-bottom {
+            padding: 1.5mm 4mm 2.5mm 4mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            direction: ltr;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .nextcare2-qr {
+            width: 10mm;
+            height: 10mm;
+        }
+
+        .nextcare2-hologram {
+            width: 7mm;
+            height: 7mm;
+            background: linear-gradient(135deg, #e2e8f0, #ffffff, #cbd5e1);
+            border-radius: 1mm;
+            border: 1px solid #94a3b8;
+        }
+
+        .nextcare2-back {
+            background: white;
+            padding: 3mm 4mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-top: 3mm solid #106c5c;
+            font-size: 4.5pt;
+            color: #333;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .barcode-strip {
+            width: 80%;
+            height: 5mm;
+            background: repeating-linear-gradient(90deg, #000, #000 1.5px, #fff 1.5px, #fff 3px);
+            margin: 2mm auto;
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+            body {
+                background: white !important;
+                padding: 0 !important;
+            }
+            .no-print-bar { display: none !important; }
+            .a4-sheet {
+                box-shadow: none !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                padding: 12mm 15mm !important;
+                margin: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print-bar">
+        <div>
+            <h2 style="font-size: 18px; margin-bottom: 3px;">🖨️ طباعة الكروت الرسمية المحدثة (6 بطاقات وش وضهر)</h2>
+            <span style="font-size: 12px; color: #94a3b8;">تم تحديث التصميمات بالكامل لتمثل الكروت الأصلية الحقيقية مع بيانات هدرا عادل شفيق</span>
+        </div>
+        <button class="btn-print" onclick="window.print()">اضغط هنا للطباعة الفورية</button>
+    </div>
+
+    <div class="a4-sheet" dir="ltr">
+        <div class="cards-grid">
+
+            <!-- ROW 1: WADI DEGLA -->
+            <!-- 1. كارت وادي دجلة (الوجه الأصلي) -->
+            <div class="card-box wadi-front" dir="rtl">
+                <div class="wadi-header">
+                    <div class="wadi-year">2026</div>
+                    <div class="wadi-logo-box">
+                        <img src="/wadi-degla-official-logo.png?v=20260803_v2" class="wadi-logo-img" alt="Wadi Degla Logo">
+                        <div>
+                            <h2>أندية وادى دجلة</h2>
+                            <h3>WADI DEGLA CLUBS</h3>
+                            <p>ملك شركة أندية وادى دجلة ش.م.م<br>سجل تجاري رقم 8932 الاستثمار<br>ترخيص رقم (0/2) لسنة 2018</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="wadi-body">
+                    <img src="/hedra.jpg?v=20260803_v2" class="wadi-photo" alt="Hedra Photo">
+                    <div class="wadi-info">
+                        <h2>هدرا عادل شفيق</h2>
+                        <h3>Hedra Adel Shafeek</h3>
+                        <h4>00400173809_2</h4>
+                    </div>
+                </div>
+                <div class="wadi-footer-row">
+                    <div class="wadi-footer-text">
+                        جميع أندية وادى دجلة ج.م.ع • عضو بالأندية المذكورة أعلاه ويحق له دخول نادى وادى دجلة الرياضي بالمعادى والمشهر برقم 4 لسنة 2010 والانتفاع بمرافقه.<br>
+                        تاريخ الانتهاء: 31/12/2026
+                    </div>
+                    <div class="wadi-signature">
+                        رئيس مجلس الإدارة<br>
+                        أ/ هانى فؤاد
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1. كارت وادي دجلة (الظهر الأصلي) -->
+            <div class="card-box wadi-back" dir="rtl">
+                <h3>تعليمات هامة واستخدام البطاقة</h3>
+                <p>
+                    • هذه البطاقة شخصية ولا يجوز استخدامها إطلاقاً من قبل أي شخص آخر غير صاحبها.<br>
+                    • يُرجى إبراز هذه البطاقة لموظفي الأمن عند بوابات الدخول لكافة فروع أندية وادي دجلة.<br>
+                    • في حالة فقدان أو تلف البطاقة يُرجى إبلاغ إدارة شؤون العضوية بالنادي فوراً.<br>
+                    • تُعامل هذه البطاقة وفقاً للائحة الأساسية والداخلية المعتمدة لأندية وادي دجلة.
+                </p>
+                <div style="font-size: 8pt; font-weight: 900; margin-top: 3mm; color: #000;">www.wadidegla.com</div>
+            </div>
+
+
+            <!-- ROW 2: NEXTCARE CARD 1 -->
+            <!-- 2. كارت NEXTCARE الأول (الوجه الأخضر/الأبيض) -->
+            <div class="card-box nextcare1-front">
+                <div class="nextcare1-header">
+                    <div class="nextcare1-logo">
+                        <h1>NE<span>X</span>tCARE</h1>
+                        <hr>
+                        <p>Your Health Managed with Care</p>
+                    </div>
+                    <img src="/hedra.jpg?v=20260803_v2" class="nextcare1-photo" alt="Hedra Photo">
+                </div>
+                <div class="nextcare1-body">
+                    Member Name: <br>
+                    <span>هدرا عادل شفيق / Hedra Adel Shafeek</span><br>
+                    Company: <span>Integrant Inc.</span><br>
+                    Member ID: <span>29110012705831</span><br>
+                    Valid Until: <span>31/12/2026</span>
+                </div>
+                <div class="nextcare1-bottom-bar">
+                    MEDICAL INSURANCE COVERAGE CARD
+                </div>
+            </div>
+
+            <!-- 2. كارت NEXTCARE الأول (الظهر) -->
+            <div class="card-box nextcare1-back">
+                <div>
+                    <h4 style="color:#1d8679; margin:0 0 2pt 0; font-size: 6pt; font-weight: 800;">Important Emergency Notice</h4>
+                    <p style="font-size: 4pt; color: #444; line-height: 1.3;">
+                        This card is the property of NEXTCARE. If found, please return to the nearest office.<br>
+                        Present this card prior to receiving medical services at approved network providers.
+                    </p>
+                </div>
+                <div class="barcode-strip"></div>
+                <div style="display: flex; justify-content: space-between; font-size: 4pt; font-weight: 700; color: #111;">
+                    <span>Emergency Hotline: 19982</span>
+                    <span>www.nextcarehealth.com</span>
+                </div>
+            </div>
+
+
+            <!-- ROW 3: MyNEXTCARE CARD 2 -->
+            <!-- 3. كارت MyNEXTCARE الثاني (الوجه الدائري مع الـ QR) -->
+            <div class="card-box nextcare2-front">
+                <div class="nextcare2-top-bar">
+                    <div class="nextcare2-logo">
+                        <h2>MyNE<span>X</span>tCARE®</h2>
+                        <p>Your Health Managed with Care</p>
+                    </div>
+                </div>
+                <img src="/hedra.jpg?v=20260803_v2" class="nextcare2-photo" alt="Hedra Photo">
+
+                <div class="nextcare2-middle">
+                    <div class="nextcare2-name-area">
+                        <h3>هدرا عادل شفيق</h3>
+                        <h4>Hedra Adel Shafeek</h4>
+                        <p>Company: Integrant Inc.</p>
+                    </div>
+
+                    <div class="nextcare2-info-box">
+                        Card#: 29110012705831<br>
+                        Gov ID: 29110012705831<br>
+                        YOB: 1991<br>
+                        Valid: 2026-12-31
+                    </div>
+                </div>
+
+                <div class="nextcare2-bottom">
+                    <div style="font-size: 5.5pt; font-weight: 800; color: #106c5c;">Out Patient Cover</div>
+                    <div style="display: flex; align-items: center; gap: 2mm;">
+                        <div class="nextcare2-hologram"></div>
+                        <div id="qr-next2" class="nextcare2-qr"></div>
+                    </div>
+                    <div style="text-align: right; font-size: 4.5pt; font-weight: 800; color: #111;">
+                        Class Private 1(Bed)<br>CAT A GOLD
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. كارت MyNEXTCARE الثاني (الظهر) -->
+            <div class="card-box nextcare2-back">
+                <div>
+                    <h4 style="color:#106c5c; margin:0 0 2pt 0; font-size: 6pt; font-weight: 800;">Terms & Conditions of Cover</h4>
+                    <p style="font-size: 4pt; color: #444; line-height: 1.3;">
+                        Present this card before receiving consultation or treatment. Pre-authorization required for in-patient care.<br>
+                        Misuse or unauthorized transfer of this card will result in immediate termination of coverage.
+                    </p>
+                </div>
+                <div class="barcode-strip"></div>
+                <div style="display: flex; justify-content: space-between; font-size: 4pt; font-weight: 700; color: #111;">
+                    <span>Toll Free Hotline: 19982</span>
+                    <span>claims-egypt@nextcarehealth.com</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            setTimeout(function() {
+                new QRCode(document.getElementById("qr-next2"), {
+                    text: "https://www.nextcarehealth.com/check?id=29110012705831&name=Hedra+Adel",
+                    width: 38, height: 38, colorDark: "#000000"
+                });
+            }, 100);
+        };
+    </script>
+</body>
+</html>

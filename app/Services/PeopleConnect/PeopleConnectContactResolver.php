@@ -46,6 +46,11 @@ class PeopleConnectContactResolver
                 // Ensure the whatsapp identifier is linked if it wasn't
                 $this->identityResolver->linkIdentifier($contact, 'whatsapp', $phone, false);
 
+                // Update placeholder contact name if real display name is provided
+                if (! empty($displayName) && (empty($contact->name) || str_starts_with($contact->name, 'WAHA Contact') || str_starts_with($contact->name, 'WhatsApp User') || $contact->name === $phone)) {
+                    $contact->update(['name' => $displayName, 'display_name' => $displayName]);
+                }
+
                 return $contact;
             }
 

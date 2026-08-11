@@ -34,6 +34,11 @@
         </li>
     </ul>
 
+    <!-- Fullscreen Toggle Button -->
+    <button class="btn btn-sm text-light px-2.5 py-1 ms-2" id="btn-toggle-fullscreen" title="Toggle Fullscreen Mode" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; transition: all 0.2s ease;">
+        <i class="fa-solid fa-expand" id="fullscreen-icon" style="font-size: 0.85rem; color: #94A3B8;"></i>
+    </button>
+
     <style>
         #taskhub-nav .nav-link {
             transition: all 0.2s ease;

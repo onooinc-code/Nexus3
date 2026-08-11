@@ -1,0 +1,58 @@
+{
+  "manifest_version": 3,
+  "name": "Nexus Agentic Browser Bridge & Control Center",
+  "version": "1.2.0",
+  "description": "Enterprise Autonomous Chrome Extension Bridge & Realtime Dashboard for Hedra Souly Nexus AI Ecosystem",
+
+  "permissions": [
+    "storage",
+    "scripting",
+    "tabs",
+    "webNavigation",
+    "declarativeNetRequest",
+    "notifications",
+    "alarms",
+    "debugger",
+    "activeTab"
+  ],
+
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://*/*", "http://*/*"],
+      "js": ["content-observer.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+
+  "action": {
+    "default_popup": "popup.html"
+  },
+
+  "options_page": "dashboard.html",
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none';"
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "injected-bridge.js",
+        "dashboard.html",
+        "dashboard.js"
+      ],
+      "matches": ["https://*/*", "http://*/*"]
+    }
+  ]
+}

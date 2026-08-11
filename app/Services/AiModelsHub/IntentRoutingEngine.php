@@ -3,6 +3,7 @@
 namespace App\Services\AiModelsHub;
 
 use App\Models\AIModel;
+use App\Models\AIProvider;
 use App\Models\IntentRouting;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -55,11 +56,29 @@ class IntentRoutingEngine
         }
 
         $fallbacks = [];
+
+        // 1. Primary Fallback
         if ($routing->fallback_provider_id && $routing->fallback_model_id) {
             $fallbacks[] = [
                 'provider' => $routing->fallbackProvider,
                 'model' => $routing->fallbackModel,
             ];
+        }
+
+        // 2. Multi-Provider Fallback Chain
+        if (! empty($routing->fallback_chain) && is_array($routing->fallback_chain)) {
+            foreach ($routing->fallback_chain as $item) {
+                if (! empty($item['provider_id']) && ! empty($item['model_id'])) {
+                    $provider = AIProvider::find($item['provider_id']);
+                    $model = AIModel::find($item['model_id']);
+                    if ($provider && $model && $provider->is_active && $model->is_active) {
+                        $fallbacks[] = [
+                            'provider' => $provider,
+                            'model' => $model,
+                        ];
+                    }
+                }
+            }
         }
 
         return $fallbacks;

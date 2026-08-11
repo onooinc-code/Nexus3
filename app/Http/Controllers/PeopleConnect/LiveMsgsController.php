@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\PeopleConnect;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\TriggerSyncRequest;
 use App\Jobs\PeopleConnect\SyncWahaContactsJob;
 use App\Jobs\PeopleConnect\SyncWahaConversationsJob;
 use App\Models\PeopleConnect\PeopleConnectMessage;
@@ -13,7 +14,7 @@ class LiveMsgsController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $perPage = $request->input('per_page', 50);
+        $perPage = max(1, min((int) $request->input('per_page', 50), 200));
 
         $messages = PeopleConnectMessage::with('conversation.contact')
             ->orderBy('created_at', 'desc')
@@ -22,9 +23,9 @@ class LiveMsgsController extends Controller
         return response()->json($messages);
     }
 
-    public function triggerSync(Request $request): JsonResponse
+    public function triggerSync(TriggerSyncRequest $request): JsonResponse
     {
-        $type = $request->input('type', 'all');
+        $type = $request->validated()['type'] ?? $request->input('type', 'all');
 
         if ($type === 'contacts' || $type === 'all') {
             SyncWahaContactsJob::dispatch();

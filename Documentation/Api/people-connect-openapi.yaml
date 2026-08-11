@@ -1,0 +1,397 @@
+openapi: 3.0.3
+info:
+  title: Nexus3 PeopleConnect & WAHA Integration API
+  description: >
+    Official OpenAPI 3.0 specification reflecting the actual working API surface of the 
+    PeopleConnect WhatsApp Hub, WAHA Webhooks, and Management Controller in the Nexus3 Monolith.
+  version: 1.0.0
+
+servers:
+  - url: https://n.soulyeg.online/api
+    description: Production API Server
+  - url: http://localhost:8000/api
+    description: Local Development Server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /webhooks/waha:
+    post:
+      summary: WAHA Inbound Webhook Endpoint
+      description: >
+        Receives real-time incoming WhatsApp messages and status events from the WAHA engine.
+        Enforces HMAC-SHA512/256 signature verification.
+      security: []
+      parameters:
+        - in: header
+          name: X-Waha-Secret
+          schema:
+            type: string
+          required: false
+          description: Webhook secret key (alternative to header signature)
+        - in: header
+          name: x-hmac-sha512256
+          schema:
+            type: string
+          required: false
+          description: HMAC SHA-512/256 signature of request body
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WahaWebhookPayload'
+      responses:
+        '200':
+          description: Webhook received and queued successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  status:
+                    type: string
+                    example: queued
+                  event_id:
+                    type: string
+                    example: evt_666a12bc
+        '401':
+          description: Invalid webhook signature or secret
+        '422':
+          description: Unrecognized payload structure
+
+  /v1/people-connect/stats:
+    get:
+      summary: PeopleConnect Dashboard Metrics
+      description: Returns aggregate counts of contacts, active conversations, unread messages, and reply modes.
+      responses:
+        '200':
+          description: Statistics summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_conversations:
+                    type: integer
+                    example: 142
+                  unread_conversations:
+                    type: integer
+                    example: 5
+                  reply_modes:
+                    type: object
+                    properties:
+                      manual:
+                        type: integer
+                        example: 100
+                      assisted:
+                        type: integer
+                        example: 30
+                      autopilot:
+                        type: integer
+                        example: 12
+
+  /v1/people-connect/search:
+    get:
+      summary: Search PeopleConnect Conversations
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          required: true
+          description: Search term (contact name, phone, or message body)
+      responses:
+        '200':
+          description: Matching conversations list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PeopleConnectConversation'
+
+  /v1/people-connect/conversations/{id}:
+    get:
+      summary: Get Conversation Details & Messages
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Conversation ID
+      responses:
+        '200':
+          description: Conversation details with message history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  conversation:
+                    $ref: '#/components/schemas/PeopleConnectConversation'
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PeopleConnectMessage'
+
+  /v1/people-connect/conversations/{id}/reply-mode:
+    post:
+      summary: Update Conversation Reply Mode
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - mode
+              properties:
+                mode:
+                  type: string
+                  enum: [manual, assisted, autopilot]
+                  example: autopilot
+      responses:
+        '200':
+          description: Reply mode updated successfully
+
+  /v1/waha-manage/status:
+    get:
+      summary: WAHA Synchronization Engine Status
+      description: Returns contact sync totals, total messages, and active sync processes.
+      responses:
+        '200':
+          description: Status overview
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stats:
+                    type: object
+                    properties:
+                      total_waha_contacts:
+                        type: integer
+                      synced_contacts:
+                        type: integer
+                      unsynced_contacts:
+                        type: integer
+                      total_messages:
+                        type: integer
+                  active_processes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WahaSyncProcess'
+
+  /v1/waha-manage/sync/start:
+    post:
+      summary: Start WAHA Contacts or Messages Sync
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: [sync_contacts, sync_messages]
+                  default: sync_contacts
+      responses:
+        '200':
+          description: Process started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  process:
+                    $ref: '#/components/schemas/WahaSyncProcess'
+
+  /v1/waha-manage/sync/{id}/pause:
+    post:
+      summary: Pause WAHA Sync Process
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Process paused
+
+  /v1/waha-manage/analyze/start:
+    post:
+      summary: Start Batch AI Intelligence Analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agent_id
+                - model_id
+                - message_limit
+              properties:
+                agent_id:
+                  type: integer
+                model_id:
+                  type: string
+                message_limit:
+                  type: integer
+                  default: 50
+                extract_preferences:
+                  type: boolean
+                extract_personality:
+                  type: boolean
+                extract_topics:
+                  type: boolean
+      responses:
+        '200':
+          description: Analysis process dispatched
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    PeopleConnectConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12
+        contact_id:
+          type: integer
+          example: 45
+        channel:
+          type: string
+          example: whatsapp
+        provider:
+          type: string
+          example: waha
+        provider_conversation_id:
+          type: string
+          example: "201001234567@c.us"
+        reply_mode_effective:
+          type: string
+          enum: [manual, assisted, autopilot]
+          example: assisted
+        unread_count:
+          type: integer
+          example: 2
+        last_message_at:
+          type: string
+          format: date-time
+        last_message_preview:
+          type: string
+          example: "Hello, how can I help you today?"
+
+    PeopleConnectMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 981
+        conversation_id:
+          type: integer
+          example: 12
+        contact_id:
+          type: integer
+          example: 45
+        sender_type:
+          type: string
+          enum: [contact, agent, system]
+          example: contact
+        direction:
+          type: string
+          enum: [inbound, outbound]
+          example: inbound
+        body:
+          type: string
+          example: "I would like to inquire about your services."
+        status:
+          type: string
+          enum: [pending, sending, delivered, failed]
+          example: delivered
+        waha_message_id:
+          type: string
+          example: "false_201001234567@c.us_3EB0C12345678"
+        delivered_at:
+          type: string
+          format: date-time
+
+    WahaSyncProcess:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 5
+        type:
+          type: string
+          example: sync_contacts
+        status:
+          type: string
+          enum: [pending, running, paused, completed, failed]
+          example: running
+        progress:
+          type: integer
+          example: 45
+        processed_items:
+          type: integer
+          example: 120
+        total_items:
+          type: integer
+          example: 250
+        started_at:
+          type: string
+          format: date-time
+
+    WahaWebhookPayload:
+      type: object
+      required:
+        - event
+        - payload
+      properties:
+        event:
+          type: string
+          example: message.upsert
+        session:
+          type: string
+          example: default
+        payload:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "false_201001234567@c.us_3EB0C12345678"
+            from:
+              type: string
+              example: "201001234567@c.us"
+            fromMe:
+              type: boolean
+              example: false
+            body:
+              type: string
+              example: "Hello world"
+            timestamp:
+              type: integer
+              example: 1721400000

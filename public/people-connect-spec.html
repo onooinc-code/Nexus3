@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PeopleConnect - Hedra AI Twin & Contact OS Specification</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            padding-bottom: 60px;
+        }
+        .header-section {
+            background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+            border-bottom: 1px solid #312e81;
+            padding: 40px 0;
+            margin-bottom: 30px;
+        }
+        .section-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        .badge-agent {
+            background: #3b82f622;
+            color: #60a5fa;
+            border: 1px solid #3b82f644;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .badge-status {
+            background: #10b98122;
+            color: #34d399;
+            border: 1px solid #10b98144;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+        .code-block {
+            background-color: #090d16;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 16px;
+            color: #38bdf8;
+            font-family: 'Courier New', Courier, monospace;
+            direction: ltr;
+            text-align: left;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+        .kanban-task {
+            border-right: 4px solid var(--accent-blue);
+            background: #182234;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: all 0.2s ease;
+        }
+        .kanban-task:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+        .table-custom {
+            color: var(--text-main);
+            border-color: var(--card-border);
+        }
+        .table-custom th {
+            background-color: #0f172a;
+            color: var(--text-muted);
+            border-bottom-width: 2px;
+        }
+        .table-custom td {
+            background-color: var(--card-bg);
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-section">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <span class="badge bg-primary mb-2"><i class="fa-solid fa-users-gear me-1"></i> PeopleConnect OS v1.0</span>
+                <h1 class="fw-bold mb-2">👥 نظام التواصل التوأمي الذكي - PeopleConnect</h1>
+                <p class="text-muted mb-0">مواصفات المعمارية والخطة الهندسية الكاملة لإدارة وتأدية أداء هدرا (100% Authentic Twin) عبر Hermes Agents & Nexus</p>
+            </div>
+            <div class="text-end">
+                <span class="badge bg-success p-2 fs-6 mb-1"><i class="fa-solid fa-check-circle me-1"></i> تم التحديث بالكامل بوردة Kanban</span>
+                <div class="text-muted small">البوردة: <code>people-connect</code></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Summary Box -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="section-card text-center py-3">
+                <i class="fa-solid fa-id-card text-primary fs-2 mb-2"></i>
+                <div class="fs-4 fw-bold">Nexus 3 DB</div>
+                <div class="text-muted small">بروفايل ومصدر حقائق لكل شخص</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="section-card text-center py-3">
+                <i class="fa-solid fa-brain text-purple fs-2 mb-2"></i>
+                <div class="fs-4 fw-bold">100% Hedra Twin</div>
+                <div class="text-muted small">مطابقة بصرية ولغوية ومبدئية</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="section-card text-center py-3">
+                <i class="fa-solid fa-comments text-success fs-2 mb-2"></i>
+                <div class="fs-4 fw-bold">WAHA + Messenger</div>
+                <div class="text-muted small">تواصل ثنائي الاتجاه تلقائي وبإستراتيجيات</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="section-card text-center py-3">
+                <i class="fa-solid fa-bars-progress text-warning fs-2 mb-2"></i>
+                <div class="fs-4 fw-bold">8 مهام Kanban</div>
+                <div class="text-muted small">مجهزة للمراجعة والتشغيل اليدوي</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Requirements & Specs -->
+    <div class="section-card">
+        <h3 class="fw-bold mb-4 text-primary"><i class="fa-solid fa-sliders me-2"></i> الشروط والمتطلبات الأساسية للنظام</h3>
+        
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="p-3 border rounded bg-dark">
+                    <h5 class="fw-bold text-info"><i class="fa-solid fa-database me-2"></i> 1. ملف شخصي شامل (Single Source of Truth)</h5>
+                    <p class="text-muted small mb-0">
+                        إنشاء هيكل بيانات موحد في Nexus لكل جهة اتصال يتضمن: الحقائق المؤكدة، تاريخ الرسائل السابقة، المواضيع المشتركة، مواصفات وشخصية الشخص، مواقفه ومبادئه، بالإضافة إلى ملاحظات وتنبيهات هدرا الخاصة بهذه الشخصية.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="p-3 border rounded bg-dark">
+                    <h5 class="fw-bold text-info"><i class="fa-solid fa-user-gear me-2"></i> 2. تحليل الشخصية والمواقف والمبادئ</h5>
+                    <p class="text-muted small mb-0">
+                        تحديد وتصنيف شامل لكل ما يفيد في فهم شخصية جهة الاتصال: نمط الحديث، المواقف السابقة، الحدود والمبادئ التي يتعامل بها هدرا معه، ودرجة القرب (عائلية، عمل، شخصية، رسمية، إلخ).
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="p-3 border rounded bg-dark">
+                    <h5 class="fw-bold text-info"><i class="fa-solid fa-route me-2"></i> 3. نظام مهام خاص بالتواصل (Dialogue Task Engine)</h5>
+                    <p class="text-muted small mb-0">
+                        نظام إدارة مهام متطور يختلف عن المهام العادية، حيث يعتمد على طبيعة وسياق المحادثات والهدف المطلوب الوصول إليه (Goal-Driven Dynamic Dialogue) مع تحديث واستقبال التفاصيل لحظياً.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="p-3 border rounded bg-dark">
+                    <h5 class="fw-bold text-info"><i class="fa-solid fa-satellite-dish me-2"></i> 4. قنوات وتدفقات التواصل (WhatsApp & FB)</h5>
+                    <p class="text-muted small mb-0">
+                        التواصل سواء ببدء محادثات صادرة لتحقيق هدف محدد مع شخص معين (Outgoing Goal Chat)، أو استقبال المحادثات الواردة وتوجيه الحديث نحو تحقيق الهدف (Incoming Goal Handler) عبر WAHA و Meta Graph API.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Source Data to Analyze -->
+    <div class="section-card">
+        <h3 class="fw-bold mb-3 text-warning"><i class="fa-solid fa-folder-open me-2"></i> المصادر والبيانات المتاحة للتحليل والاستخراج</h3>
+        <div class="table-responsive">
+            <table class="table table-custom align-middle">
+                <thead>
+                    <tr>
+                        <th>المصدر</th>
+                        <th>نوع البيانات</th>
+                        <th>الغرض والاستخراج</th>
+                        <th>الأداة والمسار</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><i class="fa-brands fa-whatsapp text-success me-2"></i> أرشيف رسائل الواتس اب</td>
+                        <td>JSON / TXT Exports</td>
+                        <td>استخراج نبرة هدرا، المصطلحات المصرية، أسلوب الرد، والتاريخ المباشر</td>
+                        <td>WAHA / Nexus Import Engine</td>
+                    </tr>
+                    <tr>
+                        <td><i class="fa-brands fa-facebook text-primary me-2"></i> رسائل الفيس بوك القديمة</td>
+                        <td>JSON / HTML Exports</td>
+                        <td>استخراج تاريخ المحادثات الطويلة، النقاشات الفكرية والعملية</td>
+                        <td>Meta Data Ingestion Pipeline</td>
+                    </tr>
+                    <tr>
+                        <td><i class="fa-solid fa-file-code text-info me-2"></i> ملفات XML للبروفايلات</td>
+                        <td>Structured XML Dumps</td>
+                        <td>استخراج السيرة الذاتية، العلاقات الاجتماعية، الاهتمامات والبيانات الشخصية</td>
+                        <td>Nexus XML Parser</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Agent Specialists Architecture -->
+    <div class="section-card">
+        <h3 class="fw-bold mb-4 text-purple"><i class="fa-solid fa-robot me-2"></i> هيكلة وكلاء الذكاء الاصطناعي (Hermes Agents Dedicated Profiles)</h3>
+        <p class="text-muted mb-4">تم إنشاء إعدادات وتخصيص 4 وكلاء متخصصين يعملون بنماذج سريعة وموثوقة (Gemini 3.6 Flash عبر السيرفر الخاص) بدون استخدام LiteLLM:</p>
+        
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="p-3 border rounded text-center bg-dark">
+                    <i class="fa-solid fa-file-import text-primary fs-3 mb-2"></i>
+                    <h6 class="fw-bold">people-ingest</h6>
+                    <span class="badge-agent">استخراج وهيكلة البيانات</span>
+                    <p class="text-muted small mt-2 mb-0">تحليل وتفريغ شات الواتساب والفيس بوك وملفات XML وتحويلها لجداول Nexus.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="p-3 border rounded text-center bg-dark">
+                    <i class="fa-solid fa-brain text-purple fs-3 mb-2"></i>
+                    <h6 class="fw-bold">people-persona</h6>
+                    <span class="badge-agent">هندسة شخصية هدرا</span>
+                    <p class="text-muted small mt-2 mb-0">استخراج البصمة اللغوية لهدرا، المواقف، القواعد الصارمة والمبادئ.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="p-3 border rounded text-center bg-dark">
+                    <i class="fa-solid fa-diagram-project text-warning fs-3 mb-2"></i>
+                    <h6 class="fw-bold">people-orchestrator</h6>
+                    <span class="badge-agent">إدارة محرك المحادثات</span>
+                    <p class="text-muted small mt-2 mb-0">إدارة أهداف التواصل، متابعة حالة الحوار، وبوابة موافقة هدرا البشرية.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="p-3 border rounded text-center bg-dark">
+                    <i class="fa-solid fa-paper-plane text-success fs-3 mb-2"></i>
+                    <h6 class="fw-bold">people-waha</h6>
+                    <span class="badge-agent">ربط القنوات اللحظي</span>
+                    <p class="text-muted small mt-2 mb-0">الربط المباشر مع WAHA API والواتساب والماسنجر واستقبال الويب هوك.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nexus Database Schemas -->
+    <div class="section-card">
+        <h3 class="fw-bold mb-3 text-info"><i class="fa-solid fa-database me-2"></i> هيكل جداول قاعدة البيانات في Nexus 3</h3>
+        <div class="code-block">
+CREATE TABLE contact_profiles (
+    id UUID PRIMARY KEY,
+    full_name VARCHAR(255) NOT NULL,
+    relationship_tier VARCHAR(50), -- family, close_friend, business, formal, toxic
+    phone_number VARCHAR(50),
+    facebook_id VARCHAR(100),
+    avatar_url TEXT,
+    summary_bio TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE contact_facts (
+    id UUID PRIMARY KEY,
+    contact_id UUID REFERENCES contact_profiles(id),
+    category VARCHAR(50), -- personality, work, stances, habits, warnings
+    fact_key VARCHAR(100),
+    fact_value TEXT,
+    confidence_score FLOAT DEFAULT 1.0,
+    source_origin VARCHAR(100) -- whatsapp_archive, fb_chat, fb_xml, hedra_manual
+);
+
+CREATE TABLE contact_stances_principles (
+    id UUID PRIMARY KEY,
+    contact_id UUID REFERENCES contact_profiles(id),
+    topic VARCHAR(100),
+    hedra_stance TEXT NOT NULL,
+    strict_boundary_rules TEXT,
+    past_incidents TEXT
+);
+
+CREATE TABLE dialogue_tasks (
+    id UUID PRIMARY KEY,
+    contact_id UUID REFERENCES contact_profiles(id),
+    goal_type VARCHAR(50), -- outgoing_target, incoming_handler, relationship_nurture
+    target_outcome TEXT,
+    current_state VARCHAR(50) DEFAULT 'initiated', -- initiated, in_progress, goal_satisfied, escalated
+    last_message_at TIMESTAMP,
+    requires_hedra_approval BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE message_history (
+    id UUID PRIMARY KEY,
+    contact_id UUID REFERENCES contact_profiles(id),
+    platform VARCHAR(30), -- whatsapp, messenger
+    sender VARCHAR(20), -- hedra_twin, contact, hedra_human
+    message_text TEXT,
+    sentiment VARCHAR(20),
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+        </div>
+    </div>
+
+    <!-- Kanban Board Tasks -->
+    <div class="section-card">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h3 class="fw-bold mb-1 text-success"><i class="fa-solid fa-kanban me-2"></i> بوردة مهام Kanban الخاصة بالنظام (people-connect)</h3>
+                <p class="text-muted small mb-0">جميع المهام مصممة ومقسمة بشكل دقيق وتوجد حالياً في حالة <code>ready</code> أو <code>todo</code> لانتظار مراجعتك وتشغيلك اليدوي</p>
+            </div>
+            <span class="badge bg-warning text-dark p-2 fw-bold"><i class="fa-solid fa-lock me-1"></i> متوقفة - تنتظر تشغيل هدرا</span>
+        </div>
+
+        <!-- Task 1 -->
+        <div class="kanban-task">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="fw-bold mb-0 text-primary">PC-01: PeopleConnect DB Schema & Nexus 3 Migration Specs</h5>
+                <div>
+                    <span class="badge-agent me-2"><i class="fa-solid fa-robot me-1"></i> people-ingest</span>
+                    <span class="badge-status"><i class="fa-solid fa-clock me-1"></i> ready</span>
+                </div>
+            </div>
+            <p class="text-muted small mb-2">تصميم وتنفيذ هيكل قاعدة البيانات المتكامل في Nexus 3 لبيانات وشخصيات وسجلات جهات الاتصال (Profiles, Facts, Stances, Dialogue Tasks, Message History).</p>
+            <div class="bg-dark p-2 rounded text-muted small dir-ltr text-start">Provider: Custom (gemini-3.6-flash @ 24.199.92.66) | ID: t_24d34f85</div>
+        </div>
+
+        <!-- Task 2 -->
+        <div class="kanban-task">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="fw-bold mb-0 text-primary">PC-02: Multi-Source Data Ingestion Engine (WhatsApp, FB Chats, FB XML)</h5>
+                <div>
+                    <span class="badge-agent me-2"><i class="fa-solid fa-robot me-1"></i> people-ingest</span>
+                    <span class="badge bg-secondary text-light"><i class="fa-solid fa-link me-1"></i> todo (يعتمد على PC-01)</span>
+                </div>
+            </div>
+            <p class="text-muted small mb-2">تطوير خط استخراج وتنظيف وتحويل المحادثات القديمة للواتساب والفيس بوك وملفات XML وتحويلها إلى بيانات هيكلية في Nexus.</p>
+            <div class="bg-dark p-2 rounded text-muted small dir-ltr text-start">Provider: Custom (gemini-3.6-flash @ 24.199.92.66) | ID: t_56da7fef</div>
+        </div>
+
+        <!-- Task 3 -->
+        <div class="kanban-task">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="fw-bold mb-0 text-primary">PC-03: Hedra Persona Extraction & Twin Mind Blueprint</h5>
+                <div>
+                    <span class="badge-agent me-2"><i class="fa-solid fa-robot me-1"></i> people-persona</span>
+                    <span class="badge bg-secondary text-light"><i class="fa-solid fa-link me-1"></i> todo (يعتمد على PC-01)</span>
+                </div>
+            </div>
+            <p class="text-muted small mb-2">تحليل المحادثات القديمة لاستخراج بصمة هدرا اللغوية (100% Matching)، اللهجة المصرية، الأسلوب، المبادئ، والردود العاطفية لكل نوع علاقة.</p>
+            <div class="bg-dark p-2 rounded text-muted small dir-ltr text-start">Provider: Custom (gemini-3.6-flash @ 24.199.92.66) | ID: t_da54c69c</div>
+        </div>
+
+        <!-- Task 4 -->
+        <div class="kanban-task">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="fw-bold mb-0 text-primary">PC-04: Nexus Contact Interaction Task System (CRM Dialogue Workflow)</h5>
+                <div>
+                    <span class="badge-agent me-2"><i class="fa-solid fa-robot me-1"></i> people-orchestrator</span>
+                    <span class="badge bg-secondary text-light"><i class="fa-solid fa-link me-1"></i> todo (يعتمد على PC-01)</span>
+                </div>
+            </div>
+            <p class="text-muted small mb-2">بناء نظام إدارة مهام التواصل المتخصص داخل Nexus لمتابعة تحقيق أهداف المحادثة، حالة الحوار، والنقاط الإستراتيجية لحظة بلحظة.</p>
+            <div class="bg-dark p-2 rounded text-muted small dir-ltr text-start">Provider: Custom (gemini-3.6-flash @ 24.199.92.66) | ID: t_016ce168</div>
+        </div>
+
+        <!-- Task 5 -->
+        <div class="kanban-task">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="fw-bold mb-0 text-primary">PC-05: WAHA WhatsApp Real-time Engine & Autonomous Dialogue Hook</h5>
+                <div>
+                    <span class="badge-agent me-2"><i class="fa-solid fa-robot me-1"></i> people-waha</span>
+                    <span class="badge bg-secondary text-light"><i class="fa-solid fa-link me-1"></i> todo (يعتمد على PC-04)</span>
+                </div>
+            </div>
+            <p class="text-muted small mb-2">ربط محرك الواتساب اللحظي عبر WAHA API (الجلسة session_01552341338) لارسال واستقبال الرسائل التلقائية وتحقيق الأهداف.</p>
+            <div class="bg-dark p-2 rounded text-muted small dir-ltr text-start">Provider: Custom (gemini-3.6-flash @ 24.199.92.66) | ID: t_6151ae3a</div>
+        </div>
+
+        <!-- Task 6 -->
+        <div class="kanban-task">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="fw-bold mb-0 text-primary">PC-06: Facebook Messenger & Profile Automation Integration</h5>
+                <div>
+                    <span class="badge-agent me-2"><i class="fa-solid fa-robot me-1"></i> people-waha</span>
+                    <span class="badge bg-secondary text-light"><i class="fa-solid fa-link me-1"></i> todo (يعتمد على PC-04)</span>
+                </div>
+            </div>
+            <p class="text-muted small mb-2">ربط رسائل الفيس بوك ماسنجر وتكامله مع البروفايلات لربط هوية الشخص بين الواتساب والفيس بوك تحت بروفايل موحد.</p>
+            <div class="bg-dark p-2 rounded text-muted small dir-ltr text-start">Provider: Custom (gemini-3.6-flash @ 24.199.92.66) | ID: t_1bdfeb65</div>
+        </div>
+
+        <!-- Task 7 -->
+        <div class="kanban-task">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="fw-bold mb-0 text-primary">PC-07: Goal-Driven Autonomous Dialogue Loop & Hedra Review Portal</h5>
+                <div>
+                    <span class="badge-agent me-2"><i class="fa-solid fa-robot me-1"></i> people-orchestrator</span>
+                    <span class="badge bg-secondary text-light"><i class="fa-solid fa-link me-1"></i> todo (يعتمد على PC-05 & PC-06)</span>
+                </div>
+            </div>
+            <p class="text-muted small mb-2">بناء محرك التفكير والتقييم التلقائي للأهداف وبوابة التنبيه والتأكيد مع هدرا عند المواضيع الحساسة أو القرارات الهامة.</p>
+            <div class="bg-dark p-2 rounded text-muted small dir-ltr text-start">Provider: Custom (gemini-3.6-flash @ 24.199.92.66) | ID: t_361549a1</div>
+        </div>
+
+        <!-- Task 8 -->
+        <div class="kanban-task">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="fw-bold mb-0 text-primary">PC-08: PeopleConnect Unified HTML Dashboard & Nexus UI Module</h5>
+                <div>
+                    <span class="badge-agent me-2"><i class="fa-solid fa-robot me-1"></i> people-orchestrator</span>
+                    <span class="badge bg-secondary text-light"><i class="fa-solid fa-link me-1"></i> todo (يعتمد على PC-07)</span>
+                </div>
+            </div>
+            <p class="text-muted small mb-2">تطوير لوحة التحكم البصرية الشاملة داخل Nexus لعرض بروفايل 360 لكل شخص، متابعة مهام المحادثات النشطة، والتدخل المباشر.</p>
+            <div class="bg-dark p-2 rounded text-muted small dir-ltr text-start">Provider: Custom (gemini-3.6-flash @ 24.199.92.66) | ID: t_55062526</div>
+        </div>
+
+    </div>
+
+    <!-- Execution & Human Safeguards -->
+    <div class="section-card border-warning">
+        <h3 class="fw-bold mb-3 text-warning"><i class="fa-solid fa-shield-halved me-2"></i> الضوابط الأمنية وبند الموافقة البشرية (Human-in-the-Loop)</h3>
+        <ul class="text-muted mb-0">
+            <li class="mb-2"><strong>إيقاف التنفيذ التلقائي التام:</strong> تم تكوين البوردة والمهام بحيث تبقى في أتم الاستعداد <code>ready</code> دون أن يتم إطلاق أي منها تلقائياً، انتظاراً لمراجعتك عبر Kanban Dashboard UI.</li>
+            <li class="mb-2"><strong>حظر LiteLLM:</strong> تم تعيين المزود المباشر <code>custom</code> (Gemini 3.6 Flash / 3.5 Flash على سيرفر السحابة المحلي 24.199.92.66) لجميع البروفايلات لضمان السرعة وتجنب أخطاء 504 أو 429 الخاصة بـ LiteLLM.</li>
+            <li class="mb-2"><strong>بوابة التصعيد لهدرا:</strong> أي رسالة واردة تتضمن مواضيع مادية، قرارات شخصية مصيرية، أو طلبات غير مسجلة في ملف حقائق الشخص، يتم تعليق الشات فوراً وإرسال تنبيه لك على التليجرام والمباشرة بالتدخل.</li>
+        </ul>
+    </div>
+
+</div>
+
+</body>
+</html>

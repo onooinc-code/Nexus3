@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SyncProviderModelsJob;
 use App\Models\AIApiKey;
 use App\Models\AIModel;
 use App\Models\AIProvider;
@@ -9,7 +10,9 @@ use App\Services\AiModelsHub\DynamicProviderRegistry;
 use App\Services\AiModelsHub\DynamicRestProvider;
 use App\Services\AiModelsHub\EncryptedApiKeyStorage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -62,6 +65,9 @@ class AiProviderController extends Controller
             'payload_format' => 'nullable|string|max:255',
             'is_active' => 'nullable|boolean',
             'api_key' => 'nullable|string',
+            'schema' => 'nullable|string|max:50',
+            'response_method' => 'nullable|string|max:255',
+            'time_between_requests_ms' => 'nullable|integer',
         ]);
 
         if ($validator->fails()) {
@@ -78,6 +84,9 @@ class AiProviderController extends Controller
                 'auth_header_format' => $request->auth_header_format,
                 'payload_format' => $request->payload_format,
                 'is_active' => $request->is_active ?? true,
+                'schema' => $request->schema ?? 'openai',
+                'response_method' => $request->response_method ?? 'POST /v1/chat/completions',
+                'time_between_requests_ms' => $request->time_between_requests_ms ?? 0,
             ]);
 
             // Save the API key if provided
@@ -169,6 +178,9 @@ class AiProviderController extends Controller
             'payload_format' => 'nullable|string|max:255',
             'is_active' => 'nullable|boolean',
             'api_key' => 'nullable|string',
+            'schema' => 'nullable|string|max:50',
+            'response_method' => 'nullable|string|max:255',
+            'time_between_requests_ms' => 'nullable|integer',
         ]);
 
         if ($validator->fails()) {
@@ -194,6 +206,9 @@ class AiProviderController extends Controller
                 'auth_header_format' => $request->auth_header_format,
                 'payload_format' => $request->payload_format,
                 'is_active' => $request->is_active ?? $provider->is_active,
+                'schema' => $request->schema ?? $provider->schema,
+                'response_method' => $request->response_method ?? $provider->response_method,
+                'time_between_requests_ms' => $request->time_between_requests_ms ?? $provider->time_between_requests_ms,
             ]);
 
             if ($request->filled('api_key')) {
@@ -335,19 +350,33 @@ class AiProviderController extends Controller
             $restProvider = new DynamicRestProvider($id, $this->keyStorage);
             $health = $restProvider->getHealthStatus();
 
-            $isHealthy = $health['status'] === 'healthy';
+            $isHealthy = in_array($health['status'] ?? '', ['healthy', 'reachable']);
 
             $errorDetail = isset($health['provider_error'])
                 ? ' — '.substr($health['provider_error'], 0, 120)
                 : '';
 
-            $message = match ($health['status']) {
-                'healthy' => 'Connection to provider successful',
+            $message = match ($health['status'] ?? 'unknown') {
+                'healthy', 'reachable' => 'Connection to provider successful ('.($health['latency'] ?? 0).'ms)',
                 'no_key' => 'No API key configured — please add an API key to test this provider',
                 'unhealthy' => 'Provider returned HTTP '.($health['http_status'] ?? '?').$errorDetail,
                 'offline' => 'Connection failed: '.($health['error'] ?? 'unreachable'),
+                'unknown' => 'Health check incomplete: '.($health['error'] ?? 'Endpoint unreachable'),
                 default => 'Unable to determine provider status',
             };
+
+            // Save ping result metric to database for live latency sparkline & health badges
+            try {
+                DB::table('provider_health_metrics')->insert([
+                    'provider_id' => $id,
+                    'status' => $isHealthy ? 'healthy' : ($health['status'] ?? 'offline'),
+                    'latency_ms' => $health['latency'] ?? 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } catch (\Exception $ex) {
+                Log::warning('Unable to persist provider health metric: '.$ex->getMessage());
+            }
 
             return response()->json([
                 'success' => $isHealthy,
@@ -410,15 +439,15 @@ class AiProviderController extends Controller
     {
         $provider = AIProvider::with([
             'models',
-            'apiKeys' => fn($q) => $q->select('id', 'provider_id', 'name', 'status', 'is_active', 'is_default', 'last_used_at', 'created_at', \Illuminate\Support\Facades\DB::raw("CONCAT('sk-...****', SUBSTRING(key_hash, -4)) as masked_key"))
+            'apiKeys' => fn ($q) => $q->select('id', 'provider_id', 'name', 'status', 'is_active', 'is_default', 'last_used_at', 'created_at', DB::raw("CONCAT('sk-...****', SUBSTRING(key_hash, -4)) as masked_key")),
         ])->find($id);
 
-        if (!$provider) {
+        if (! $provider) {
             return response()->json(['success' => false, 'message' => 'Not found'], 404);
         }
 
         // Latency sparkline (last 24 points)
-        $sparkline = \Illuminate\Support\Facades\DB::table('provider_health_metrics')->where('provider_id', $id)
+        $sparkline = DB::table('provider_health_metrics')->where('provider_id', $id)
             ->orderBy('created_at', 'desc')
             ->take(24)
             ->pluck('latency_ms')
@@ -427,7 +456,7 @@ class AiProviderController extends Controller
 
         // Uptime timeline (last 90 days simplified - pseudo data if sparse)
         // Here we just fetch the last 90 ping statuses
-        $uptime = \Illuminate\Support\Facades\DB::table('provider_health_metrics')->where('provider_id', $id)
+        $uptime = DB::table('provider_health_metrics')->where('provider_id', $id)
             ->orderBy('created_at', 'desc')
             ->take(90)
             ->pluck('status')
@@ -435,13 +464,13 @@ class AiProviderController extends Controller
             ->values();
 
         // Last 10 pings
-        $lastPings = \Illuminate\Support\Facades\DB::table('provider_health_metrics')->where('provider_id', $id)
+        $lastPings = DB::table('provider_health_metrics')->where('provider_id', $id)
             ->orderBy('created_at', 'desc')
             ->take(10)
             ->get(['created_at', 'status', 'latency_ms']); // 'http_status' is not in migration, using status/latency
 
         // Usage stats (simple month aggregate)
-        $usage = \Illuminate\Support\Facades\DB::table('usage_logs')
+        $usage = DB::table('usage_logs')
             ->selectRaw('SUM(total_cost) as month_cost, COUNT(*) as month_requests, SUM(input_tokens + output_tokens) as month_tokens')
             ->where('provider_id', $id)
             ->where('timestamp', '>=', now()->startOfMonth())
@@ -455,18 +484,20 @@ class AiProviderController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $provider
+            'data' => $provider,
         ]);
     }
 
     public function updateMeta(Request $request, $id)
     {
         $provider = AIProvider::find($id);
-        if (!$provider) return response()->json(['success' => false], 404);
+        if (! $provider) {
+            return response()->json(['success' => false], 404);
+        }
 
         $provider->update($request->only([
             'notes', 'tags', 'sort_order', 'is_favorite', 'monthly_budget_cap',
-            'auto_sync_interval', 'circuit_breaker_threshold', 'request_timeout_ms', 'max_retries'
+            'auto_sync_interval', 'circuit_breaker_threshold', 'request_timeout_ms', 'max_retries',
         ]));
 
         return response()->json(['success' => true, 'data' => $provider]);
@@ -480,6 +511,7 @@ class AiProviderController extends Controller
                 AIProvider::where('id', $order['id'])->update(['sort_order' => $order['sort_order']]);
             }
         }
+
         return response()->json(['success' => true]);
     }
 
@@ -487,31 +519,38 @@ class AiProviderController extends Controller
     {
         $providers = AIProvider::where('is_active', true)->get();
         foreach ($providers as $provider) {
-            dispatch(new \App\Jobs\SyncProviderModelsJob($provider->id));
+            dispatch(new SyncProviderModelsJob($provider->id));
         }
-        return response()->json(['success' => true, 'message' => 'Sync jobs dispatched for ' . $providers->count() . ' providers.']);
+
+        return response()->json(['success' => true, 'message' => 'Sync jobs dispatched for '.$providers->count().' providers.']);
     }
 
     public function healthSummary()
     {
         $providers = AIProvider::withCount('apiKeys')->get();
-        
+
         $active = $providers->where('is_active', true)->count();
-        $noKey = $providers->filter(fn($p) => $p->api_keys_count === 0)->count();
-        
-        $lastPings = \Illuminate\Support\Facades\DB::table('provider_health_metrics')
+        $noKey = $providers->filter(fn ($p) => $p->api_keys_count === 0)->count();
+
+        $lastPings = DB::table('provider_health_metrics')
             ->select('provider_id', 'status')
-            ->whereIn('id', function($q) {
+            ->whereIn('id', function ($q) {
                 $q->selectRaw('MAX(id)')->from('provider_health_metrics')->groupBy('provider_id');
             })->get()->keyBy('provider_id');
 
         $unreachable = 0;
         $degraded = 0;
         foreach ($providers as $p) {
-            if (!$p->is_active) continue;
+            if (! $p->is_active) {
+                continue;
+            }
             $status = $lastPings[$p->id]->status ?? 'unknown';
-            if ($status === 'offline') $unreachable++;
-            if ($status === 'degraded') $degraded++;
+            if ($status === 'offline') {
+                $unreachable++;
+            }
+            if ($status === 'degraded') {
+                $degraded++;
+            }
         }
 
         $lastSync = AIProvider::max('last_synced_at');
@@ -525,21 +564,21 @@ class AiProviderController extends Controller
                 'unreachable' => $unreachable,
                 'degraded' => $degraded,
                 'last_sync_at' => $lastSync,
-            ]
+            ],
         ]);
     }
 
     public function usageStats($id)
     {
-        $today = \Illuminate\Support\Facades\DB::table('usage_logs')
+        $today = DB::table('usage_logs')
             ->selectRaw('SUM(total_cost) as cost, COUNT(*) as requests, SUM(input_tokens + output_tokens) as tokens')
             ->where('provider_id', $id)->where('timestamp', '>=', now()->startOfDay())->first();
 
-        $month = \Illuminate\Support\Facades\DB::table('usage_logs')
+        $month = DB::table('usage_logs')
             ->selectRaw('SUM(total_cost) as cost, COUNT(*) as requests, SUM(input_tokens + output_tokens) as tokens')
             ->where('provider_id', $id)->where('timestamp', '>=', now()->startOfMonth())->first();
 
-        $dailyChart = \Illuminate\Support\Facades\DB::table('usage_logs')
+        $dailyChart = DB::table('usage_logs')
             ->selectRaw('DATE(timestamp) as date, SUM(total_cost) as cost, SUM(input_tokens) as input_tokens, SUM(output_tokens) as output_tokens')
             ->where('provider_id', $id)->where('timestamp', '>=', now()->subDays(30))
             ->groupBy('date')->orderBy('date')->get();
@@ -550,17 +589,18 @@ class AiProviderController extends Controller
     private function getNexusApisList()
     {
         $routes = [];
-        foreach (\Illuminate\Support\Facades\Route::getRoutes() as $route) {
-            if (str_contains($route->uri(), 'api/v1/ai/') && !str_contains($route->uri(), 'providers')) {
+        foreach (Route::getRoutes() as $route) {
+            if (str_contains($route->uri(), 'api/v1/ai/') && ! str_contains($route->uri(), 'providers')) {
                 $routes[] = [
                     'method' => $route->methods()[0],
-                    'uri' => '/' . $route->uri(),
+                    'uri' => '/'.$route->uri(),
                     'name' => $route->getName(),
                     'description' => 'Nexus AI API Route',
                     'example_payload' => '{}',
                 ];
             }
         }
+
         return $routes;
     }
 
@@ -572,11 +612,13 @@ class AiProviderController extends Controller
     public function duplicate($id)
     {
         $provider = AIProvider::find($id);
-        if (!$provider) return response()->json(['success' => false], 404);
+        if (! $provider) {
+            return response()->json(['success' => false], 404);
+        }
 
         $newProvider = $provider->replicate();
         $newProvider->id = (string) Str::uuid();
-        $newProvider->name = '(Copy) ' . $provider->name;
+        $newProvider->name = '(Copy) '.$provider->name;
         $newProvider->is_active = false;
         $newProvider->last_synced_at = null;
         $newProvider->save();
@@ -589,7 +631,9 @@ class AiProviderController extends Controller
         $action = $request->input('action');
         $ids = $request->input('ids', []);
 
-        if (empty($ids)) return response()->json(['success' => false]);
+        if (empty($ids)) {
+            return response()->json(['success' => false]);
+        }
 
         switch ($action) {
             case 'enable':
@@ -608,7 +652,7 @@ class AiProviderController extends Controller
                 break;
             case 'sync':
                 foreach ($ids as $id) {
-                    dispatch(new \App\Jobs\SyncProviderModelsJob($id));
+                    dispatch(new SyncProviderModelsJob($id));
                 }
                 break;
         }

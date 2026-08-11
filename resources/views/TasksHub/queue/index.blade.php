@@ -199,8 +199,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     d.per_page = d.length;
                 },
                 dataFilter: function(data) {
-                    let j = jQuery.parseJSON(data);
-                    return JSON.stringify({ recordsTotal: j.meta?.total || j.data.length, recordsFiltered: j.meta?.total || j.data.length, data: j.data });
+                    let j = JSON.parse(data);
+                    let total = j.meta?.total || j.total || (j.data ? j.data.length : 0);
+                    return JSON.stringify({ recordsTotal: total, recordsFiltered: total, data: j.data || [] });
                 }
             },
             columns: [

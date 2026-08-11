@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hermes Agent — كتالوج الإمكانيات والتسعير</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b1020;--bg2:#121a30;--card:#172244;--card2:#1d2a52;
+  --txt:#e8edf7;--mut:#93a0c0;--line:#26335c;
+  --accent:#5b8cff;--accent2:#22d3ee;--gold:#f5c451;--grn:#34d399;--pink:#f472b6;
+  --shadow:0 10px 40px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Cairo',system-ui,sans-serif;background:radial-gradient(1200px 600px at 80% -10%,#1b2b55 0,transparent 60%),radial-gradient(900px 500px at 0% 0%,#10324a 0,transparent 55%),var(--bg);color:var(--txt);line-height:1.6;min-height:100vh}
+.wrap{max-width:1280px;margin:0 auto;padding:28px 18px 80px}
+
+header.hero{display:flex;flex-direction:column;gap:14px;padding:34px 26px;border-radius:22px;background:linear-gradient(135deg,#16224a,#0f1c3c);border:1px solid var(--line);box-shadow:var(--shadow);position:relative;overflow:hidden}
+header.hero:before{content:"";position:absolute;inset:0;background:radial-gradient(600px 300px at 90% -40%,rgba(91,140,255,.25),transparent 60%)}
+.brand{display:flex;align-items:center;gap:14px;flex-wrap:wrap;z-index:1}
+.brand .logo{width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:26px;font-weight:900;box-shadow:0 6px 20px rgba(91,140,255,.5)}
+.brand h1{font-size:26px;font-weight:900}
+.brand .sub{color:var(--mut);font-size:14px}
+.hero p.lead{color:var(--mut);font-size:15px;max-width:820px;z-index:1}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;z-index:1;margin-top:6px}
+.stat{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.stat b{display:block;font-size:22px;font-weight:900;color:var(--accent2)}
+.stat span{font-size:12px;color:var(--mut)}
+
+.toolbar{position:sticky;top:0;z-index:20;margin:22px 0 14px;padding:14px;border-radius:16px;background:rgba(18,26,48,.85);backdrop-filter:blur(10px);border:1px solid var(--line);display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.toolbar input{flex:1;min-width:220px;background:var(--bg2);border:1px solid var(--line);color:var(--txt);padding:11px 14px;border-radius:10px;font-family:inherit;font-size:14px;outline:none}
+.toolbar input:focus{border-color:var(--accent)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--card);border:1px solid var(--line);color:var(--mut);padding:8px 13px;border-radius:20px;font-size:13px;cursor:pointer;transition:.18s;user-select:none}
+.chip:hover{color:var(--txt);border-color:var(--accent)}
+.chip.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#06101f;font-weight:700;border-color:transparent}
+
+section.group{margin:26px 0}
+.group-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px dashed var(--line)}
+.group-head .gicon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:var(--card2);border:1px solid var(--line)}
+.group-head h2{font-size:19px;font-weight:800}
+.group-head .cnt{margin-inline-start:auto;font-size:13px;color:var(--mut);background:var(--card);border:1px solid var(--line);padding:4px 12px;border-radius:20px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.cap{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px;transition:.2s;position:relative}
+.cap:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 12px 30px rgba(91,140,255,.18)}
+.cap .ctitle{font-weight:700;font-size:15.5px;display:flex;align-items:center;gap:8px}
+.cap .ctitle .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);flex:none}
+.cap .cdesc{font-size:13px;color:var(--mut);flex:1}
+.price{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.4);color:var(--grn);font-weight:800;font-size:14px;padding:5px 12px;border-radius:10px}
+.price small{color:var(--mut);font-weight:600;font-size:11px}
+
+.pkg{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:6px}
+.pcard{background:linear-gradient(180deg,#15224a,#0e1838);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden}
+.pcard.featured{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 14px 40px rgba(245,196,81,.18)}
+.pcard .badge{position:absolute;top:14px;inset-inline-start:14px;background:var(--gold);color:#1a1206;font-size:11px;font-weight:800;padding:3px 10px;border-radius:8px}
+.pcard h3{font-size:18px;font-weight:900}
+.pcard .ptag{font-size:13px;color:var(--mut)}
+.pcard .pprice{font-size:24px;font-weight:900;color:var(--accent2);margin:4px 0}
+.pcard .pprice span{font-size:13px;color:var(--mut);font-weight:600}
+.pcard ul{list-style:none;display:flex;flex-direction:column;gap:7px;font-size:13px}
+.pcard ul li{padding-inline-start:22px;position:relative;color:var(--txt)}
+.pcard ul li:before{content:"✓";position:absolute;inset-inline-start:0;color:var(--grn);font-weight:900}
+.pcard .note{font-size:12px;color:var(--mut);border-top:1px dashed var(--line);padding-top:8px;margin-top:2px}
+
+section.title-block{margin:34px 0 6px}
+section.title-block h2{font-size:23px;font-weight:900;display:flex;align-items:center;gap:10px}
+section.title-block h2 .bar{width:6px;height:26px;border-radius:4px;background:linear-gradient(var(--accent),var(--accent2))}
+section.title-block p{color:var(--mut);font-size:14px;margin-top:4px;max-width:820px}
+
+.foot{margin-top:40px;padding:22px;border-radius:16px;background:var(--bg2);border:1px solid var(--line);color:var(--mut);font-size:13px;line-height:1.8}
+.foot b{color:var(--txt)}
+.hide{display:none!important}
+@media(max-width:560px){.brand h1{font-size:21px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="brand">
+    <div class="logo">H</div>
+    <div>
+      <h1>Hermes Agent — كتالوج الإمكانيات والتسعير المقترح</h1>
+      <div class="sub">منتج الموظفين الرقميين للشركات والمصانع · توجّه Premium لـ Class A / B</div>
+    </div>
+  </div>
+  <p class="lead">هذا الملف عرض تفاعلي لكل إمكانيات Hermes Agent مقسّمة لمجموعات، مع سعر وحدة مقترح (بالجنيه المصري شهرياً) لكل إمكانية، ونظام Packages جاهز للبيع. الأسعار استرشادية قابلة للضبط داخل نطاق التسعير المعتمد (Premium).</p>
+  <div class="stats">
+    <div class="stat"><b id="s-total">0</b><span>إمكانية مُفصّلة</span></div>
+    <div class="stat"><b>12</b><span>مجموعة قدرات</span></div>
+    <div class="stat"><b>4</b><span>Packages أساسية</span></div>
+    <div class="stat"><b>8k–1.5M</b><span>نطاق السعر/شهر (ج.م)</span></div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <input id="search" placeholder="🔎 ابحث في الإمكانيات أو المجموعات...">
+  <div class="chips" id="chips"></div>
+</div>
+
+<section class="title-block">
+  <h2><span class="bar"></span> ١. كتالوج إمكانيات Hermes Agent</h2>
+  <p>كل إمكانية مع سعر وحدة مقترح (شهري، ج.م). السعر محسوب كنسبة من التكلفة المحملة لموظف بشري بنفس الدور، ضمن نطاق الـ Premium المعتمد.</p>
+</section>
+
+<div id="groups"></div>
+
+<section class="title-block">
+  <h2><span class="bar"></span> ٢. نظام الـ Packages المُقترح للبيع</h2>
+  <p>حزم جاهزة مبنية من إمكانيات الكتالوج أعلاه، موجّهة لكل مستوى من عملاء Class A / B. تشمل رسوم التأسيس لمرة واحدة.</p>
+</section>
+
+<div class="pkg" id="packages"></div>
+
+<div class="foot">
+  <b>ملاحظات استراتيجية لهدرة:</b><br>
+  • العملاء الكبار (المصانع المصدّرة) يُفضّل تسعيرهم بالدولار أو ما يعادله كإجراء تحوطي من تعويم الجنيه — الباقي بالجنيه.<br>
+  • رسوم التأسيس (Setup) لمرة واحدة: 50,000 ج.م (بسيط/واتساب+Excel) · 150,000 ج.م (Odoo/CRM) · 300,000+ ج.م (SAP/ERP معقد + on-prem).<br>
+  • الـ ROI للعميل: توفير 60–75% من تكلفة الموظف البشري + تشغيل 24/7 بلا أخطاء أو إجازات.<br>
+  • عامل الانبهار (Wow): مجلس الإدارة الهجين + واجهة شبيهة بـ Nexus تعرض البشر والـ Agents معاً.<br>
+  • كل الأسعار قابلة للمراجعة بعد بناء لوحة التسعير النهائية في الجزء 1.2.
+</div>
+
+</div>
+
+<script>
+const DATA = [
+  { g:"الأدوات الأساسية (Toolsets)", icon:"🧰", items:[
+    ["web — بحث واستخراج محتوى الويب","بحث فوري + استخراج نصوص من أي موقع لجمع معلومات السوق والمنافسين","1500"],
+    ["search — بحث ويب مبسّط","بحث نصي خفيف وسريع للاستعلامات اليومية","1000"],
+    ["browser — أتمتة المتصفح","فتح مواقع، تعبئة نماذج، سحب داتا من صفحات ديناميكية (JS)","2500"],
+    ["terminal — أوامر شل وإدارة عمليات","تنفيذ أي أمر على السيرفر/الكمبيوتر (لينكس/ويندوز)","2000"],
+    ["file — قراءة/كتابة/بحث/تعديل ملفات","التعامل مع كل ملفات الشركة والسيستم بأمان","1000"],
+    ["code_execution — تنفيذ Python معزول","تشغيل سكريبتات تحليل بيانات وجداول داخل Sandbox","2000"],
+    ["vision — تحليل الصور","فهم الفواتير الممسوحة، الرسوم، اللوحات، والصور البصرية","1500"],
+    ["image_gen — توليد وتعديل صور","تصميم إعلانات، منشورات، هويات بصرية للقسم التجاري","2500"],
+    ["video — تحليل وتوليد فيديو","تحليل فيديوهات المراقبة/التدريب وتوليد محتوى قصير","3000"],
+    ["x_search — بحث X (تويتر) رسمي","رصد سمعة العلامة وآراء العملاء لحظياً","1500"],
+    ["tts — تحويل النص لصوت","رد صوتي احترافي للعملاء والإدارات","1000"],
+    ["skills — إدارة وبحث المهارات","مكتبة الإجراءات القابلة لإعادة الاستخدام","1000"],
+    ["memory — ذاكرة دائمة عبر الجلسات","تذكّر كل سياق الشركة والعميل دائماً","2000"],
+    ["session_search — بحث المحادثات السابقة","استرجاع أي قرار أو فاتورة قديمة بسرعة (FTS5)","1000"],
+    ["delegation — تفويض مهام لوكلاء فرعيين","توزيع الشغل على وكلاء متوازيين","3000"],
+    ["cronjob — جدولة المهام الزمنية","مهام تلقائية (تقارير يومية، متابعة تحصيل)","1500"],
+    ["clarify — أسئلة توضيح للمستخدم","طلب توضيح عند غموض حقيقي قبل التنفيذ","500"],
+    ["messaging — إرسال رسائل عبر المنصات","بعت رسائل واتساب/تيليجرام/إيميل تلقائياً","2000"],
+    ["todo — تخطيط ومتابعة المهام","قائمة مهام ذكية للقسم","500"],
+    ["kanban — لوحة عمل متعددة الوكلاء","تنسيق شغل فرق الوكلاء","2000"],
+    ["debugging — أدوات فحص داخلي","تشخيص ذاتي للمشاكل التقنية","1000"],
+    ["safe — مجموعة أدوات محدودة للجلسات المقفلة","وضع آمن للصلاحيات المنخفضة","500"],
+    ["spotify — تشغيل ومكتبات موسيقى","تشغيل موسيقى في الفروع/المكاتب","500"],
+    ["homeassistant — تحكم Smart Home","تحكم في أبواب/إنارة المقر","1000"],
+    ["discord / discord_admin — أدوات ديسكورد","إدارة سيرفرات المجتمع والموظفين","1500"],
+    ["feishu_doc / feishu_drive — مستندات لايرك","تكامل مع منصات لايرك الصينية","1500"],
+    ["yuanbao — تكامل يوانباو","ربط منصات صينية إضافية","1000"],
+    ["rl — أدوات تعلم معزز","تدريب ذاتي على مهام متكررة","3000"]
+  ]},
+  { g:"منصات التواصل (Gateway)", icon:"📡", items:[
+    ["Telegram","تواصل ثنائي ومجموعات مع إدارة الشركة","1500"],
+    ["WhatsApp (Baileys + Business API)","التواصل الأهم مع العملاء والموردين في مصر","2000"],
+    ["Slack","تكامل مع فرق العمل التقنية","1500"],
+    ["Discord","مجتمعات ودعم فني","1500"],
+    ["Email / SMTP","بريد رسمي تلقائي للفواتير والتقارير","1500"],
+    ["SMS","تنبيهات ورسائل قصيرة للعملاء","1000"],
+    ["Microsoft Teams","تكامل مع الشركات الكبرى","1800"],
+    ["Signal / Matrix / Mattermost","منصات آمنة ومغلقة","1200"],
+    ["iMessage (Photon) / LINE / WeCom / Weixin","تغطية أسواق آسيوية وأمريكية","1500"],
+    ["Google Chat / Home Assistant / ntfy","تكامل مكاتب Google والمنزل الذكي","1000"],
+    ["API Server / Webhooks","استقبال أحداث من أي سيستم خارجي","2500"]
+  ]},
+  { g:"نظام الذاكرة (Memory System)", icon:"🧠", items:[
+    ["الذاكرة الدائمة عبر الجلسات","وعي مستمر بالشركة حتى بعد إعادة التشغيل","3000"],
+    ["Honcho — نمذجة المستخدم بالجدل","فهم عميق لأسلوب صاحب العمل وقراراته","4000"],
+    ["بطاقة المستخدم (Peer Card)","ملف تعريف محدّث تلقائياً للعميل","1000"],
+    ["الاستنتاجات الدائمة (Conclusions)","حفظ حقائق مستقرة عن العميل/السوق","1500"],
+    ["استرجاع FTS5 + تلخيص LLM","بحث ذكي في كل تاريخ المحادثات","1500"],
+    ["ملف تعريف المستخدم (User Profile)","تخصيص الردود حسب الشخصية","1000"],
+    ["التذكيرات الدورية الذاتية","نبهات تلقائية للاجتماعات والمستحقات","1000"]
+  ]},
+  { g:"نظام المهارات (Skills)", icon:"📚", items:[
+    ["إنشاء مهارات تلقائي من التجربة","الـ Agent يتعلّم إجراءات شركتك ويسجّلها","2500"],
+    ["تحسين المهارات أثناء الاستخدام","تطوير ذاتي للإجراءات مع الوقت","2500"],
+    ["توافق agentskills.io","مهارات جاهزة ومشاركة من المجتمع","1000"],
+    ["المنسّق (Curator)","صيانة دورة حياة المهارات تلقائياً","1500"]
+  ]},
+  { g:"العمل متعدد الوكلاء (Multi-Agent)", icon:"🕸️", items:[
+    ["delegate_task — وكلاء معزولون","تشغيل وكلاء مستقلين (leaf / orchestrator)","4000"],
+    ["تشغيل خلفي + متوازي (batch)","إنجاز مهام متعددة في نفس الوقت","2000"],
+    ["برمجياً: طيّ خطوات في استدعاء واحد","تصغير التكلفة والزمن عبر أتمتة الخطوات","2000"],
+    ["لوحة كانبان (Kanban)","تنسيق فرق وكلاء عبر لوحة عمل","2000"],
+    ["تفرّخ عمليات Hermes مستقلة","نسخ كاملة مستقلة عبر tmux/PTY","2000"]
+  ]},
+  { g:"الجدولة (Cron)", icon:"⏰", items:[
+    ["جدولة مرنة (30m / every 2h / cron)","تشغيل أي مهمة في توقيتها","2000"],
+    ["تسليم متعدد المنصات","إرسال النتيجة لواتساب/إيميل/تيليجرام","1000"],
+    ["script mode (بلا LLM)","تشغيل سكريبت صافي بلا تكلفة ذكاء","1500"],
+    ["ربط مخرجات الجوب بجوب (context_from)","سلسلة مهام تغذّي بعضها","1000"]
+  ]},
+  { g:"تكامل MCP", icon:"🔌", items:[
+    ["عميل MCP أصلي (stdio/HTTP)","ربط أي خادم أدوات خارجي","2500"],
+    ["تشغيل Hermes كـ MCP Server","جعل Hermes أداة لأي سيستم آخر","2000"],
+    ["تصفية أدوات السيرفر","تحكّم دقيق في الأدوات المكشوفة","1000"]
+  ]},
+  { g:"البروفايلات (Profiles)", icon:"🗂️", items:[
+    ["بيئات معزولة (clone/export/import)","نسخة Hermes منفصلة لكل عميل/قسم","2000"],
+    ["alias — أسماء مستعارة للبروفايل","تبديل سريع بين هويات الوكلاء","500"]
+  ]},
+  { g:"الصوت (Voice — STT + TTS)", icon:"🎙️", items:[
+    ["STT — تحويل الصوت لنص","فهم رسائل الصوت والاجتماعات","1500"],
+    ["TTS — تحويل النص لصوت","رد صوتي طبيعي للعملاء","1500"],
+    ["الصوت اللحظي (real-time voice)","مكالمة صوتية مباشرة مع الـ Agent","3000"]
+  ]},
+  { g:"الواجهات/الأسطح (Surfaces)", icon:"🖥️", items:[
+    ["CLI + Ink TUI","تحكم نصي للمطورين","500"],
+    ["تطبيق Desktop (Electron)","تطبيق سطح مكتب للموظفين","2000"],
+    ["Web Dashboard — لوحة تحكم","لوحة تحكم كاملة + OAuth للإدارة","3000"],
+    ["ACP Server — تكامل IDEs","ربط بـ VS Code / Zed للمطورين","2000"],
+    ["API Server — متوافق OpenAI","نبيعه كـ endpoint للشركة (الأهم للبيع)","5000"],
+    ["OpenAI-compatible Proxy","واجهة محلية متوافقة لأي أداة","2000"],
+    ["Automation Blueprints","أتمتة جاهزة بضغطة زر","2500"]
+  ]},
+  { g:"المزودات والنماذج (20+ Provider)", icon:"🔋", items:[
+    ["تجمّع المفاتيح (Credential Pools)","تدوير تلقائي بين مفاتيح يتجنّب الـ 429","2000"],
+    ["Custom endpoint (base_url+key)","ربط أي مزود خاص بالشركة","1000"],
+    ["تبديل مزود وسط الشغل","مرونة بلا توقف عند فشل مزود","1000"]
+  ]},
+  { g:"التحكم/الأمان/متفرقات", icon:"🔒", items:[
+    ["حجب الأسرار (Secret Redaction)","حماية المفاتيح والبيانات الحساسة","1500"],
+    ["حجب PII في رسائل البوابة","إخفاء أرقام العملاء تلقائياً","1500"],
+    ["أوضاع الموافقة (smart/manual/off)","تحكّم في صلاحيات التنفيذ","1000"],
+    ["6 Terminal backends","local/Docker/SSH/Daytona/Singularity/Modal","2000"],
+    ["ملفات سياق المشروع",".hermes.md / AGENTS.md / SOUL.md لكل عميل","1000"],
+    ["مستويات التفكير (none→ultra)","تحكّم في عمق التفكير حسب المهمة","1000"],
+    ["ضغط السياق التلقائي","توفير tokens مع طول المحادثة","1000"],
+    ["Checkpoints + Rollback","رجوع آمن لملفات عند الخطأ","1000"],
+    ["Webhooks (اشتراك + قوالب)","تشغيل الوكيل عند أي حدث خارجي","1500"],
+    ["تدريب RL بـ Atropos","تحسين سلوك الوكيل بالتعلم المعزز","3000"],
+    ["إدارة الجلسات (resume/branch)","استئناف أو تفرّع أي جلسة عمل","1000"]
+  ]}
+];
+
+const PACKAGES = [
+  { name:"Starter Agent", tag:"موظف رقمي واحد — دور إداري", price:"8,000–20,000", unit:"ج.م / شهر", featured:false, badge:"", items:[
+    "منصة تواصل واحدة (واتساب أو تيليجرام)","ذاكرة دائمة + استرجاع FTS5","cronjob + todo للمتابعة","messaging + tts للرد التلقائي","صلاحيات آمنة (safe + secret redaction)","API Server أساسي للربط"
+  ], note:"أنسب لدور واحد: منسق مواعيد، متابع ليدز، مراقب مخزون صغير." },
+  { name:"Department Pack", tag:"3–5 وكلاء لإدارة كاملة", price:"40,000–100,000", unit:"ج.م / شهر", featured:false, badge:"", items:[
+    "كل ما في Starter × لكل وكيل","delegate_task + multi-agent سرب","browser + code_execution للتحليل","webhooks + MCP لربط الـ ERP","لوحة كانبان لتنسيق القسم","تقارير دورية للمدير (Dashboard)"
+  ], note:"مثال: باكة مالية (CFO + محاسب + محصل) أو باكة مبيعات (CMO + SDR + CRM)." },
+  { name:"C-Suite + Hybrid Board", tag:"المنتج المميز — مجلس إدارة هجين", price:"150,000–400,000", unit:"ج.م / شهر", featured:true, badge:"⭐ الأكثر انبهاراً", items:[
+    "كل إمكانيات النظام مفعّلة","Honcho + Peer Card لنمذجة القرار","delegation + swarm لمجلس يشتغل لحظياً","API Server + Web Dashboard احترافي","Voice لحظي لاجتماعات المجلس","تقارير استراتيجية + محاكاة قرار"
+  ], note:"مجلس إدارة من الـ Agents (CEO/CFO/CMO/COO) يتناقش ويصوّت ويحلل — يعرض Live لصاحب الشركة." },
+  { name:"Enterprise / Custom", tag:"مصنع أو شركة كبرى — غير محدود", price:"500,000–1.5M+", unit:"ج.م / شهر أو Revenue-Share", featured:false, badge:"", items:[
+    "كل الباقات السابقة + سرب مفتوح","on-prem + تكامل SAP/ERP معقد","بروفايلات معزولة لكل قسم","SLA + Account Manager مخصص","تدريب RL مخصص لنشاط المصنع","أعلى أمان (PII + redaction + audit)"
+  ], note:"للمصانع المصدّرة الكبرى — تسعير بالدولار كإجراء تحوطي متاح." }
+];
+
+const groupsEl = document.getElementById('groups');
+const chipsEl = document.getElementById('chips');
+let totalCaps = 0;
+const activeFilter = { g:null };
+
+DATA.forEach((grp, gi) => {
+  totalCaps += grp.items.length;
+  const sec = document.createElement('section');
+  sec.className = 'group';
+  sec.dataset.group = gi;
+  let cards = '';
+  grp.items.forEach(it=>{
+    cards += `<div class="cap" data-text="${(grp.g+' '+it[0]+' '+it[1]).toLowerCase()}">
+      <div class="ctitle"><span class="dot"></span>${it[0]}</div>
+      <div class="cdesc">${it[1]}</div>
+      <div class="price">${Number(it[2]).toLocaleString('ar-EG')} ج.م <small>/ شهر</small></div>
+    </div>`;
+  });
+  sec.innerHTML = `<div class="group-head"><div class="gicon">${grp.icon}</div><h2>${grp.g}</h2><div class="cnt">${grp.items.length} إمكانية</div></div><div class="grid">${cards}</div>`;
+  groupsEl.appendChild(sec);
+
+  const chip = document.createElement('div');
+  chip.className = 'chip';
+  chip.textContent = grp.g.split(' (')[0];
+  chip.onclick = ()=>{
+    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+    if(activeFilter.g===gi){ activeFilter.g=null; chip.classList.remove('active'); }
+    else { activeFilter.g=gi; chip.classList.add('active'); }
+    applyFilter();
+  };
+  chipsEl.appendChild(chip);
+});
+
+document.getElementById('s-total').textContent = totalCaps.toLocaleString('ar-EG');
+
+const pkEl = document.getElementById('packages');
+PACKAGES.forEach(p=>{
+  const ul = p.items.map(i=>`<li>${i}</li>`).join('');
+  const card = document.createElement('div');
+  card.className = 'pcard'+(p.featured?' featured':'');
+  card.innerHTML = `${p.badge?`<div class="badge">${p.badge}</div>`:''}
+    <h3>${p.name}</h3><div class="ptag">${p.tag}</div>
+    <div class="pprice">${p.price} <span>${p.unit}</span></div>
+    <ul>${ul}</ul><div class="note">${p.note}</div>`;
+  pkEl.appendChild(card);
+});
+
+const searchEl = document.getElementById('search');
+function applyFilter(){
+  const q = searchEl.value.trim().toLowerCase();
+  document.querySelectorAll('.group').forEach(sec=>{
+    const gi = +sec.dataset.group;
+    const showGroup = activeFilter.g===null || activeFilter.g===gi;
+    let anyVisible = false;
+    sec.querySelectorAll('.cap').forEach(cap=>{
+      const txt = cap.dataset.text;
+      const matchQ = !q || txt.includes(q);
+      const vis = showGroup && matchQ;
+      cap.classList.toggle('hide', !vis);
+      if(vis) anyVisible = true;
+    });
+    sec.classList.toggle('hide', !(showGroup && (anyVisible || !q)));
+  });
+}
+searchEl.addEventListener('input', applyFilter);
+</script>
+</body>
+</html>

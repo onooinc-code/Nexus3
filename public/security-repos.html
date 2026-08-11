@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Security Repos & Pentest Tools Hub</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            900: '#14532d',
+                            950: '#052e16',
+                        },
+                        dark: {
+                            bg: '#0b0f17',
+                            card: '#111827',
+                            border: '#1f2937',
+                            hover: '#1e293b',
+                            accent: '#1e1b4b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Tajawal', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'Courier New', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Tajawal & Fira Code -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #0b0f17;
+            color: #e2e8f0;
+        }
+        code, pre {
+            font-family: 'Fira Code', monospace;
+        }
+        .glow-effect {
+            box-shadow: 0 0 25px -5px rgba(34, 197, 94, 0.15);
+        }
+        .glow-effect-blue {
+            box-shadow: 0 0 25px -5px rgba(59, 130, 246, 0.15);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0b0f17;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col custom-scrollbar">
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-gray-800 bg-gray-900/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <div class="p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400">
+                    <i class="fa-solid fa-shield-halved text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white tracking-wide flex items-center gap-2">
+                        Nexus Security Repos Hub
+                        <span class="text-xs font-mono font-normal px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">v1.0</span>
+                    </h1>
+                    <p class="text-xs text-gray-400">MainVps Documentation & Autonomous Pentest Suite (162.243.58.33)</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3 space-x-reverse text-sm">
+                <a href="https://n.soulyeg.online" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition flex items-center gap-2">
+                    <i class="fa-solid fa-globe text-emerald-400"></i>
+                    <span>n.soulyeg.online</span>
+                </a>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono text-xs">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    ACTIVE DEPLOYMENT
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Overview & Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-5 hover:border-gray-700 transition">
+                <div class="flex items-center justify-between text-gray-400 mb-2">
+                    <span class="text-xs font-medium">مستودعات الأدوات (Repos)</span>
+                    <i class="fa-solid fa-folder-tree text-emerald-400"></i>
+                </div>
+                <div class="text-2xl font-bold text-white font-mono">2 Active Repos</div>
+                <div class="text-xs text-gray-500 mt-1">AIRecon & Kali-Pentest</div>
+            </div>
+
+            <div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-5 hover:border-gray-700 transition">
+                <div class="flex items-center justify-between text-gray-400 mb-2">
+                    <span class="text-xs font-medium">أدوات الاختراق المتاحة</span>
+                    <i class="fa-solid fa-screwdriver-wrench text-blue-400"></i>
+                </div>
+                <div class="text-2xl font-bold text-white font-mono">269+ Tools</div>
+                <div class="text-xs text-gray-500 mt-1">14 CLI Categories</div>
+            </div>
+
+            <div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-5 hover:border-gray-700 transition">
+                <div class="flex items-center justify-between text-gray-400 mb-2">
+                    <span class="text-xs font-medium">قواعد المعرفة (Dataset)</span>
+                    <i class="fa-solid fa-database text-purple-400"></i>
+                </div>
+                <div class="text-2xl font-bold text-white font-mono">~1.09M Records</div>
+                <div class="text-xs text-gray-500 mt-1">CVEs, Payloads, Writeups</div>
+            </div>
+
+            <div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-5 hover:border-gray-700 transition">
+                <div class="flex items-center justify-between text-gray-400 mb-2">
+                    <span class="text-xs font-medium">موقع المستودعات في السيرفر</span>
+                    <i class="fa-solid fa-server text-amber-400"></i>
+                </div>
+                <div class="text-sm font-bold text-emerald-400 font-mono truncate">/root/repos/</div>
+                <div class="text-xs text-gray-500 mt-1">Direct System Root Path</div>
+            </div>
+        </div>
+
+        <!-- Repositories Section -->
+        <div class="space-y-8">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                        <i class="fa-solid fa-cubes text-emerald-400"></i>
+                        المستودعات البرمجية المتاحة (Security Repos)
+                    </h2>
+                    <p class="text-sm text-gray-400 mt-1">تفاصيل الأدوات الذكية المجهزة داخل السيرفر للتنفيذ والتحليل</p>
+                </div>
+            </div>
+
+            <!-- Repo 1: AIRecon -->
+            <div class="bg-gray-900/80 border border-gray-800 rounded-2xl overflow-hidden glow-effect transition hover:border-emerald-500/40">
+                <div class="p-6 border-b border-gray-800/80 bg-gradient-to-r from-emerald-950/30 to-transparent flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <div class="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400">
+                            <i class="fa-solid fa-robot text-2xl"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-3">
+                                <h3 class="text-xl font-bold text-white font-mono">AIRecon</h3>
+                                <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">v0.1.7-beta</span>
+                                <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">Python 3.12+</span>
+                            </div>
+                            <p class="text-sm text-gray-300 mt-1">AI-Powered Autonomous Penetration Testing Agent with Ollama LLM & Caido Integration</p>
+                        </div>
+                    </div>
+
+                    <div class="text-left font-mono text-xs text-gray-400 bg-gray-950 px-3 py-2 rounded-lg border border-gray-800">
+                        <span class="text-gray-500">Path:</span> /root/repos/airecon
+                    </div>
+                </div>
+
+                <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Column 1: Info & Features -->
+                    <div class="space-y-4 lg:col-span-1">
+                        <h4 class="text-sm font-semibold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-circle-info"></i> المميزات الرئيسية
+                        </h4>
+                        <ul class="text-sm space-y-2.5 text-gray-300">
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-emerald-400 mt-1"></i>
+                                <span>عمل محلي بالكامل (100% Offline) دون الحاجة لمفاتيح API خارجي.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-emerald-400 mt-1"></i>
+                                <span>ربط مباشر مع Caido Proxy (5 أدوات مدمجة: list, replay, fuzz, findings, scope).</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-emerald-400 mt-1"></i>
+                                <span>خط إنتاج كامل: RECON → ANALYSIS → EXPLOIT → REPORT.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-emerald-400 mt-1"></i>
+                                <span>قاعدة بيانات معرفة شاملة (~1.09M سجل أمني للـ CVEs والـ Writeups).</span>
+                            </li>
+                        </ul>
+
+                        <div class="pt-2">
+                            <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">متطلبات النموذج (Ollama Recommended)</h4>
+                            <div class="bg-gray-950 p-3 rounded-xl border border-gray-800 text-xs font-mono space-y-1">
+                                <div class="text-emerald-400">Qwen 3.5 35B (Recommended)</div>
+                                <div class="text-gray-400">Qwen 3.5 122B (Best Quality - 48GB VRAM)</div>
+                                <div class="text-gray-500">Qwen 3.5 9B (Minimum Viable)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2 & 3: Commands & Usage -->
+                    <div class="space-y-4 lg:col-span-2">
+                        <h4 class="text-sm font-semibold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-terminal"></i> أوامر التشغيل والاستخدام (Commands & Workflow)
+                        </h4>
+
+                        <div class="space-y-3">
+                            <div>
+                                <div class="flex justify-between items-center text-xs text-gray-400 mb-1">
+                                    <span>1. تثبيت الاعتمادات البيئية (Environment Setup):</span>
+                                    <button onclick="copyToClipboard('cmd-airecon-1')" class="text-emerald-400 hover:text-emerald-300 text-xs">
+                                        <i class="fa-regular fa-copy"></i> نسخ
+                                    </button>
+                                </div>
+                                <pre id="cmd-airecon-1" class="bg-gray-950 p-3 rounded-xl border border-gray-800 text-xs text-emerald-300 overflow-x-auto">cd /root/repos/airecon
+pip install -r requirements.txt</pre>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between items-center text-xs text-gray-400 mb-1">
+                                    <span>2. تشغيل الأداة في وضع التفاعل (TUI Mode):</span>
+                                    <button onclick="copyToClipboard('cmd-airecon-2')" class="text-emerald-400 hover:text-emerald-300 text-xs">
+                                        <i class="fa-regular fa-copy"></i> نسخ
+                                    </button>
+                                </div>
+                                <pre id="cmd-airecon-2" class="bg-gray-950 p-3 rounded-xl border border-gray-800 text-xs text-emerald-300 overflow-x-auto">python3 -m airecon --target https://target.com --model qwen3.5:35b</pre>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between items-center text-xs text-gray-400 mb-1">
+                                    <span>3. البحث في قاعدة المعارف الأمنية المدمجة (Local Dataset Search):</span>
+                                    <button onclick="copyToClipboard('cmd-airecon-3')" class="text-emerald-400 hover:text-emerald-300 text-xs">
+                                        <i class="fa-regular fa-copy"></i> نسخ
+                                    </button>
+                                </div>
+                                <pre id="cmd-airecon-3" class="bg-gray-950 p-3 rounded-xl border border-gray-800 text-xs text-emerald-300 overflow-x-auto">python3 -m airecon.dataset --query "SQL injection bypass WAF" --limit 10</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Repo 2: Kali-Pentest -->
+            <div class="bg-gray-900/80 border border-gray-800 rounded-2xl overflow-hidden glow-effect-blue transition hover:border-blue-500/40">
+                <div class="p-6 border-b border-gray-800/80 bg-gradient-to-r from-blue-950/30 to-transparent flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <div class="p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl text-blue-400">
+                            <i class="fa-solid fa-shield-virus text-2xl"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-3">
+                                <h3 class="text-xl font-bold text-white font-mono">Kali-Pentest</h3>
+                                <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">Skill Engine</span>
+                                <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30">269 CLI Tools</span>
+                            </div>
+                            <p class="text-sm text-gray-300 mt-1">Comprehensive Penetration Testing Skill Suite for AI Agents (Claude Code, OpenClaw, Hermes Agent)</p>
+                        </div>
+                    </div>
+
+                    <div class="text-left font-mono text-xs text-gray-400 bg-gray-950 px-3 py-2 rounded-lg border border-gray-800">
+                        <span class="text-gray-500">Path:</span> /root/repos/kali-pentest
+                    </div>
+                </div>
+
+                <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Column 1: Info & Categories -->
+                    <div class="space-y-4 lg:col-span-1">
+                        <h4 class="text-sm font-semibold text-blue-400 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-list-check"></i> تغطية الأدوات (14 التصنيفات)
+                        </h4>
+                        <div class="grid grid-cols-2 gap-2 text-xs text-gray-300">
+                            <div class="bg-gray-950 p-2 rounded-lg border border-gray-800">1. Recon & Intel</div>
+                            <div class="bg-gray-950 p-2 rounded-lg border border-gray-800">2. Vulnerability Scanning</div>
+                            <div class="bg-gray-950 p-2 rounded-lg border border-gray-800">3. Web Applications</div>
+                            <div class="bg-gray-950 p-2 rounded-lg border border-gray-800">4. Active Directory</div>
+                            <div class="bg-gray-950 p-2 rounded-lg border border-gray-800">5. Password Audit</div>
+                            <div class="bg-gray-950 p-2 rounded-lg border border-gray-800">6. Network Exploitation</div>
+                            <div class="bg-gray-950 p-2 rounded-lg border border-gray-800">7. Post Exploitation</div>
+                            <div class="bg-gray-950 p-2 rounded-lg border border-gray-800">8. PrivEsc & Persistence</div>
+                        </div>
+
+                        <p class="text-xs text-gray-400 pt-2">
+                            يوفر المستودع سيناريوهات محاكاة متكاملة مع دعم توليد التقارير التفاعلية بتنسيقات Markdown و HTML Dark Theme.
+                        </p>
+                    </div>
+
+                    <!-- Column 2 & 3: Commands & Integration -->
+                    <div class="space-y-4 lg:col-span-2">
+                        <h4 class="text-sm font-semibold text-blue-400 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-terminal"></i> طرق التثبيت والاستخدام المباشر
+                        </h4>
+
+                        <div class="space-y-3">
+                            <div>
+                                <div class="flex justify-between items-center text-xs text-gray-400 mb-1">
+                                    <span>1. ربط المهارة مع وكيل Hermes Agent المعتمد:</span>
+                                    <button onclick="copyToClipboard('cmd-kali-1')" class="text-blue-400 hover:text-blue-300 text-xs">
+                                        <i class="fa-regular fa-copy"></i> نسخ
+                                    </button>
+                                </div>
+                                <pre id="cmd-kali-1" class="bg-gray-950 p-3 rounded-xl border border-gray-800 text-xs text-blue-300 overflow-x-auto">cp -r /root/repos/kali-pentest/kali-pentest /root/.hermes/skills/kali-pentest</pre>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between items-center text-xs text-gray-400 mb-1">
+                                    <span>2. تشغيل سيناريو اختبار اختراق افتراضي (Asciinema Simulation):</span>
+                                    <button onclick="copyToClipboard('cmd-kali-2')" class="text-blue-400 hover:text-blue-300 text-xs">
+                                        <i class="fa-regular fa-copy"></i> نسخ
+                                    </button>
+                                </div>
+                                <pre id="cmd-kali-2" class="bg-gray-950 p-3 rounded-xl border border-gray-800 text-xs text-blue-300 overflow-x-auto">cd /root/repos/kali-pentest
+asciinema play demo/pentest-simulation.cast</pre>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between items-center text-xs text-gray-400 mb-1">
+                                    <span>3. استعراض التقرير التفاعلي الناتج:</span>
+                                    <button onclick="copyToClipboard('cmd-kali-3')" class="text-blue-400 hover:text-blue-300 text-xs">
+                                        <i class="fa-regular fa-copy"></i> نسخ
+                                    </button>
+                                </div>
+                                <pre id="cmd-kali-3" class="bg-gray-950 p-3 rounded-xl border border-gray-800 text-xs text-blue-300 overflow-x-auto">cat /root/repos/kali-pentest/demo/simulation-report.md</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 bg-gray-900/50 py-6 text-center text-xs text-gray-500">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>Maintained dynamically by <span class="text-emerald-400 font-mono">sysadmin-33</span> | Server 162.243.58.33 (MainVps) | Nexus Core Framework</p>
+        </div>
+    </footer>
+
+    <!-- Copy to clipboard Script -->
+    <script>
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('تم نسخ الأمر بنجاح إلى المحفظة!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+    </script>
+</body>
+</html>

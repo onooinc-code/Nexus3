@@ -1,0 +1,595 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Nexus Tasks Hub API Documentation",
+    "description": "Dedicated API Specification and Swagger Documentation exclusively for the Tasks Hub in Nexus3 Monolith.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Nexus Development Team",
+      "url": "https://n.soulyeg.online/hub/tasks"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://n.soulyeg.online/api/v1",
+      "description": "Nexus Production API v1"
+    },
+    {
+      "url": "http://localhost:8000/api/v1",
+      "description": "Local Development Server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Tasks Management",
+      "description": "Core CRUD operations for agent tasks"
+    },
+    {
+      "name": "Task Lifecycle & Actions",
+      "description": "State transition controls (execute, pause, resume, cancel, status update, logs)"
+    },
+    {
+      "name": "Type-Specific Task Creation",
+      "description": "End-points for creating manual, agentic, and system pipeline tasks"
+    },
+    {
+      "name": "Tasks Analytics & Stats",
+      "description": "System monitoring, active tasks, queue metrics, and routing performance"
+    },
+    {
+      "name": "Sub-tasks Management",
+      "description": "API endpoints for adding, toggling, and deleting sub-tasks within tasks"
+    },
+    {
+      "name": "Task Templates",
+      "description": "Template management and spawning parameterized tasks"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Sanctum Token"
+      }
+    },
+    "schemas": {
+      "AgentTask": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 101 },
+          "title": { "type": "string", "example": "Data Analysis & Report Sync" },
+          "description": { "type": "string", "example": "Process incoming user feedback logs" },
+          "type": { "type": "string", "enum": ["manual", "agent", "system"], "example": "agent" },
+          "status": { "type": "string", "enum": ["todo", "in-progress", "blocked", "completed", "failed", "cancelled"], "example": "todo" },
+          "priority": { "type": "integer", "example": 5 },
+          "progress": { "type": "integer", "example": 0 },
+          "agent_id": { "type": "integer", "nullable": true, "example": 2 },
+          "workflow_id": { "type": "integer", "nullable": true, "example": null },
+          "contact_id": { "type": "integer", "nullable": true, "example": null },
+          "conversation_id": { "type": "integer", "nullable": true, "example": null },
+          "due_date": { "type": "string", "format": "date-time", "nullable": true, "example": "2026-07-25T12:00:00Z" },
+          "payload_data": { "type": "object", "nullable": true },
+          "result_data": { "type": "object", "nullable": true },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "TaskTemplate": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 5 },
+          "name": { "type": "string", "example": "Daily Backup Pipeline" },
+          "task_type": { "type": "string", "example": "system" },
+          "title_template": { "type": "string", "example": "Backup DB {db_name}" },
+          "payload_template": { "type": "object" },
+          "expected_variables": { "type": "array", "items": { "type": "string" }, "example": ["db_name"] },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "message": { "type": "string", "example": "Operation completed successfully" },
+          "data": { "type": "object" }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/tasks/stats": {
+      "get": {
+        "tags": ["Tasks Analytics & Stats"],
+        "summary": "Get overall tasks statistics",
+        "description": "Retrieves total task count, counts grouped by status, and queue depth.",
+        "responses": {
+          "200": { "description": "Successful response with aggregated stats" }
+        }
+      }
+    },
+    "/tasks/active": {
+      "get": {
+        "tags": ["Tasks Analytics & Stats"],
+        "summary": "List active tasks",
+        "description": "Fetches all tasks currently in 'todo' or 'in-progress' status.",
+        "responses": {
+          "200": { "description": "List of active tasks" }
+        }
+      }
+    },
+    "/tasks/queue-stats": {
+      "get": {
+        "tags": ["Tasks Analytics & Stats"],
+        "summary": "Get task queue metrics",
+        "description": "Returns queue depth, processing rates, and worker performance metrics.",
+        "responses": {
+          "200": { "description": "Queue statistics object" }
+        }
+      }
+    },
+    "/tasks/routing-stats": {
+      "get": {
+        "tags": ["Tasks Analytics & Stats"],
+        "summary": "Get task routing metrics",
+        "description": "Returns routing stats regarding how tasks are allocated to agents or system executors.",
+        "responses": {
+          "200": { "description": "Routing engine performance metrics" }
+        }
+      }
+    },
+    "/tasks/stats/by-type": {
+      "get": {
+        "tags": ["Tasks Analytics & Stats"],
+        "summary": "Get tasks breakdown by type",
+        "description": "Returns status metrics broken down for manual, agent, and system task types.",
+        "responses": {
+          "200": { "description": "Breakdown metrics by type" }
+        }
+      }
+    },
+    "/tasks": {
+      "get": {
+        "tags": ["Tasks Management"],
+        "summary": "List all tasks",
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string" }, "description": "Filter by status" },
+          { "name": "agent_id", "in": "query", "schema": { "type": "integer" }, "description": "Filter by assigned agent ID" },
+          { "name": "priority", "in": "query", "schema": { "type": "integer" }, "description": "Filter by priority" },
+          { "name": "search", "in": "query", "schema": { "type": "string" }, "description": "Search in title and description" },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 20 } }
+        ],
+        "responses": {
+          "200": { "description": "Paginated list of tasks" }
+        }
+      },
+      "post": {
+        "tags": ["Tasks Management"],
+        "summary": "Create a generic task",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title"],
+                "properties": {
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
+                  "type": { "type": "string", "enum": ["manual", "agent", "system"], "default": "agent" },
+                  "priority": { "type": "integer", "default": 5 },
+                  "agent_id": { "type": "integer" },
+                  "due_date": { "type": "string", "format": "date-time" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Task created successfully" }
+        }
+      }
+    },
+    "/tasks/manual": {
+      "post": {
+        "tags": ["Type-Specific Task Creation"],
+        "summary": "Create a manual task",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title"],
+                "properties": {
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
+                  "priority": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Manual task created" }
+        }
+      }
+    },
+    "/tasks/agent": {
+      "post": {
+        "tags": ["Type-Specific Task Creation"],
+        "summary": "Create an agentic task",
+        "description": "Creates an agent task and automatically queues it for AI execution.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title"],
+                "properties": {
+                  "title": { "type": "string" },
+                  "agent_id": { "type": "integer" },
+                  "description": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Agent task created and queued" }
+        }
+      }
+    },
+    "/tasks/system": {
+      "post": {
+        "tags": ["Type-Specific Task Creation"],
+        "summary": "Create a system task",
+        "description": "Creates a system task and triggers immediate pipeline execution.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title"],
+                "properties": {
+                  "title": { "type": "string" },
+                  "description": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "System task created and executed" }
+        }
+      }
+    },
+    "/tasks/type/{type}": {
+      "get": {
+        "tags": ["Tasks Management"],
+        "summary": "Get tasks by type",
+        "parameters": [
+          { "name": "type", "in": "path", "required": true, "schema": { "type": "string", "enum": ["manual", "agent", "system"] } }
+        ],
+        "responses": {
+          "200": { "description": "Tasks filtered by specified type" }
+        }
+      }
+    },
+    "/tasks/{task}": {
+      "get": {
+        "tags": ["Tasks Management"],
+        "summary": "Get task details",
+        "parameters": [
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Detailed task record" }
+        }
+      },
+      "put": {
+        "tags": ["Tasks Management"],
+        "summary": "Update task",
+        "parameters": [
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
+                  "status": { "type": "string" },
+                  "priority": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Task updated successfully" }
+        }
+      },
+      "patch": {
+        "tags": ["Tasks Management"],
+        "summary": "Partial update task",
+        "parameters": [
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Task updated" }
+        }
+      },
+      "delete": {
+        "tags": ["Tasks Management"],
+        "summary": "Delete task",
+        "parameters": [
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Task deleted successfully" }
+        }
+      }
+    },
+    "/tasks/{task}/execute": {
+      "post": {
+        "tags": ["Task Lifecycle & Actions"],
+        "summary": "Force execute task",
+        "parameters": [
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Execution initiated" }
+        }
+      }
+    },
+    "/tasks/{task}/logs": {
+      "get": {
+        "tags": ["Task Lifecycle & Actions"],
+        "summary": "Get task execution logs",
+        "parameters": [
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 100 } }
+        ],
+        "responses": {
+          "200": { "description": "Execution log entries" }
+        }
+      }
+    },
+    "/tasks/{task}/status": {
+      "patch": {
+        "tags": ["Task Lifecycle & Actions"],
+        "summary": "Update task status via state machine",
+        "parameters": [
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["status"],
+                "properties": {
+                  "status": { "type": "string", "enum": ["todo", "in-progress", "blocked", "completed", "failed", "cancelled"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Status updated successfully" }
+        }
+      }
+    },
+    "/tasks/{task}/cancel": {
+      "post": {
+        "tags": ["Task Lifecycle & Actions"],
+        "summary": "Cancel task execution",
+        "parameters": [
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Task cancelled" }
+        }
+      }
+    },
+    "/tasks/{task}/pause": {
+      "post": {
+        "tags": ["Task Lifecycle & Actions"],
+        "summary": "Pause task execution",
+        "parameters": [
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Task paused" }
+        }
+      }
+    },
+    "/tasks/{task}/resume": {
+      "post": {
+        "tags": ["Task Lifecycle & Actions"],
+        "summary": "Resume task execution",
+        "parameters": [
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Task resumed" }
+        }
+      }
+    },
+    "/tasks/{task}/subtasks": {
+      "post": {
+        "tags": ["Sub-tasks Management"],
+        "summary": "Add a sub-task to a task",
+        "description": "Appends a new sub-task object into the task's metadata subtasks array.",
+        "parameters": [
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title"],
+                "properties": {
+                  "title": { "type": "string", "example": "Design database schema" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sub-task added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{task}/subtasks/{subtask}": {
+      "patch": {
+        "tags": ["Sub-tasks Management"],
+        "summary": "Toggle sub-task completion status",
+        "description": "Toggles the completed status of a specific sub-task in task metadata.",
+        "parameters": [
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "subtask", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Sub-task ID" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sub-task completion status toggled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Sub-tasks Management"],
+        "summary": "Delete a sub-task",
+        "description": "Removes a specific sub-task from the task's metadata subtasks array.",
+        "parameters": [
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "subtask", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Sub-task ID" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sub-task deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/task-templates": {
+      "get": {
+        "tags": ["Task Templates"],
+        "summary": "List task templates",
+        "responses": {
+          "200": { "description": "List of available task templates" }
+        }
+      },
+      "post": {
+        "tags": ["Task Templates"],
+        "summary": "Create a task template",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskTemplate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Task template created" }
+        }
+      }
+    },
+    "/task-templates/{taskTemplate}": {
+      "get": {
+        "tags": ["Task Templates"],
+        "summary": "Get task template details",
+        "parameters": [
+          { "name": "taskTemplate", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Template details" }
+        }
+      },
+      "put": {
+        "tags": ["Task Templates"],
+        "summary": "Update task template",
+        "parameters": [
+          { "name": "taskTemplate", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Template updated" }
+        }
+      },
+      "delete": {
+        "tags": ["Task Templates"],
+        "summary": "Delete task template",
+        "parameters": [
+          { "name": "taskTemplate", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Template deleted" }
+        }
+      }
+    },
+    "/task-templates/{taskTemplate}/spawn": {
+      "post": {
+        "tags": ["Task Templates"],
+        "summary": "Spawn task from template",
+        "parameters": [
+          { "name": "taskTemplate", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "variables": { "type": "object", "example": { "target": "logs" } },
+                  "overrides": { "type": "object" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Task spawned from template successfully" }
+        }
+      }
+    }
+  }
+}
